@@ -285,6 +285,151 @@ def verify_motion_sequence_lock(port: int, buses: list[BusEmulator]) -> dict:
     }
 
 
+def verify_offset_source_matrix(root: Path, build: Path) -> dict[str, list[str]]:
+    token = f"b1_offset_{os.getpid()}_{time.monotonic_ns()}"
+    shm_name = f"/{token}"
+    shm_path = Path("/dev/shm") / token
+    motor_completed: list[str] = []
+    launcher_completed: list[str] = []
+
+    with tempfile.TemporaryDirectory(prefix="therapy-robot-offset-matrix-") as temporary:
+        fixture_dir = Path(temporary)
+        runtime_dir = fixture_dir / "runtime"
+        runtime_dir.mkdir()
+
+        fixtures = {
+            "valid": b"1,-2,+3,0,9223372036854775807\n",
+            "empty": b"",
+            "wrong_count": b"1,2,3,4\n",
+            "non_integer": b"1,2,three,4,5\n",
+            "empty_token": b"1,2,,4,5\n",
+            "extra_content": b"1,2,3,4,5\nextra\n",
+            "overflow": b"1,2,3,4,9223372036854775808\n",
+        }
+        paths: dict[str, Path] = {}
+        for name, content in fixtures.items():
+            path = fixture_dir / f"{name}.txt"
+            path.write_bytes(content)
+            paths[name] = path
+        unreadable = fixture_dir / "unreadable.txt"
+        unreadable.write_bytes(fixtures["valid"])
+        unreadable.chmod(0)
+        non_regular = fixture_dir / "offset-directory"
+        non_regular.mkdir()
+
+        core_env = os.environ.copy()
+        core_env["THERAPY_ROBOT_SHM_NAME"] = shm_name
+        core = subprocess.Popen(
+            [str(build / "main_core")], cwd=root, env=core_env,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            start_new_session=True,
+        )
+        try:
+            wait_for(shm_path.exists, "offset matrix shared memory")
+            common_env = core_env.copy()
+            common_env.update({
+                "THERAPY_ROBOT_HARDWARE": "1",
+                "THERAPY_ROBOT_ACTIVE_GROUPS": "all",
+                "THERAPY_ROBOT_G0_PORT": str(fixture_dir / "missing-g0"),
+                "THERAPY_ROBOT_G1_PORT": str(fixture_dir / "missing-g1"),
+                "THERAPY_ROBOT_G2_PORT": str(fixture_dir / "missing-g2"),
+                "THERAPY_ROBOT_COLLISION_REQUIRED": "0",
+                "THERAPY_ROBOT_RUNTIME_DIR": str(runtime_dir),
+            })
+            cases = [
+                ("valid_file", "auto", str(paths["valid"]), None, "hardware startup aborted"),
+                ("inline_list", "1,2,3,4,5", str(paths["valid"]), "must be 'auto'", "must be exactly 'auto'"),
+                ("missing_file", "auto", str(fixture_dir / "missing.txt"), "missing or is not a regular file", "missing or inaccessible"),
+                ("empty_file", "auto", str(paths["empty"]), "is empty", "is empty"),
+                ("unreadable_file", "auto", str(unreadable), "is unreadable", "is unreadable"),
+                ("wrong_count", "auto", str(paths["wrong_count"]), "exactly 5 integers", "exactly 5 integers"),
+                ("non_integer", "auto", str(paths["non_integer"]), "invalid integer", "invalid integer"),
+                ("empty_token", "auto", str(paths["empty_token"]), "empty value", "empty value"),
+                ("extra_content", "auto", str(paths["extra_content"]), "invalid integer", "invalid integer"),
+                ("overflow", "auto", str(paths["overflow"]), "invalid integer", "out-of-range integer"),
+                ("empty_path", "auto", "", "must name a persistent offsets file", "must name a persistent offsets file"),
+                ("non_regular_path", "auto", str(non_regular), "missing or is not a regular file", "not a regular file"),
+            ]
+            for name, setting, path, diagnostic, _launcher_diagnostic in cases:
+                environment = common_env.copy()
+                environment["THERAPY_ROBOT_AXIS_OFFSETS_NATIVE"] = setting
+                environment["THERAPY_ROBOT_AXIS_OFFSETS_FILE"] = path
+                process = subprocess.Popen(
+                    [str(build / "main_motor")], cwd=root, env=environment,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                    start_new_session=True,
+                )
+                try:
+                    stdout, stderr = process.communicate(timeout=0.75)
+                except subprocess.TimeoutExpired:
+                    if diagnostic is not None:
+                        process.terminate()
+                        process.communicate(timeout=2.0)
+                        raise AssertionError(f"invalid offset case did not fail: {name}")
+                    process.terminate()
+                    process.communicate(timeout=2.0)
+                    motor_completed.append(name)
+                    continue
+
+                if diagnostic is None:
+                    raise AssertionError(
+                        f"valid offset file exited early: rc={process.returncode} "
+                        f"stdout={stdout!r} stderr={stderr!r}"
+                    )
+                assert process.returncode != 0, f"invalid offset case was accepted: {name}"
+                assert diagnostic in stderr, (
+                    f"offset case {name} missed diagnostic {diagnostic!r}: "
+                    f"stdout={stdout!r} stderr={stderr!r}"
+                )
+                motor_completed.append(name)
+
+            launcher = root / "scripts" / "run-jetson-hardware.sh"
+            for index, (name, setting, path, _motor_diagnostic, diagnostic) in enumerate(cases):
+                case_runtime = runtime_dir / f"launcher-{index}"
+                case_shm_name = f"/{token}_launcher_{index}"
+                case_shm_path = Path("/dev/shm") / case_shm_name[1:]
+                environment = os.environ.copy()
+                environment.pop("LOG_DIR", None)
+                environment.update({
+                    "THERAPY_ROBOT_HARDWARE_CONFIG": str(fixture_dir / "missing.env"),
+                    "THERAPY_ROBOT_AXIS_OFFSETS_NATIVE": setting,
+                    "THERAPY_ROBOT_AXIS_OFFSETS_FILE": path,
+                    "THERAPY_ROBOT_RUNTIME_DIR": str(case_runtime),
+                    "THERAPY_ROBOT_SHM_NAME": case_shm_name,
+                    "THERAPY_ROBOT_G0_PORT": str(fixture_dir / "missing-g0"),
+                    "THERAPY_ROBOT_G1_PORT": str(fixture_dir / "missing-g1"),
+                    "THERAPY_ROBOT_G2_PORT": str(fixture_dir / "missing-g2"),
+                    "THERAPY_ROBOT_REQUIRE_ALL_PORTS": "1",
+                })
+                result = subprocess.run(
+                    [str(launcher)], cwd=root, env=environment,
+                    capture_output=True, text=True, timeout=3.0,
+                )
+                assert result.returncode != 0, f"launcher accepted test case: {name}"
+                assert diagnostic in result.stderr, (
+                    f"launcher case {name} missed diagnostic {diagnostic!r}: "
+                    f"stdout={result.stdout!r} stderr={result.stderr!r}"
+                )
+                assert not case_shm_path.exists(), f"launcher case left shared memory: {name}"
+                assert not (case_runtime / "processes.pid").exists(), (
+                    f"launcher case left a process registry: {name}"
+                )
+                launcher_completed.append(name)
+        finally:
+            if core.poll() is None:
+                core.terminate()
+            try:
+                core.communicate(timeout=2.0)
+            except subprocess.TimeoutExpired:
+                core.kill()
+                core.communicate(timeout=2.0)
+            shm_path.unlink(missing_ok=True)
+
+    assert len(motor_completed) == 12
+    assert launcher_completed == motor_completed
+    return {"main_motor": motor_completed, "hardware_launcher": launcher_completed}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True)
@@ -302,6 +447,8 @@ def main() -> int:
     for binary in binaries:
         if not binary.is_file():
             raise SystemExit(f"missing test binary: {binary}")
+
+    offset_matrix = verify_offset_source_matrix(root, build)
 
     buses = [BusEmulator((1,)), BusEmulator((1, 2)), BusEmulator((1, 2))]
     for bus in buses:
@@ -349,6 +496,17 @@ def main() -> int:
             "THERAPY_ROBOT_MOTION_LOG_FILE": str(log_dir / "motor-motion-history.jsonl"),
             "THERAPY_ROBOT_MOTION_LOG_BACKUP_FILE": str(log_dir / "motor-motion-history.backup.jsonl"),
         })
+        initial_offsets = [
+            buses[0].positions[1],
+            buses[1].positions[1],
+            buses[1].positions[2],
+            buses[2].positions[1],
+            buses[2].positions[2],
+        ]
+        (log_dir / "axis-offsets-native.txt").write_text(
+            ",".join(str(value) for value in initial_offsets) + "\n",
+            encoding="ascii",
+        )
         spawn("main_motor", hardware_env)
 
         web_env = base_env.copy()
@@ -363,25 +521,17 @@ def main() -> int:
             "hardware_ready",
         )
         assert actual_positions(state) == [0, 0, 0, 0, 0]
-        assert state["run_mode"] == "hardware_relative"
+        assert state["run_mode"] == "hardware"
         lock_result = verify_motion_sequence_lock(args.port, buses)
         if args.lock_only:
             print(json.dumps({
                 "ok": True,
                 "lock_verification": lock_result,
+                "offset_source_matrix": offset_matrix,
                 "commands_per_bus": [len(bus.commands) for bus in buses],
                 "log_dir": str(log_dir),
             }, ensure_ascii=False))
             return 0
-        try:
-            request_json(args.port, "/api/command/endpoint_target", {
-                "x_m": 0.0, "y_m": 0.9, "z_m": 0.45,
-                "rx_rad": 0.0, "ry_rad": 0.0, "rz_rad": 0.0,
-            })
-            raise AssertionError("relative hardware mode accepted an endpoint command")
-        except urllib.error.HTTPError as error:
-            assert error.code == 409
-
         try:
             request_json(args.port, "/api/command/jog_axis", {
                 "axis": 4, "delta_display": 0.5,
@@ -420,14 +570,6 @@ def main() -> int:
         assert k0_enable_codes.index(0x88) < k0_enable_codes.index(0xA4)
         assert buses[0].positions[1] == k0_physical_before_enable + 43200
         assert buses[0].brake_engaged[1] is False
-
-        try:
-            request_json(args.port, "/api/command/endpoint_jog", {
-                "axis": "y", "delta_mm": -5,
-            })
-            raise AssertionError("uncalibrated relative mode accepted an endpoint jog")
-        except urllib.error.HTTPError as error:
-            assert error.code == 409
 
         request_json(args.port, "/api/command/disable_all", {})
         wait_for(
@@ -627,6 +769,7 @@ def main() -> int:
         print(json.dumps({
             "ok": True,
             "positions": actual_positions(state),
+            "offset_source_matrix": offset_matrix,
             "commands_per_bus": [len(bus.commands) for bus in buses],
             "log_dir": str(log_dir),
         }, ensure_ascii=False))
