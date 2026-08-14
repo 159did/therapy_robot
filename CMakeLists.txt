@@ -75,4 +75,9 @@ if(BUILD_TESTING)
             --main-web-control $<TARGET_FILE:main_web_control>
             --kill-script ${CMAKE_SOURCE_DIR}/scripts/kill-robot.sh
   )
+  add_test(
+    NAME interface_contract
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_interface_contract.py
+            --root ${CMAKE_SOURCE_DIR}
+  )
 endif()
