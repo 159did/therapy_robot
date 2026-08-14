@@ -5,7 +5,7 @@
 
 namespace therapy_robot {
 
-constexpr const char* kSharedMemoryName = "/therapy_robot_shared_state";
+constexpr const char* kDefaultSharedMemoryName = "/therapy_robot_shared_state";
 constexpr int kGroupCount = 3;
 constexpr int kMaxMotorsPerGroup = 2;
 constexpr int kAxisCount = 5;
@@ -128,6 +128,7 @@ struct SharedState {
   std::array<AxisMapEntry, kAxisCount> axis_map{};
 };
 
+const char* shared_memory_name();
 SharedState* open_or_create_shared_state(bool create);
 void initialize_defaults(SharedState& state);
 uint64_t now_ms();

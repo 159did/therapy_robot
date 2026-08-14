@@ -2,7 +2,13 @@
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${LOG_DIR:-/tmp/therapy_robot}"
-SHM_PATH="/dev/shm/therapy_robot_shared_state"
+SHM_NAME="${THERAPY_ROBOT_SHM_NAME-/therapy_robot_shared_state}"
+if [[ ${#SHM_NAME} -gt 255 || "$SHM_NAME" == "/." || "$SHM_NAME" == "/.." || ! "$SHM_NAME" =~ ^/[A-Za-z0-9_.-]+$ ]]; then
+  echo "invalid THERAPY_ROBOT_SHM_NAME: expected '/' followed by 1-254 safe characters" >&2
+  exit 2
+fi
+SHM_PATH="/dev/shm/${SHM_NAME#/}"
+export THERAPY_ROBOT_SHM_NAME="$SHM_NAME"
 export THERAPY_ROBOT_COLLISION_CONFIG="${THERAPY_ROBOT_COLLISION_CONFIG:-$ROOT_DIR/config/enclosure-collision.csv}"
 export THERAPY_ROBOT_COLLISION_REQUIRED="${THERAPY_ROBOT_COLLISION_REQUIRED:-0}"
 mkdir -p "$LOG_DIR"

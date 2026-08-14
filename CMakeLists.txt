@@ -56,10 +56,16 @@ install(DIRECTORY web/ DESTINATION web)
 
 include(CTest)
 if(BUILD_TESTING)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
   add_executable(test_collision tests/test_collision.cpp)
   target_link_libraries(test_collision PRIVATE therapy_robot_common)
   add_test(NAME collision_geometry COMMAND test_collision)
   add_executable(test_kinematics tests/test_kinematics.cpp)
   target_link_libraries(test_kinematics PRIVATE therapy_robot_common)
   add_test(NAME kinematics_roundtrip COMMAND test_kinematics)
+  add_test(
+    NAME shared_memory_isolation
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_shared_memory_isolation.py
+            --main-core $<TARGET_FILE:main_core>
+  )
 endif()

@@ -4,6 +4,13 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build/host}"
 LOG_DIR="${LOG_DIR:-/tmp/therapy_robot}"
+SHM_NAME="${THERAPY_ROBOT_SHM_NAME-/therapy_robot_shared_state}"
+if [[ ${#SHM_NAME} -gt 255 || "$SHM_NAME" == "/." || "$SHM_NAME" == "/.." || ! "$SHM_NAME" =~ ^/[A-Za-z0-9_.-]+$ ]]; then
+  echo "invalid THERAPY_ROBOT_SHM_NAME: expected '/' followed by 1-254 safe characters" >&2
+  exit 2
+fi
+SHM_PATH="/dev/shm/${SHM_NAME#/}"
+export THERAPY_ROBOT_SHM_NAME="$SHM_NAME"
 SIM_MAX_SPEED_NATIVE="${THERAPY_ROBOT_SIM_MAX_SPEED_NATIVE:-}"
 SIM_POLL_MS="${THERAPY_ROBOT_SIM_POLL_MS:-10}"
 SIM_K0_SPEED_MM_S="${THERAPY_ROBOT_SIM_K0_SPEED_MM_S:-30}"
@@ -15,15 +22,15 @@ export THERAPY_ROBOT_COLLISION_REQUIRED="${THERAPY_ROBOT_COLLISION_REQUIRED:-0}"
 mkdir -p "$LOG_DIR"
 printf '%s\n' "$SIM_SPEED_MULTIPLIER" > "$LOG_DIR/speed_multiplier"
 "$ROOT_DIR/scripts/kill-robot.sh" || true
-rm -f /dev/shm/therapy_robot_shared_state
+rm -f -- "$SHM_PATH"
 
 cd "$ROOT_DIR"
 "$BUILD_DIR/main_core" > "$LOG_DIR/main_core.log" 2>&1 &
 for _ in $(seq 1 50); do
-  [[ -e /dev/shm/therapy_robot_shared_state ]] && break
+  [[ -e "$SHM_PATH" ]] && break
   sleep 0.02
 done
-if [[ ! -e /dev/shm/therapy_robot_shared_state ]]; then
+if [[ ! -e "$SHM_PATH" ]]; then
   echo "main_core did not create shared memory; see $LOG_DIR/main_core.log" >&2
   exit 1
 fi
