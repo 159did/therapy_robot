@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute named Cartesian test points through the normal safe endpoint API."""
+"""Preview named Cartesian test points without starting automatic motion."""
 
 import argparse
 import json
@@ -21,6 +21,14 @@ if (len(RUNTIME_DIR_TEXT) < 2 or len(RUNTIME_DIR_TEXT) > 4095 or
     raise ValueError('invalid THERAPY_ROBOT_RUNTIME_DIR')
 RUNTIME_DIR = Path(RUNTIME_DIR_TEXT)
 PROGRESS_PATH = RUNTIME_DIR / 'motion_test_progress.json'
+AUTOMATIC_EXECUTION_LOCK = {
+    'ok': False,
+    'execution_locked': True,
+    'error_code': 'automatic_trajectory_locked',
+    'error': '完整自动轨迹尚未完成安全复核，当前仅允许只读仿真预检',
+    'motor_command_written': False,
+    'motion_started': False,
+}
 
 
 def get_json(url, timeout=3.0):
@@ -114,6 +122,9 @@ def demo_speed_multiplier(index, total):
 
 
 def run(args):
+    if args.execute:
+        print(json.dumps(AUTOMATIC_EXECUTION_LOCK, ensure_ascii=False))
+        raise SystemExit(2)
     base_url = args.base_url.rstrip('/')
     side = 'left' if args.side == 'left' else 'right'
     catalog_url = base_url + '/api/motion_test/points?' + urllib.parse.urlencode({'side': side})
@@ -131,6 +142,10 @@ def run(args):
     if not preflight.get('ok') or preflight.get('motor_command_written') is not False:
         failed = next((p for p in preflight.get('points', []) if not p.get('ok')), {})
         raise RuntimeError(f"启动前整轨预检失败: {failed.get('name', '--')} {failed.get('reason', 'unknown')}")
+    print(json.dumps(preflight, ensure_ascii=False, indent=2))
+    if not args.execute:
+        print('dry-run: 自动执行已锁定，本次仅输出整轨仿真预检。')
+        return
     progress = {
         'running': True,
         'total': len(selected),
@@ -184,20 +199,22 @@ def main():
     parser.add_argument('--tolerance-mm', type=float, default=3.0)
     parser.add_argument('--timeout-sec', type=float, default=45.0)
     parser.add_argument('--dwell-sec', type=float, default=1.0)
+    parser.add_argument('--execute', action='store_true', help='自动执行当前被安全硬锁；默认只运行整轨仿真预检')
     args = parser.parse_args()
     try:
         run(args)
     except (ValueError, RuntimeError, TimeoutError, urllib.error.URLError) as exc:
-        try:
-            progress = json.loads(PROGRESS_PATH.read_text(encoding='utf-8'))
-        except (OSError, json.JSONDecodeError):
-            progress = {'completed': 0, 'points': []}
-        progress.update({
-            'running': False,
-            'message': f'测试序列停止: {exc}',
-            'error': str(exc),
-        })
-        write_progress(progress)
+        if args.execute:
+            try:
+                progress = json.loads(PROGRESS_PATH.read_text(encoding='utf-8'))
+            except (OSError, json.JSONDecodeError):
+                progress = {'completed': 0, 'points': []}
+            progress.update({
+                'running': False,
+                'message': f'测试序列停止: {exc}',
+                'error': str(exc),
+            })
+            write_progress(progress)
         raise SystemExit(str(exc)) from exc
 
 
