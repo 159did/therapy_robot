@@ -976,7 +976,10 @@ int main() {
       }
 
       state->command.target_native = requested;
-      state->command.target_command_id = 1;
+      // Continuous jog is a single-axis drive command, not a coordinated
+      // waypoint trajectory.  main_motor consumes command id 3 only after the
+      // soft-limit and collision checks above have accepted the full path.
+      state->command.target_command_id = 3;
       std::atomic_thread_fence(std::memory_order_release);
       state->command.target_command_seq++;
       std::ostringstream out;

@@ -34,6 +34,7 @@ class BusEmulator:
         self.brake_engaged = {motor_id: True for motor_id in motor_ids}
         self.brake_operations: list[tuple[int, int]] = []
         self.commands: list[tuple[int, int]] = []
+        self.position_commands: list[tuple[int, int, int]] = []
         self.motor_on_position_jump = 0
         self._buffer = bytearray()
         self._stop = threading.Event()
@@ -99,7 +100,10 @@ class BusEmulator:
             state[6] = 0
             self._write_response(command, motor_id, bytes(state), data_checksum=True)
         elif command == 0xA4:
-            self.positions[motor_id] = int.from_bytes(data[:8], "little", signed=True)
+            position = int.from_bytes(data[:8], "little", signed=True)
+            max_speed = int.from_bytes(data[8:12], "little", signed=False)
+            self.position_commands.append((motor_id, position, max_speed))
+            self.positions[motor_id] = position
             self._write_response(command, motor_id, self._status(motor_id), data_checksum=True)
         elif command == 0x8C:
             operation = data[0]
@@ -335,6 +339,10 @@ def main() -> int:
             "THERAPY_ROBOT_SERIAL_TIMEOUT_MS": "200",
             "THERAPY_ROBOT_STATUS_EVERY_POLLS": "3",
             "THERAPY_ROBOT_WATCHDOG_MS": "2000",
+            # PTY position replies are instantaneous; keep the coordinated
+            # software trajectories inside the test's eight-second wait while
+            # their target and command-shape assertions remain deterministic.
+            "THERAPY_ROBOT_MAX_SPEED_NATIVE": "120000",
             "THERAPY_ROBOT_ALLOW_ZERO": "1",
             "THERAPY_ROBOT_AXIS_OFFSETS_FILE": str(log_dir / "axis-offsets-native.txt"),
             "THERAPY_ROBOT_K0_POSITION_FILE": str(log_dir / "k0-last-logical-native.txt"),
@@ -500,15 +508,26 @@ def main() -> int:
         )
         assert moved_endpoint_state["run_mode"] == "hardware"
 
+        k4_physical_before = buses[2].positions[2]
+        k4_position_command_count_before = len(buses[2].position_commands)
         continuous = request_json(args.port, "/api/command/jog_axis_continuous", {
             "axis": 4, "direction": 1,
         })
         assert continuous["command"] == "jog_axis_continuous"
         assert continuous["target_native"] == 60000
         assert continuous["soft_limit_display"] == 60
-        wait_for(
+        continuous_state = wait_for(
             lambda: state_if(args.port, lambda value: actual_positions(value)[4] == 60000),
             "K4 continuous jog reaches positive soft limit in emulator",
+        )
+        assert continuous_state["command"]["target_command_id"] == 3
+        k4_position_commands = [
+            item for item in buses[2].position_commands[k4_position_command_count_before:]
+            if item[0] == 2
+        ]
+        assert len(k4_position_commands) == 1
+        assert abs(k4_position_commands[0][1] - k4_physical_before) == abs(
+            continuous["target_native"] - continuous["start_native"]
         )
         for body in ({"axis": 5, "direction": 1},
                      {"axis": 4, "direction": 0}):

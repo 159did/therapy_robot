@@ -1289,6 +1289,7 @@ void send_targets(SharedState& state, HardwareRuntime& runtime,
   // latched recovery state; normal targets never inherit this bypass.
   const bool recovery_jog_path = state.control.collision.manual_recovery &&
                                  state.command.target_command_id == 7;
+  const bool continuous_jog_path = state.command.target_command_id == 3;
   std::array<int64_t, kAxisCount> logical_targets{};
   for (int idx = 0; idx < kAxisCount; ++idx) {
     logical_targets[idx] = clamped_target(
@@ -1366,6 +1367,17 @@ void send_targets(SharedState& state, HardwareRuntime& runtime,
 
   if (!has_motion) {
     runtime.trajectory_active = false;
+    return;
+  }
+
+  if (continuous_jog_path) {
+    // The drive owns the constant-speed move and stops at the already checked
+    // soft-limit target.  Streaming cubic waypoints here turns a continuous
+    // jog into a very long ease-in/ease-out trajectory and delays stop-at-limit
+    // behavior by the software trajectory duration.
+    runtime.trajectory_active = false;
+    runtime.trajectory_last_command_native = logical_targets;
+    send_trajectory_point(state, runtime, logical_targets);
     return;
   }
 
