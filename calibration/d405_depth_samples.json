@@ -1,0 +1,9 @@
+{
+  "description": "D405 深度 Z 线性标定样本。measured_z_m 是相机读出的平面/标定点 Z，actual_z_m 是用尺子量的真实距离。单位米。",
+  "samples": [
+    { "name": "z300", "measured_z_m": 0.300, "actual_z_m": 0.300 },
+    { "name": "z350", "measured_z_m": 0.350, "actual_z_m": 0.350 },
+    { "name": "z400", "measured_z_m": 0.400, "actual_z_m": 0.400 },
+    { "name": "z450", "measured_z_m": 0.450, "actual_z_m": 0.450 }
+  ]
+}

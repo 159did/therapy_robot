@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <title>理疗机器人控制界面</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="operator-bar" aria-label="设备连接与安全控制">
+      <div class="operator-status">
+        <strong>设备连接与安全控制</strong>
+        <div class="connection-badges">
+          <span id="connectionState" class="pill warn">连接中</span>
+          <span id="modeState" class="pill warn">mode: --</span>
+          <span id="systemState" class="pill">system_state: --</span>
+          <span id="jointPowerStatus" class="pill">电机电源：等待状态</span>
+        </div>
+      </div>
+      <div class="operator-actions">
+        <button id="jointJogEnable" class="enable">全部使能（K0 松闸）</button>
+        <button id="jointJogStop" class="danger operator-stop">立即停止（K0 合闸）</button>
+        <button id="jointJogDisable" class="secondary">全部下电</button>
+        <button id="returnArmZero">K1～K4 回零（K0 保持）</button>
+        <button class="danger" onclick="fetch('/api/command/recover_arm_zero',{method:'POST'}).then(r=>r.json()).then(x=>alert(x.message||x.error||'已发送碰撞恢复归位')).catch(e=>alert(e.message))">碰撞恢复归位（K1～K4，K0保持）</button>
+        <button id="returnZZero">Z / K0 回安全零位（+3 mm）</button>
+        <button id="emergencyStopTop" class="danger">立即急停</button>
+        <button id="resetEmergencyStopTop" class="secondary">复位急停</button>
+        <button id="clearFaultsTop" class="secondary">故障清零 / 恢复操作</button>
+        <button class="secondary" onclick="fetch('/api/command/enable_limit_stop_recovery',{method:'POST'}).then(r=>r.json()).then(x=>alert(x.message||x.error||'限位/碰撞恢复已开启，请重新使能')).catch(e=>alert(e.message))">进入限位/碰撞恢复模式（先下电）</button>
+        <button class="secondary" onclick="fetch('/api/command/disable_limit_stop_recovery',{method:'POST'}).then(r=>r.json()).then(x=>alert(x.error||'限位块调试恢复已退出')).catch(e=>alert(e.message))">退出调试恢复</button>
+        <label class="runtime-mode-control">全局运行模式
+          <select id="runtimeModeSelect">
+            <option value="sim">仿真（不连接电机）</option>
+            <option value="hardware">实机（连接Nano电机）</option>
+          </select>
+        </label>
+        <button id="applyRuntimeMode" class="secondary">应用全局模式</button>
+        <button id="advancedDebugToggle" class="secondary">显示高级调试</button>
+      </div>
+      <p id="returnZeroStatus" class="pill">分轴回零：待命</p>
+      <p id="faultDetailTop" class="pill">故障详情：无</p>
+      <p id="runtimeModeStatus" class="pill">全局模式：读取中；切换前必须全部电机下电</p>
+    </section>
+
+    <section class="panel pose-reconcile-panel" id="poseReconcilePanel">
+      <div class="panel-title">
+        <h2>突发状态核对与同步</h2>
+        <p>用于急停、断电、编码器分支变化或碰撞后的软件姿态核对。只在所有电机下电时使用；确认后只更新偏置和仿真，不会使能或运动。</p>
+      </div>
+      <div class="reconcile-grid">
+        <div>
+          <h3>程序当前解释</h3>
+          <pre id="reconcileCurrent" class="status-box">等待状态...</pre>
+        </div>
+        <div>
+          <h3>实体确认姿态</h3>
+          <div class="targets reconcile-inputs">
+            <label>K0 mm<input id="reconcileK0" type="number" step="0.1" value="173.1" /></label>
+            <label>K1 deg<input id="reconcileK1" type="number" step="0.1" value="0" /></label>
+            <label>K2 deg<input id="reconcileK2" type="number" step="0.1" value="0" /></label>
+            <label>K3 deg<input id="reconcileK3" type="number" step="0.1" value="0" /></label>
+            <label>K4 deg<input id="reconcileK4" type="number" step="0.1" value="0" /></label>
+          </div>
+          <div class="actions">
+            <button id="reconcileFill" class="secondary">用当前软件值填入</button>
+            <button id="reconcileApply" class="danger">确认实体姿态并同步（不运动）</button>
+          </div>
+          <p id="reconcileStatus" class="pill">等待核对</p>
+        </div>
+      </div>
+    </section>
+
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Therapy Robot Control</p>
+        <h1>理疗机器人控制界面</h1>
+        <p class="subtitle">主工作区集中显示穴位识别、三维仿真、末端实时位姿、增量点动和自动按摩；工程参数可通过“显示高级调试”展开。</p>
+      </div>
+      <div class="status-card">
+        <span class="pill good">顶部控制区始终可见</span>
+        <span>连接、使能、停止和下电已集中到页面最上方</span>
+      </div>
+    </header>
+
+    <section class="grid two operation-grid">
+      <article class="panel advanced-panel">
+        <div class="panel-title">
+          <h2>三组电机目标位置</h2>
+          <p>输入 MF9025V2 native 原始位置，单位统一为 0.01°/LSB；GUI 可按轴显示换算值。</p>
+        </div>
+        <div class="targets">
+          <label>G0-A0 抬升目标 native<input id="target_g0a0" type="number" step="1" value="0" /><small id="hint_target_g0a0" class="input-hint">范围加载中...</small></label>
+          <label>G1-A0 大臂目标 native<input id="target_g1a0" type="number" step="1" value="0" /><small id="hint_target_g1a0" class="input-hint">范围加载中...</small></label>
+          <label>G1-A1 小臂目标 native<input id="target_g1a1" type="number" step="1" value="0" /><small id="hint_target_g1a1" class="input-hint">范围加载中...</small></label>
+          <label>G2-A0 末端 1 目标 native<input id="target_g2a0" type="number" step="1" value="0" /><small id="hint_target_g2a0" class="input-hint">范围加载中...</small></label>
+          <label>G2-A1 末端 2 目标 native<input id="target_g2a1" type="number" step="1" value="0" /><small id="hint_target_g2a1" class="input-hint">范围加载中...</small></label>
+        </div>
+        <div class="actions">
+          <button id="sendTargets">发送目标位置</button>
+          <button id="enableAll" class="secondary">全部上电</button>
+          <button id="disableAll" class="secondary">全部下电</button>
+          <button id="stopAll" class="danger">停止</button>
+          <button id="setZero" class="secondary">捕获收纳零位（软件）</button>
+        </div>
+      </article>
+
+      <article class="panel advanced-panel">
+        <div class="panel-title">
+          <h2>物理量目标位置</h2>
+          <p>K0 使用 mm；K1-K4 使用 deg。点击发送时会按当前轴映射自动换算成 native，并同步回上面的 native 输入框。</p>
+        </div>
+        <div class="targets">
+          <label>K0 抬升目标 mm<input id="physical_g0a0" type="number" step="0.1" value="0" /><small id="hint_physical_g0a0" class="input-hint">范围加载中...</small></label>
+          <label>K1 大臂目标 deg<input id="physical_g1a0" type="number" step="0.1" value="0" /><small id="hint_physical_g1a0" class="input-hint">范围加载中...</small></label>
+          <label>K2 小臂目标 deg<input id="physical_g1a1" type="number" step="0.1" value="0" /><small id="hint_physical_g1a1" class="input-hint">范围加载中...</small></label>
+          <label>K3 末端 1 目标 deg<input id="physical_g2a0" type="number" step="0.1" value="0" /><small id="hint_physical_g2a0" class="input-hint">范围加载中...</small></label>
+          <label>K4 末端 2 目标 deg<input id="physical_g2a1" type="number" step="0.1" value="0" /><small id="hint_physical_g2a1" class="input-hint">范围加载中...</small></label>
+        </div>
+        <div class="actions">
+          <button id="sendPhysicalTargets">发送物理量目标</button>
+        </div>
+      </article>
+
+      <article class="panel advanced-panel">
+        <div class="panel-title">
+          <h2>相机模拟输入</h2>
+          <p>模拟未来 RGB-D 相机输出的穴位点坐标与皮肤法线姿态，点击换算后得到机器人基坐标系下的绝对末端目标。</p>
+        </div>
+        <div class="targets">
+          <label>穴位名称<input id="camera_point_name" type="text" value="大椎" /></label>
+          <label>Camera X mm<input id="camera_x" type="number" step="1" value="0" /></label>
+          <label>Camera Y mm<input id="camera_y" type="number" step="1" value="0" /></label>
+          <label>Camera Z mm<input id="camera_z" type="number" step="1" value="0" /></label>
+          <label>Camera Rx deg<input id="camera_rx" type="number" step="0.1" value="0" /></label>
+          <label>Camera Ry deg<input id="camera_ry" type="number" step="0.1" value="0" /></label>
+          <label>Camera Rz deg（不可控）<input id="camera_rz" type="number" step="0.1" value="0" disabled /></label>
+        </div>
+        <div class="actions">
+          <button id="convertCameraEndpoint">相机换算到绝对</button>
+          <button id="sendCameraEndpoint" class="secondary">换算并发送</button>
+        </div>
+      </article>
+
+      <article class="panel advanced-panel">
+        <div class="panel-title">
+          <h2>相机到基座标定</h2>
+          <p>先用外参近似仿真相机坐标到机器人基坐标的转换：p_base = R_calib · p_camera + t_calib。默认值已包含相机底面中心相对末端底面中心偏移 Y=-217mm、Z=+145.2mm。</p>
+        </div>
+        <div class="targets">
+          <label>tx mm<input id="calib_tx" type="number" step="1" value="0" /></label>
+          <label>ty mm<input id="calib_ty" type="number" step="1" value="711" /></label>
+          <label>tz mm<input id="calib_tz" type="number" step="1" value="622.1" /></label>
+          <label>rotX deg<input id="calib_rx" type="number" step="0.1" value="0" /></label>
+          <label>rotY deg<input id="calib_ry" type="number" step="0.1" value="0" /></label>
+          <label>rotZ deg<input id="calib_rz" type="number" step="0.1" value="0" /></label>
+        </div>
+      </article>
+
+      <article class="panel advanced-panel">
+        <div class="panel-title">
+          <h2>相对零位目标</h2>
+          <p>输入相对当前零位的偏移量，点击换算后自动填充右侧绝对末端目标。零位参考可后续按实际标定调整。</p>
+        </div>
+        <div class="targets">
+          <label>ΔX mm<input id="relative_x" type="number" step="1" value="0" /></label>
+          <label>ΔY mm<input id="relative_y" type="number" step="1" value="0" /></label>
+          <label>ΔZ mm<input id="relative_z" type="number" step="1" value="0" /></label>
+          <label>ΔRx deg<input id="relative_rx" type="number" step="0.1" value="0" /></label>
+          <label>ΔRy deg<input id="relative_ry" type="number" step="0.1" value="0" /></label>
+          <label>ΔRz deg<input id="relative_rz" type="number" step="0.1" value="0" disabled /></label>
+          <label>零位 X mm<input id="base_x" type="number" step="1" value="0" /></label>
+          <label>零位 Y mm<input id="base_y" type="number" step="1" value="928" /></label>
+          <label>零位 Z mm<input id="base_z" type="number" step="1" value="476.9" /></label>
+          <label>零位 Rx deg<input id="base_rx" type="number" step="0.1" value="0" /></label>
+          <label>零位 Ry deg<input id="base_ry" type="number" step="0.1" value="0" /></label>
+          <label>零位 Rz deg<input id="base_rz" type="number" step="0.1" value="0" disabled /></label>
+        </div>
+        <div class="actions">
+          <button id="convertEndpoint">相对换算到绝对</button>
+        </div>
+      </article>
+
+      <article class="panel advanced-panel">
+        <div class="panel-title">
+          <h2>绝对末端目标</h2>
+          <p>写入 control.endpoint_target，后续由 main_control 做逆解。</p>
+          <p>X/Y/Z 定义在按摩头工具最末端的 tip 点，不是圆柱底面或腕点。</p>
+          <p>IK 采用真实结构：K1-K2=580mm，K3-K4=229mm，K4刚性末端组件=119mm，末端下探=153.1mm；橙色末端长方体、K4轴电机和末端圆柱随K4一起旋转。</p>
+          <p id="endpointPrecheck" class="pill">后端IK预检查: --</p>
+          <p id="endpointBackendStatus" class="pill">后端结果: --</p>
+        </div>
+        <div class="targets">
+          <label>X mm<input id="endpoint_x" type="number" step="1" value="0" /></label>
+          <label>Y mm<input id="endpoint_y" type="number" step="1" value="0" /></label>
+          <label>Z mm<input id="endpoint_z" type="number" step="1" value="0" /></label>
+          <label>法向量 Nx<input id="endpoint_nx" type="number" step="0.001" value="0" /></label>
+          <label>法向量 Ny<input id="endpoint_ny" type="number" step="0.001" value="0" /></label>
+          <label>法向量 Nz<input id="endpoint_nz" type="number" step="0.001" value="1" /></label>
+          <label>换算 Rx deg<input id="endpoint_rx" type="number" step="0.1" value="0" readonly /></label>
+          <label>换算 Ry deg<input id="endpoint_ry" type="number" step="0.1" value="0" readonly /></label>
+          <label>Rz deg（不可控）<input id="endpoint_rz" type="number" step="0.1" value="0" disabled /></label>
+        </div>
+        <div class="actions">
+          <button id="syncActualEndpoint" class="secondary">同步当前末端到绝对目标</button>
+          <button id="sendEndpoint">发送末端目标</button>
+          <a class="button-link" href="/sim">打开仿真界面</a>
+        </div>
+      </article>
+
+      <article class="panel acupoint-vision-panel">
+        <div class="panel-title compact-title">
+          <div>
+            <h2>穴位识别图像与坐标</h2>
+            <p>显示最新一次背部识别使用的 RGB 照片，并按识别像素标注穴位名称；右侧列出相机坐标和皮肤法向。</p>
+          </div>
+          <span id="acupointImageStatus" class="pill warn">穴位数据: 加载中</span>
+        </div>
+        <div class="acupoint-vision-layout">
+          <div id="acupointImageStage" class="acupoint-image-stage">
+            <img id="acupointSourceImage" src="/api/acupoints/latest/image" alt="穴位识别原始照片" />
+            <canvas id="acupointOverlay"></canvas>
+          </div>
+          <div id="acupointCoordinateList" class="acupoint-coordinate-list">等待穴位数据...</div>
+        </div>
+      </article>
+
+      <article class="panel endpoint-live-panel">
+        <div class="panel-title">
+          <h2>机器人末端实时位姿</h2>
+          <p>位置来自当前关节反馈的正运动学；单位为 mm 和 deg。硬件模式下显示实体反馈，仿真模式下显示软件反馈。</p>
+        </div>
+        <div class="pose-live-grid">
+          <div><span>X</span><b id="livePoseX">-- mm</b></div>
+          <div><span>Y</span><b id="livePoseY">-- mm</b></div>
+          <div><span>Z</span><b id="livePoseZ">-- mm</b></div>
+          <div><span>Rx</span><b id="livePoseRx">-- deg</b></div>
+          <div><span>Ry</span><b id="livePoseRy">-- deg</b></div>
+          <div><span>Rz</span><b>不可控</b></div>
+        </div>
+      </article>
+
+      <article class="panel joint-jog-panel">
+        <div class="panel-title">
+          <h2>单关节低速点动测试</h2>
+          <p>每次都以五个关节的实际反馈为基准，只改变所选关节。程序不会自动上电；首次实体测试建议选 K4、步长 0.5°。</p>
+        </div>
+        <div class="targets">
+          <label>测试关节
+            <select id="jointJogAxis">
+              <option value="4" selected>K4 末端关节（首次推荐）</option>
+              <option value="3">K3 腕关节</option>
+              <option value="2">K2 小臂</option>
+              <option value="1">K1 大臂</option>
+              <option value="0">K0 升降（重力轴，最后测试）</option>
+            </select>
+          </label>
+          <label>单次步长（K0 为 mm；其余为 deg）
+            <select id="jointJogStep">
+              <option value="0.5">0.5</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="5" selected>5</option>
+              <option value="10">10</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button data-joint-jog-sign="-1">− 点动</button>
+          <button data-joint-jog-sign="1">+ 点动</button>
+        </div>
+        <p id="jointJogStatus" class="pill">单关节点动：等待状态</p>
+        <div class="actions">
+          <button data-joint-continuous-direction="-1">− 匀速启动</button>
+          <button data-joint-continuous-direction="1">+ 匀速启动</button>
+        </div>
+        <p id="jointContinuousStatus" class="pill">单轴匀速：等待启动；使用“立即停止”结束运动</p>
+        <p class="subtitle">匀速模式会让所选轴朝对应软限位持续运动；K0 使用配置文件中的原有速度，K1～K4 继续使用原有速度。必须由操作员观察实体并手动点击“立即停止”，到达软限位也会自动结束。</p>
+        <p class="subtitle">选择 K0 时步长会切换为 5/10/20/50/100mm，默认 20mm；旋转关节最大 10°。K0 是重力轴，必须先确认可靠支撑和急停可用。</p>
+      </article>
+
+      <article class="panel recovery-jog-panel">
+        <div class="panel-title">
+          <h2>故障自救：恢复点动</h2>
+          <p>仅用于碰撞或软限位停止后脱离当前位置。先点击“全部下电”，再点击顶部“进入限位/碰撞恢复模式”，然后重新使能电机。</p>
+          <p>恢复时只允许单轴小步：K0最多每次5 mm且只允许向上；K1～K4最多每次2°。末端增量、目标位置和自动序列保持锁定。</p>
+          <p class="pill warn">这是受限的碰撞路径恢复，不是关闭碰撞检测；目标姿态仍必须离开末端和机箱碰撞边界。</p>
+        </div>
+        <div class="targets">
+          <label>恢复关节
+            <select id="recoveryJogAxis">
+              <option value="4" selected>K4 末端关节</option>
+              <option value="3">K3 腕关节</option>
+              <option value="2">K2 小臂</option>
+              <option value="1">K1 大臂</option>
+              <option value="0">K0 升降（只允许上升）</option>
+            </select>
+          </label>
+          <label>恢复步长（K0 为 mm；其余为 deg）
+            <select id="recoveryJogStep">
+              <option value="0.5">0.5</option>
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="5">5（仅K0）</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button data-recovery-jog-sign="-1">恢复 −</button>
+          <button data-recovery-jog-sign="1">恢复 +</button>
+        </div>
+        <p id="recoveryJogStatus" class="pill">恢复点动：等待进入恢复模式</p>
+      </article>
+
+      <article class="panel endpoint-jog-panel">
+        <div class="panel-title">
+          <h2>末端位姿增量控制</h2>
+          <p>基于当前五轴真实反馈做相对笛卡尔点动，姿态保持不变；后端直接完成 FK、IK、关节软限位和碰撞路径检查。相对零位模式可用于当前开机周期的增量测试，绝对穴位定位仍需正式零位标定。</p>
+        </div>
+        <label class="jog-step-label">单次步长 mm
+          <select id="endpointJogStep">
+            <option value="1">1</option>
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+        <div class="jog-grid">
+          <button data-jog-axis="x" data-jog-sign="-1">X−</button>
+          <button data-jog-axis="x" data-jog-sign="1">X+</button>
+          <button data-jog-axis="y" data-jog-sign="-1">Y−</button>
+          <button data-jog-axis="y" data-jog-sign="1">Y+</button>
+          <button data-jog-axis="z" data-jog-sign="-1">Z−</button>
+          <button data-jog-axis="z" data-jog-sign="1">Z+</button>
+        </div>
+        <p id="endpointJogStatus" class="pill">增量控制: 待命</p>
+      </article>
+
+      <article class="panel motion-test-panel">
+        <div class="panel-title">
+          <h2>三维侧方直线运动测试</h2>
+          <p>固定 X 后沿 Y 轴模拟脊柱方向运动。完整序列严格按高位转出、侧方下降、Y 向扫描、原路抬升返回执行，启动前检查实时姿态到全部路径点，不通过时不会下发电机命令。</p>
+        </div>
+        <div class="targets">
+          <label>患者所在侧
+            <select id="motionTestSide">
+              <option value="right" selected>机器人右侧（X +575 mm）</option>
+              <option value="left">机器人左侧（X -575 mm）</option>
+            </select>
+          </label>
+          <label>指定测试点
+            <select id="motionTestPointSelect"><option value="">测试点加载中...</option></select>
+          </label>
+        </div>
+        <p id="motionTestPointInfo" class="subtitle">--</p>
+        <div class="actions">
+          <button id="playTrajectoryPreview" class="secondary" onclick="window.therapyRobotPlayPreview?.()">播放新轨迹仿真（不控制实机）</button>
+          <button id="sendMotionTestPoint" disabled title="先确认新轨迹仿真，再开放实机分点测试">实机分点暂时禁用</button>
+          <button id="startMotionTestSequence" class="secondary" disabled title="完整自动轨迹尚未完成安全复核">实机完整轨迹已锁定</button>
+          <button id="stopMotionTestSequence" class="danger">停止测试序列</button>
+        </div>
+        <p id="motionTestStatus" class="pill">测试点: 待命</p>
+        <div id="motionTestProgress" class="sequence-progress">等待测试序列...</div>
+        <pre id="motionTestLog" class="log-box">等待日志...</pre>
+      </article>
+
+      <article class="panel acupoint-panel">
+        <div class="panel-title">
+          <h2>自动穴位序列按摩</h2>
+          <p>流程：先到合适高度和位置识别一次，记录全部穴位点；然后按顺序逐个移动到穴位按摩 10 秒，每个穴位结束后只抬升到该穴位上方预备点，不再重复识别。</p>
+          <p id="acupointSequenceStatus" class="pill">自动序列: --</p>
+        </div>
+        <div class="operation-settings">
+          <label>运动速度
+            <select id="motionSpeed">
+              <option value="0.35">精细 35%</option>
+              <option value="0.65" selected>标准 65%</option>
+              <option value="0.85">快速 85%</option>
+              <option value="1">上限 100%</option>
+            </select>
+          </label>
+          <span id="motionSpeedStatus" class="pill good">实机/仿真速度: 65%</span>
+        </div>
+        <div class="actions">
+          <button id="startSelectedAcupoints">按摩所选穴位</button>
+          <button id="startAcupointSequence" class="secondary">按摩全部穴位</button>
+          <button id="stopAcupointSequence" class="danger">停止自动穴位序列</button>
+        </div>
+        <p class="subtitle">日志：/tmp/therapy_robot/acupoint_sequence.log</p>
+        <div id="acupointSequenceProgress" class="sequence-progress">等待进度...</div>
+        <pre id="acupointSequenceLog" class="log-box">等待日志...</pre>
+      </article>
+
+      <article class="panel embedded-sim-panel">
+        <div class="panel-title compact-title">
+          <div>
+            <h2>常驻三维仿真</h2>
+            <p>直接跟随五轴绝对编码器反馈；拖拽旋转视角、滚轮缩放、右键平移。</p>
+          </div>
+          <a class="button-link" href="/sim" target="_blank" rel="noopener">独立打开</a>
+        </div>
+        <div id="embeddedThreeView" class="three-view embedded-three-view"></div>
+        <div class="embedded-sim-values">
+          <span id="embeddedEeX">x: --</span>
+          <span id="embeddedEeY">y: --</span>
+          <span id="embeddedEeZ">z: --</span>
+          <span id="embeddedSimMode">仿真: --</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel status-panel advanced-panel">
+      <div class="panel-title compact-title">
+        <div>
+          <h2>关键状态</h2>
+          <p>只保留控制过程中最常用的实时状态，避免被调试字段淹没。</p>
+        </div>
+      </div>
+      <div id="statusCards" class="memory-grid"></div>
+    </section>
+  </main>
+  <script type="module" src="/control_preview_20260810_v5.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+{
+  "type": "camera_to_robot_base_rigid_transform",
+  "source": "/home/zzq/PTR/therapy_robot/calibration/camera_to_base_samples.json",
+  "point_count": 3,
+  "rotation": [
+    [
+      1.0000000000000004,
+      -1.2460842763948434e-16,
+      7.437280868633534e-18
+    ],
+    [
+      3.365666402910401e-16,
+      1.0000000000000002,
+      -5.915210345261145e-16
+    ],
+    [
+      5.346204556043383e-18,
+      6.124230968094531e-16,
+      1.0
+    ]
+  ],
+  "translation_m": [
+    0.09999999999999998,
+    0.6000000000000002,
+    -0.050000000000000044
+  ],
+  "rmse_mm": 2.888891902733299e-14,
+  "max_error_mm": 4.163336342344337e-14,
+  "camera_point_condition": {
+    "rank": 2,
+    "singular_values": [
+      0.10100475344876673,
+      0.05829270778368292,
+      1.5023145987371588e-18
+    ]
+  },
+  "usage": "p_base = R @ p_camera + t; normal_base = R @ normal_camera",
+  "samples": [
+    {
+      "name": "p1_left_upper",
+      "camera_point_m": [
+        0.0,
+        0.0,
+        0.4
+      ],
+      "robot_point_m": [
+        0.1,
+        0.6,
+        0.35
+      ],
+      "pred_robot_point_m": [
+        0.09999999999999998,
+        0.6,
+        0.35
+      ],
+      "error_mm": 2.7755575615628914e-14
+    },
+    {
+      "name": "p2_right_upper",
+      "camera_point_m": [
+        0.1,
+        0.0,
+        0.4
+      ],
+      "robot_point_m": [
+        0.2,
+        0.6,
+        0.35
+      ],
+      "pred_robot_point_m": [
+        0.2,
+        0.6,
+        0.35
+      ],
+      "error_mm": 0.0
+    },
+    {
+      "name": "p3_left_lower",
+      "camera_point_m": [
+        0.0,
+        0.1,
+        0.42
+      ],
+      "robot_point_m": [
+        0.1,
+        0.7,
+        0.37
+      ],
+      "pred_robot_point_m": [
+        0.09999999999999996,
+        0.7,
+        0.37
+      ],
+      "error_mm": 4.163336342344337e-14
+    }
+  ]
+}

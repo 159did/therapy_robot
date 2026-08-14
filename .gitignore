@@ -1,0 +1,55 @@
+# Build and packaged outputs
+/build/
+/backups/
+/bin_aarch64-linux-gnu/
+/*.tar.gz
+/*.tar.xz
+/*.zip
+
+# Local environments and dependency caches
+**/.venv/
+**/venv/
+**/node_modules/
+**/__pycache__/
+*.py[cod]
+
+# Compiler and CMake products outside the main build directory
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dll
+*.dylib
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# Runtime and test products
+*.log
+*.pid
+*.tmp
+*.swp
+*.swo
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Local editor metadata
+/.idea/
+/.vscode/
+/back/.idea/
+.DS_Store
+Thumbs.db
+
+# Historical in-place backup copies; canonical backups live under backups/
+*.before-*
+*.bak
+*.orig
+*~
+
+# Machine-local configuration overlays. Canonical reviewed config remains tracked.
+/config/*.local.env
+/config/*.override.env
+/config/*.local.json

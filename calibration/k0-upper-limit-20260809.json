@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-08-09T20:38:57+08:00",
+  "axis": "K0",
+  "stable_logical_native": 4523124,
+  "stable_height_mm": 314.105833,
+  "instant_high_logical_native": 4523351,
+  "instant_high_height_mm": 314.121597,
+  "settling_native": -227,
+  "settling_mm": -0.015764,
+  "native_per_mm": 14400,
+  "physical_multi_turn_0x92": 143951,
+  "brake_engaged_when_read": true,
+  "axis_offsets_native": [58504, -5464, -106952, 4164, 2365],
+  "encoder_0x90_valid": false,
+  "encoder_0x90_note": "MG6012E-i8B returned no valid frame for legacy type 0/1 queries; zero results were discarded"
+}

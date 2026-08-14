@@ -1,0 +1,47 @@
+{
+  "top_y": 0,
+  "bottom_y": 419,
+  "neck_y": 43,
+  "shoulder_y": 189,
+  "points": {
+    "neck_left": [
+      274.0,
+      43.0
+    ],
+    "neck_right": [
+      634.0,
+      43.0
+    ],
+    "neck_center": [
+      454.0,
+      43.0
+    ],
+    "shoulder_left": [
+      113.0,
+      189.0
+    ],
+    "shoulder_right": [
+      634.0,
+      189.0
+    ],
+    "shoulder_center": [
+      373.5,
+      189.0
+    ]
+  },
+  "axis": {
+    "origin": [
+      454.0,
+      43.0
+    ],
+    "ex": [
+      1.0,
+      0.0
+    ],
+    "ey": [
+      -0.0,
+      1.0
+    ],
+    "scale_shoulder_width_px": 521.0
+  }
+}

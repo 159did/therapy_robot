@@ -1,0 +1,26 @@
+{
+  "neck_left": [
+    268,
+    2
+  ],
+  "neck_right": [
+    383,
+    2
+  ],
+  "neck_center": [
+    326,
+    2
+  ],
+  "shoulder_left": [
+    272,
+    22
+  ],
+  "shoulder_right": [
+    392,
+    22
+  ],
+  "shoulder_center": [
+    331,
+    22
+  ]
+}

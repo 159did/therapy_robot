@@ -1,0 +1,26 @@
+{
+  "description": "相机到机器人基坐标系标定样本。请把示例点替换成实测值。camera_point_m 是 D405 坐标，robot_point_m 是同一物理点在机器人基坐标系下的坐标。单位都是米。",
+  "collection_notes": [
+    "至少采 3 个不共线点；建议 9~20 个点覆盖工作区域。",
+    "每一组必须是同一个物理标定点在相机坐标和机器人基坐标下的对应值。",
+    "点位不要都在一条直线或一个很小区域，否则外参会不稳定。",
+    "采集完成后运行: /tmp/realsense-venv/bin/python /home/zzq/PTR/therapy_robot/scripts/calibrate_camera_to_base.py"
+  ],
+  "samples": [
+    {
+      "name": "p1_left_upper",
+      "camera_point_m": [0.0, 0.0, 0.40],
+      "robot_point_m": [0.10, 0.60, 0.35]
+    },
+    {
+      "name": "p2_right_upper",
+      "camera_point_m": [0.10, 0.0, 0.40],
+      "robot_point_m": [0.20, 0.60, 0.35]
+    },
+    {
+      "name": "p3_left_lower",
+      "camera_point_m": [0.0, 0.10, 0.42],
+      "robot_point_m": [0.10, 0.70, 0.37]
+    }
+  ]
+}

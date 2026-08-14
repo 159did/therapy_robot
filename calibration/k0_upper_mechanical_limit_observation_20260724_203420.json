@@ -1,0 +1,71 @@
+{
+  "record_type": "physical_limit_observation",
+  "recorded_at": "2026-07-24T20:34:20.457+08:00",
+  "axis": "K0",
+  "physical_observation": {
+    "position": "upper_mechanical_limit",
+    "meaning": "robot arm at its highest lift position",
+    "range_endpoint_role": "maximum",
+    "confirmed_by": "operator_on_site",
+    "confirmation_source": "user stated that the arm had been raised to its highest position"
+  },
+  "absolute_raw_reference": {
+    "read_at": "2026-07-24T20:40:00+08:00",
+    "command": "MF/MG protocol 0x92 read multi-turn angle",
+    "physical_multi_turn_native": -933,
+    "repeat_read_count": 5,
+    "repeat_min_native": -933,
+    "repeat_max_native": -933,
+    "brake_engaged_confirmed": true,
+    "semantic_name": "K0_UPPER_RANGE_MAX_RAW"
+  },
+  "software_snapshot": {
+    "run_mode": "hardware_relative",
+    "system_state": "estop_latched",
+    "emergency_stop": 1,
+    "limit_alarm": 1,
+    "group_error": "soft-limit violation K0",
+    "enabled": 0,
+    "brake_state_known": 1,
+    "brake_engaged": 1,
+    "k0_actual_logical_native": 129,
+    "k0_target_logical_native": -1151994,
+    "k0_actual_display_mm": 0.00895833,
+    "k0_target_display_mm": -79.99958333,
+    "all_axes_actual_logical_native": [129, 0, -1, 0, -502],
+    "twenty_sample_k0_min_native": 129,
+    "twenty_sample_k0_max_native": 129
+  },
+  "mechanical_conversion": {
+    "motor": "MG6012E-i8B",
+    "protocol_motor_turn_native": 36000,
+    "internal_reduction_ratio": 8,
+    "external_pulley_teeth_motor": 72,
+    "external_pulley_teeth_output": 72,
+    "ball_screw_lead_mm_per_output_turn": 20,
+    "mm_per_native": 0.00006944444444444444,
+    "native_per_mm": 14400
+  },
+  "direction_observation": {
+    "configured_direction": 1,
+    "command_direction": "negative",
+    "observed_physical_direction": "up",
+    "recommended_k0_direction_for_stowed_zero_and_positive_up": -1
+  },
+  "interpretation": {
+    "is_absolute_motor_raw_position": false,
+    "is_active_zero_calibration": false,
+    "reason": "actual_motor_native is a logical value after subtracting the volatile startup offset in hardware_relative mode; the raw startup offset is not exposed by the current API",
+    "next_action": "measure both endpoints in one uninterrupted motor-controller power session, or add a repeatable homing reference; do not subtract endpoint snapshots captured across a power-down"
+  },
+  "superseding_correction_20260724": {
+    "status": "endpoint_raw_valid_but_travel_calculation_invalid",
+    "stowed_snapshot_native": 58541,
+    "invalid_direct_difference_native": 59474,
+    "invalid_displayed_travel_mm": 4.130138888888889,
+    "do_not_use_as_range": true,
+    "reason": "The upper and stowed 0x92 snapshots were not captured under a proven continuous, no-power-loss multi-turn counting baseline. The operator powered the system down between the observations. Therefore the two raw values cannot establish total lift travel.",
+    "conversion_status": "The configured 1/14400 mm/native conversion remains a separate protocol/mechanical hypothesis; it must be verified by a measured commanded displacement before becoming a travel calibration.",
+    "required_remeasurement": "Starting at stowed, keep the motor controller powered, record 0x92, move continuously to the upper mechanical endpoint while tracking the counter, record 0x92 again, and independently measure physical millimetres."
+  }
+}

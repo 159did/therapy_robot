@@ -1,0 +1,32 @@
+{
+  "record_type": "active_five_axis_absolute_encoder_software_zero",
+  "captured_at": "2026-07-26T19:35:26+08:00",
+  "status": "active",
+  "supersedes": "five_axis_software_zero_20260724_214813.json",
+  "operator_definition": "The current physical robot pose is the working zero pose for K0-K4.",
+  "encoder_assumption_confirmed_by_operator": "All five motors use absolute encoders.",
+  "offsets_native": {
+    "K0": 58504,
+    "K1": -5464,
+    "K2": -106952,
+    "K3": 4164,
+    "K4": 2365
+  },
+  "nano_file": "/home/jetsonorin/Documents/therapy_robot/config/axis-offsets-native.txt",
+  "sha256": "de678497ff2be06bbbf30f47064ce24f8f36a0f5c73d7f92e26157828ef63970",
+  "capture_method": "Existing project software zero path: POST /api/command/set_zero -> read each motor 0x92 -> atomically save axis-offsets-native.txt -> load as fixed absolute encoder coordinate offsets.",
+  "motor_internal_zero_commands_sent": false,
+  "motion_commands_sent": false,
+  "restart_verification": {
+    "run_mode": "hardware",
+    "system_state": "hardware_ready",
+    "logical_native": [0, -3, 0, 0, 0],
+    "all_axes_online": true,
+    "all_axes_disabled": true,
+    "K0_brake_state_known": true,
+    "K0_brake_engaged": true,
+    "axis_faults": 0
+  },
+  "operational_rule": "This is the authoritative working zero. Future deployments must preserve axis-offsets-native.txt. Do not use the superseded 2026-07-24 offsets.",
+  "return_to_zero_meaning": "Commanding K0-K4 logical zero returns the motors to the absolute encoder coordinates captured in this record, subject to normal transmission integrity."
+}

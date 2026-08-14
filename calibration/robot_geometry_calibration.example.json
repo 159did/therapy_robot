@@ -1,0 +1,28 @@
+{
+  "type": "robot_ik_geometry_calibration",
+  "source": "/home/zzq/PTR/therapy_robot/calibration/robot_geometry_samples.json",
+  "fit": {
+    "upperArmMm": 579.9998769402223,
+    "forearmMm": 229.00007130841337,
+    "baseHeightMinusForearmDropMm": 630.0003133398451,
+    "wristForwardOffsetMm": 119.0,
+    "toolMm": 153.10014983420405,
+    "rmse_mm": 0.00027217467318523734,
+    "max_abs_error_mm": 0.0005441820360658767,
+    "rank": 4,
+    "singular_values": [
+      3.9892486954953283,
+      3.8177871206173215,
+      1.1971201180657127,
+      0.278028361969909
+    ],
+    "equation": "wrist=[L1*sin(K1)+L2*sin(K1+K2), L1*cos(K1)+L2*cos(K1+K2), K0+baseEff]; tip=wrist-tool*axis"
+  },
+  "recommended_frontend_model_fields": {
+    "upperArmMm": 579.9998769402223,
+    "forearmMm": 229.00007130841337,
+    "wristForwardOffsetMm": 119.0,
+    "toolMm": 153.10014983420405,
+    "baseHeightMm_minus_forearmDropMm": 630.0003133398451
+  }
+}

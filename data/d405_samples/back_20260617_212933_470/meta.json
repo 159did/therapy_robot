@@ -1,0 +1,63 @@
+{
+  "ok": true,
+  "name": "back_20260617_212933_470",
+  "saved_at": "2026-06-17T21:29:33",
+  "width": 640,
+  "height": 480,
+  "depth_format": "z16",
+  "depth_scale_m_per_unit": 0.0001,
+  "intrinsics": {
+    "width": 640,
+    "height": 480,
+    "ppx": 325.946533203125,
+    "ppy": 241.9703369140625,
+    "fx": 393.4027099609375,
+    "fy": 392.9847412109375,
+    "model": "distortion.inverse_brown_conrady",
+    "coeffs": [
+      -0.05288384109735489,
+      0.05912626162171364,
+      0.0015924441395327449,
+      0.0008194540860131383,
+      -0.019702551886439323
+    ]
+  },
+  "calibration": {},
+  "status": {
+    "ok": true,
+    "image": {
+      "width": 640,
+      "height": 480,
+      "combined_width": 1280
+    },
+    "selected": {
+      "x": 320,
+      "y": 240,
+      "roi": 80
+    },
+    "calibration": {},
+    "calibration_next": "top",
+    "acupoints": [],
+    "frame_number": 11098,
+    "estimate": {
+      "ok": true,
+      "valid": 441,
+      "sampled": 441,
+      "depth_median_m": 0.385699987411499,
+      "point_camera_m": [
+        -0.005580095538358434,
+        -0.0018871385731381658,
+        0.38654534096350207
+      ],
+      "normal_camera": [
+        -0.186816190642535,
+        -0.04248144218830474,
+        0.9814759487544324
+      ],
+      "residual_median_mm": 2.564937444647948,
+      "residual_mean_mm": 3.046382758169709,
+      "residual_max_mm": 11.143494261301802
+    }
+  },
+  "acupoints": []
+}

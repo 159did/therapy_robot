@@ -1,0 +1,38 @@
+{
+  "type": "d405_depth_z_calibration",
+  "model": "actual_z_m = measured_z_m * scale + offset_m",
+  "scale": 0.9999999999999997,
+  "offset_m": -1.0632044703312452e-16,
+  "rmse_mm": 2.3714374201337735e-13,
+  "max_abs_error_mm": 2.7755575615628914e-13,
+  "samples": [
+    {
+      "name": "z300",
+      "measured_z_m": 0.3,
+      "actual_z_m": 0.3,
+      "corrected_z_m": 0.29999999999999977,
+      "error_mm": -2.220446049250313e-13
+    },
+    {
+      "name": "z350",
+      "measured_z_m": 0.35,
+      "actual_z_m": 0.35,
+      "corrected_z_m": 0.34999999999999976,
+      "error_mm": -2.220446049250313e-13
+    },
+    {
+      "name": "z400",
+      "measured_z_m": 0.4,
+      "actual_z_m": 0.4,
+      "corrected_z_m": 0.3999999999999998,
+      "error_mm": -2.220446049250313e-13
+    },
+    {
+      "name": "z450",
+      "measured_z_m": 0.45,
+      "actual_z_m": 0.45,
+      "corrected_z_m": 0.44999999999999973,
+      "error_mm": -2.7755575615628914e-13
+    }
+  ]
+}

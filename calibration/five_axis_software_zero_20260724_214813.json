@@ -1,0 +1,53 @@
+{
+  "record_type": "five_axis_persistent_software_zero",
+  "captured_at": "2026-07-24T21:48:13+08:00",
+  "operator_intent": "Use the current approximately stowed pose as zero for all five axes; K2-K4 will be refined later.",
+  "coordinate_source": "MF/MG protocol 0x92 multi-turn angle",
+  "offsets_native": {
+    "K0": 58540,
+    "K1": -4833,
+    "K2": -106951,
+    "K3": 4164,
+    "K4": 2369
+  },
+  "calibration_status": {
+    "K0": "operator_selected_current_stowed_reference; encoder/output conversion and endpoint travel remain pending physical calibration",
+    "K1": "operator_selected_current_stowed_reference; angle and cross-power repeatability remain pending validation",
+    "K2": "provisional zero explicitly requested by operator; replace with higher-precision calibration later",
+    "K3": "provisional zero explicitly requested by operator; replace with higher-precision calibration later",
+    "K4": "provisional zero explicitly requested by operator; replace with higher-precision calibration later"
+  },
+  "write_method": {
+    "kind": "persistent software offsets",
+    "file_on_nano": "/home/jetsonorin/Documents/therapy_robot/config/axis-offsets-native.txt",
+    "sha256": "caad32cf83b0e031d62b521f6aa4932e35ae443d39d65839d90afffb7a3ced59",
+    "motor_rom_or_flash_zero_written": false,
+    "motor_ram_zero_command_sent": false
+  },
+  "capture_safety_state": {
+    "all_five_axes_online": true,
+    "all_five_axes_disabled": true,
+    "K0_brake_state_known": true,
+    "K0_brake_engaged": true,
+    "axis_faults": 0,
+    "limit_alarm": 0
+  },
+  "restart_verification": {
+    "performed": true,
+    "run_mode": "hardware",
+    "system_state": "hardware_ready",
+    "loaded_offsets_match_file": true,
+    "logical_native_after_restart": [0, 0, 0, 0, 0],
+    "all_five_axes_disabled": true,
+    "K0_brake_engaged": true,
+    "axis_faults": 0,
+    "limit_alarm": 0
+  },
+  "limitations": [
+    "This is an absolute software coordinate reference, not a motor ROM electrical zero.",
+    "It reproduces the same 0x92 motor coordinates only if the motor multi-turn reference remains valid and the mechanical transmission does not slip.",
+    "K1-K4 can be moved while unpowered; physical-pose recovery after unpowered movement is not yet guaranteed.",
+    "K0 native/mm and K1-K4 native/degree conversions still require physical metrology.",
+    "Hardware endpoint motion and acupoint motion must remain locked until zero repeatability, conversion, collision boundaries, and FK/IK agreement are verified."
+  ]
+}

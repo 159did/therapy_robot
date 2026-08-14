@@ -1,0 +1,60 @@
+{
+  "description": "机器人 K0-K4 轴 native 到物理量的标定样本模板。请用实测数据替换示例值。K0 单位 mm，K1-K4 单位 deg。",
+  "collection_notes": [
+    "每个轴至少 2 个点；旋转轴建议 3~5 个点，覆盖负角度、零位、正角度。",
+    "native 是控制系统/电机原始位置，physical 是你用尺子或角度尺测得的真实物理量。",
+    "尽量从同一运动方向接近测量点，减少机械回差影响。",
+    "采集完成后运行: /tmp/realsense-venv/bin/python /home/zzq/PTR/therapy_robot/scripts/calibrate_robot_axes.py"
+  ],
+  "axes": {
+    "K0": {
+      "kind": "linear",
+      "unit": "mm",
+      "description": "抬升轴，高度方向。示例: native 减小对应高度下降。",
+      "samples": [
+        { "name": "k0_zero", "native": 0, "physical": 0 },
+        { "name": "k0_down_100", "native": -100000, "physical": -100 }
+      ]
+    },
+    "K1": {
+      "kind": "rotary",
+      "unit": "deg",
+      "description": "大臂角度轴。",
+      "samples": [
+        { "name": "k1_neg30", "native": -3000, "physical": -30 },
+        { "name": "k1_zero", "native": 0, "physical": 0 },
+        { "name": "k1_pos30", "native": 3000, "physical": 30 }
+      ]
+    },
+    "K2": {
+      "kind": "rotary",
+      "unit": "deg",
+      "description": "小臂角度轴。",
+      "samples": [
+        { "name": "k2_neg30", "native": -3000, "physical": -30 },
+        { "name": "k2_zero", "native": 0, "physical": 0 },
+        { "name": "k2_pos30", "native": 3000, "physical": 30 }
+      ]
+    },
+    "K3": {
+      "kind": "rotary",
+      "unit": "deg",
+      "description": "末端姿态轴 1。",
+      "samples": [
+        { "name": "k3_neg20", "native": -2000, "physical": -20 },
+        { "name": "k3_zero", "native": 0, "physical": 0 },
+        { "name": "k3_pos20", "native": 2000, "physical": 20 }
+      ]
+    },
+    "K4": {
+      "kind": "rotary",
+      "unit": "deg",
+      "description": "末端姿态轴 2。",
+      "samples": [
+        { "name": "k4_neg20", "native": -2000, "physical": -20 },
+        { "name": "k4_zero", "native": 0, "physical": 0 },
+        { "name": "k4_pos20", "native": 2000, "physical": 20 }
+      ]
+    }
+  }
+}

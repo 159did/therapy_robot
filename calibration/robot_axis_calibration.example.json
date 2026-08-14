@@ -1,0 +1,166 @@
+{
+  "type": "robot_axis_linear_calibration",
+  "source": "/home/zzq/PTR/therapy_robot/calibration/robot_axis_samples.json",
+  "model": "physical = native * scale_physical_per_native + offset_physical",
+  "axes": {
+    "K0": {
+      "scale_physical_per_native": 0.001,
+      "offset_physical": 1.3202363013762111e-24,
+      "sign": 1,
+      "rmse_physical": 9.335480414717654e-25,
+      "max_abs_error_physical": 1.3202363013762111e-24,
+      "span_native": 100000.0,
+      "span_physical": 100.0,
+      "samples": [
+        {
+          "native": 0.0,
+          "physical": 0.0,
+          "pred_physical": 1.3202363013762111e-24,
+          "error_physical": 1.3202363013762111e-24
+        },
+        {
+          "native": -100000.0,
+          "physical": -100.0,
+          "pred_physical": -100.0,
+          "error_physical": 0.0
+        }
+      ],
+      "unit": "mm",
+      "kind": "linear",
+      "zero_native_for_physical_zero": -1.3202363013762111e-21,
+      "warnings": []
+    },
+    "K1": {
+      "scale_physical_per_native": 0.01,
+      "offset_physical": 0.0,
+      "sign": 1,
+      "rmse_physical": 0.0,
+      "max_abs_error_physical": 0.0,
+      "span_native": 6000.0,
+      "span_physical": 60.0,
+      "samples": [
+        {
+          "native": -3000.0,
+          "physical": -30.0,
+          "pred_physical": -30.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 0.0,
+          "physical": 0.0,
+          "pred_physical": 0.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 3000.0,
+          "physical": 30.0,
+          "pred_physical": 30.0,
+          "error_physical": 0.0
+        }
+      ],
+      "unit": "deg",
+      "kind": "rotary",
+      "zero_native_for_physical_zero": -0.0,
+      "warnings": []
+    },
+    "K2": {
+      "scale_physical_per_native": 0.01,
+      "offset_physical": 0.0,
+      "sign": 1,
+      "rmse_physical": 0.0,
+      "max_abs_error_physical": 0.0,
+      "span_native": 6000.0,
+      "span_physical": 60.0,
+      "samples": [
+        {
+          "native": -3000.0,
+          "physical": -30.0,
+          "pred_physical": -30.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 0.0,
+          "physical": 0.0,
+          "pred_physical": 0.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 3000.0,
+          "physical": 30.0,
+          "pred_physical": 30.0,
+          "error_physical": 0.0
+        }
+      ],
+      "unit": "deg",
+      "kind": "rotary",
+      "zero_native_for_physical_zero": -0.0,
+      "warnings": []
+    },
+    "K3": {
+      "scale_physical_per_native": 0.01,
+      "offset_physical": 0.0,
+      "sign": 1,
+      "rmse_physical": 0.0,
+      "max_abs_error_physical": 0.0,
+      "span_native": 4000.0,
+      "span_physical": 40.0,
+      "samples": [
+        {
+          "native": -2000.0,
+          "physical": -20.0,
+          "pred_physical": -20.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 0.0,
+          "physical": 0.0,
+          "pred_physical": 0.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 2000.0,
+          "physical": 20.0,
+          "pred_physical": 20.0,
+          "error_physical": 0.0
+        }
+      ],
+      "unit": "deg",
+      "kind": "rotary",
+      "zero_native_for_physical_zero": -0.0,
+      "warnings": []
+    },
+    "K4": {
+      "scale_physical_per_native": 0.01,
+      "offset_physical": 0.0,
+      "sign": 1,
+      "rmse_physical": 0.0,
+      "max_abs_error_physical": 0.0,
+      "span_native": 4000.0,
+      "span_physical": 40.0,
+      "samples": [
+        {
+          "native": -2000.0,
+          "physical": -20.0,
+          "pred_physical": -20.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 0.0,
+          "physical": 0.0,
+          "pred_physical": 0.0,
+          "error_physical": 0.0
+        },
+        {
+          "native": 2000.0,
+          "physical": 20.0,
+          "pred_physical": 20.0,
+          "error_physical": 0.0
+        }
+      ],
+      "unit": "deg",
+      "kind": "rotary",
+      "zero_native_for_physical_zero": -0.0,
+      "warnings": []
+    }
+  }
+}

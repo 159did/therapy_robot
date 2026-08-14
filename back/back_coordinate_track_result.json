@@ -1,0 +1,29 @@
+{
+  "neck_left": [
+    278,
+    38
+  ],
+  "neck_right": [
+    278,
+    38
+  ],
+  "neck_center": [
+    277,
+    38
+  ],
+  "shoulder_left": [
+    201,
+    86
+  ],
+  "shoulder_right": [
+    205,
+    86
+  ],
+  "shoulder_center": [
+    202,
+    86
+  ],
+  "seed_y": 84,
+  "seed_center": 215.5,
+  "seed_width": 8.0
+}

@@ -1,0 +1,44 @@
+# Enclosure collision model. Units are metres in the robot base frame.
+#
+# Coordinate convention (same as kinematics and web simulation):
+#   X: enclosure width, slot centred on X=0
+#   Y: stowed upper-arm direction, rear -> front
+#   Z: vertical
+#
+# Confirmed enclosure geometry:
+#   enclosure 765.5 x 361 x 760 mm
+#   full-height active slot 750 x 150 x 760 mm, flush with the front face
+#   slot X=[-75,75] mm, Y=[-100,650] mm, Z=[-12.5,747.5] mm
+#   small-arm stop top is 173 mm below the enclosure top and its length is
+#   exactly the 229 mm forearm projection, Y=[351,580] mm.
+setting,enabled,true
+
+# The stowed small-arm bottom is 171 mm below the enclosure top, leaving a
+# measured 2 mm gap to the stop. Keep the numerical margin at 1 mm so the
+# calibrated zero pose remains valid while a downward move is rejected.
+setting,safety_margin_m,0.001
+setting,lift_step_m,0.002
+setting,joint_step_deg,0.5
+
+# Conservative link envelopes derived from the displayed/confirmed shells.
+# Large arm: 120 mm wide. Small arm: 85 mm wide x 107 mm high.
+setting,lift_radius_m,0.055
+setting,upper_arm_radius_m,0.060
+# K2/K3 displayed cylinders are 45 mm radius; the global 1 mm margin is
+# included here, so a 44 mm base envelope produces the physical 45 mm bound.
+setting,elbow_radius_m,0.044
+setting,forearm_radius_m,0.0535
+setting,wrist_radius_m,0.050
+setting,tool_radius_m,0.040
+
+# Solid enclosure material surrounding the rectangular full-height slot.
+box,enclosure_left,-0.1805,-0.0750,-0.1155,0.6500,-0.0125,0.7475
+box,enclosure_right,0.0750,0.1805,-0.1155,0.6500,-0.0125,0.7475
+box,enclosure_rear,-0.0750,0.0750,-0.1155,-0.1000,-0.0125,0.7475
+
+# Travel stop under the forearm only. It intentionally does not extend back
+# to the lift column and therefore cannot overlap K0 in the collision model.
+# The physical clearance at the stowed pose was confirmed to exceed the nominal
+# 2 mm value. Keep the global 1 mm safety margin and lower only this model top
+# face by 1 mm so the measured K0 recovery position is not a false K2 collision.
+box,forearm_lower_stop,-0.0425,0.0425,0.3510,0.5800,0.5545,0.5735
