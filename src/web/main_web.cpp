@@ -1433,38 +1433,14 @@ int main() {
           << "\",\"progress\":" << (progress.empty() ? "null" : progress) << "}";
       res.set_content(out.str(), "application/json");
     });
-    server.Post("/api/acupoint_sequence/start", [state, port](const httplib::Request& req, httplib::Response& res) {
-      if (state->emergency_stop) {
-        res.status = 409;
-        res.set_content("{\"ok\":false,\"error\":\"emergency stop is latched\"}", "application/json");
-        return;
-      }
-      if (std::string(state->run_mode) == "hardware_relative") {
-        res.status = 409;
-        res.set_content("{\"ok\":false,\"error\":\"calibrated axis offsets are required for automatic motion\"}", "application/json");
-        return;
-      }
-      if (acupoint_sequence_running()) {
-        res.set_content("{\"ok\":true,\"running\":true,\"message\":\"already running\"}", "application/json");
-        return;
-      }
-      const std::string names = extract_string(req.body, "names");
-      std::string root = root_dir();
-      std::string names_arg = names.empty() ? "" : " --names " + shell_quote(names);
-      const std::string progress_path = runtime_file("acupoint_sequence_progress.json");
-      const std::string log_path = runtime_file("acupoint_sequence.log");
-      const std::string pid_path = runtime_file("acupoint_sequence.pid");
-      const std::string base_url = "http://127.0.0.1:" + std::to_string(port);
-      std::string cmd = "mkdir -p " + shell_quote(runtime_dir()) + "; rm -f -- " +
-                        shell_quote(progress_path) + "; cd " + shell_quote(root) +
-                        " && nohup python3 scripts/run_acupoint_sequence.py --scan-once --skip-unreachable --scan-x-mm 0 --scan-y-mm 928 --scan-z-mm 450" +
-                        names_arg + " --base-url " + shell_quote(base_url) +
-                        " --execute > " + shell_quote(log_path) +
-                        " 2>&1 & echo $! > " + shell_quote(pid_path);
-      int rc = std::system(cmd.c_str());
-      std::ostringstream out;
-      out << "{\"ok\":" << (rc == 0 ? "true" : "false") << ",\"running\":" << (acupoint_sequence_running() ? "true" : "false") << ",\"selected\":\"" << escape_json(names.c_str()) << "\",\"log\":\"" << escape_json(log_path.c_str()) << "\"}";
-      res.set_content(out.str(), "application/json");
+    server.Post("/api/acupoint_sequence/start", [](const httplib::Request&, httplib::Response& res) {
+      res.status = 409;
+      res.set_content(
+          "{\"ok\":false,\"execution_locked\":true,"
+          "\"error_code\":\"automatic_trajectory_locked\","
+          "\"error\":\"完整自动轨迹尚未完成安全复核，当前仅允许只读仿真预检\","
+          "\"motor_command_written\":false,\"motion_started\":false}",
+          "application/json");
     });
     server.Post("/api/speed", [state](const httplib::Request& req, httplib::Response& res) {
       const double multiplier = std::clamp(extract_number(req.body, "multiplier", 0.65), 0.25, 1.0);

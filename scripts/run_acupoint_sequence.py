@@ -23,6 +23,15 @@ if (len(RUNTIME_DIR_TEXT) < 2 or len(RUNTIME_DIR_TEXT) > 4095 or
     raise ValueError('invalid THERAPY_ROBOT_RUNTIME_DIR')
 RUNTIME_DIR = Path(RUNTIME_DIR_TEXT)
 
+AUTOMATIC_EXECUTION_LOCK = {
+    'ok': False,
+    'execution_locked': True,
+    'error_code': 'automatic_trajectory_locked',
+    'error': '完整自动轨迹尚未完成安全复核，当前仅允许只读仿真预检',
+    'motor_command_written': False,
+    'motion_started': False,
+}
+
 
 def resolve_result_path(result):
     if result and result != 'latest':
@@ -425,7 +434,7 @@ def run_scan_once_sequence(args):
     if not executable:
         raise SystemExit('没有可执行的可达穴位，未执行。')
     if not args.execute:
-        print('dry-run: 未执行动作。确认安全后追加 --execute。')
+        print('dry-run: 自动执行已锁定，本次仅输出计划。')
         return
 
     for idx, plan in enumerate(executable, start=1):
@@ -476,6 +485,9 @@ def run_scan_once_sequence(args):
 
 
 def run_sequence(args):
+    if args.execute:
+        print(json.dumps(AUTOMATIC_EXECUTION_LOCK, ensure_ascii=False))
+        raise SystemExit(2)
     if args.cycle_scan:
         run_cycle_sequence(args)
         return
@@ -518,7 +530,7 @@ def run_sequence(args):
     if failed and not args.force:
         raise SystemExit(f'后端IK检查失败 {len(failed)} 步，未执行。若确认安全可追加 --force。')
     if not args.execute:
-        print('dry-run: 未执行动作。确认安全后追加 --execute。')
+        print('dry-run: 自动执行已锁定，本次仅输出计划。')
         return
 
     for idx, acupoint in enumerate(points, start=1):
@@ -572,7 +584,7 @@ def main():
     parser.add_argument('--no-retract', action='store_true', help='每个穴位按摩后不回到预备点')
     parser.add_argument('--no-backend-check', dest='check_backend', action='store_false', help='跳过 /api/ik/check')
     parser.add_argument('--no-wait-reached', dest='wait_reached', action='store_false', help='发送后不等待到位')
-    parser.add_argument('--execute', action='store_true', help='真正执行动作；默认只打印计划')
+    parser.add_argument('--execute', action='store_true', help='自动执行当前被安全硬锁；默认只打印计划')
     parser.add_argument('--force', action='store_true', help='即使 IK 检查失败也继续发送')
     parser.add_argument('--skip-unreachable', action='store_true', help='scan-once 中跳过 IK 不可达穴位，继续执行可达穴位')
     parser.set_defaults(check_backend=True, wait_reached=True)
