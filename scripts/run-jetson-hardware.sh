@@ -9,7 +9,38 @@ if [[ -f "$HARDWARE_CONFIG" ]]; then
   source "$HARDWARE_CONFIG"
   set +a
 fi
-LOG_DIR="${LOG_DIR:-/tmp/therapy_robot}"
+RUNTIME_DIR="${THERAPY_ROBOT_RUNTIME_DIR-${LOG_DIR:-/tmp/therapy_robot}}"
+LOG_DIR="${LOG_DIR:-$RUNTIME_DIR}"
+if [[ ${#RUNTIME_DIR} -gt 4095 || "$RUNTIME_DIR" != /* || "$RUNTIME_DIR" == "/" ||
+      "$RUNTIME_DIR" == */ || "$RUNTIME_DIR" == *//* || "$RUNTIME_DIR" == */./* ||
+      "$RUNTIME_DIR" == */../* || "$RUNTIME_DIR" == */. || "$RUNTIME_DIR" == */.. ||
+      ! "$RUNTIME_DIR" =~ ^/[A-Za-z0-9_./-]+$ ]]; then
+  echo "invalid THERAPY_ROBOT_RUNTIME_DIR: expected a safe non-root absolute path" >&2
+  exit 2
+fi
+export THERAPY_ROBOT_RUNTIME_DIR="$RUNTIME_DIR"
+SHM_NAME="${THERAPY_ROBOT_SHM_NAME-/therapy_robot_shared_state}"
+if [[ ${#SHM_NAME} -gt 255 || "$SHM_NAME" == "/." || "$SHM_NAME" == "/.." || ! "$SHM_NAME" =~ ^/[A-Za-z0-9_.-]+$ ]]; then
+  echo "invalid THERAPY_ROBOT_SHM_NAME: expected '/' followed by 1-254 safe characters" >&2
+  exit 2
+fi
+SHM_PATH="/dev/shm/${SHM_NAME#/}"
+export THERAPY_ROBOT_SHM_NAME="$SHM_NAME"
+WEB_PORT="${THERAPY_ROBOT_WEB_PORT:-8080}"
+SIM_WEB_PORT="${THERAPY_ROBOT_SIM_WEB_PORT:-8081}"
+if [[ ! "$WEB_PORT" =~ ^[0-9]+$ || ${#WEB_PORT} -gt 5 ||
+      ! "$SIM_WEB_PORT" =~ ^[0-9]+$ || ${#SIM_WEB_PORT} -gt 5 ]]; then
+  echo "invalid web port: expected an integer from 1 to 65535" >&2
+  exit 2
+fi
+WEB_PORT=$((10#$WEB_PORT))
+SIM_WEB_PORT=$((10#$SIM_WEB_PORT))
+if (( WEB_PORT < 1 || WEB_PORT > 65535 || SIM_WEB_PORT < 1 || SIM_WEB_PORT > 65535 )); then
+  echo "invalid web port: expected an integer from 1 to 65535" >&2
+  exit 2
+fi
+export THERAPY_ROBOT_WEB_PORT="$WEB_PORT"
+export THERAPY_ROBOT_SIM_WEB_PORT="$SIM_WEB_PORT"
 ACTIVE_GROUPS="${THERAPY_ROBOT_ACTIVE_GROUPS:-all}"
 if [[ "${THERAPY_ROBOT_VALIDATE_G1_ONLY:-0}" == "1" ]]; then
   ACTIVE_GROUPS="1"
@@ -29,7 +60,8 @@ G1_MOTOR_IDS="${THERAPY_ROBOT_G1_MOTOR_IDS:-1,2}"
 G2_MOTOR_IDS="${THERAPY_ROBOT_G2_MOTOR_IDS:-1,2}"
 AXIS_DIRECTIONS="${THERAPY_ROBOT_AXIS_DIRECTIONS:-1,1,1,1,1}"
 AXIS_LIMIT_MARGIN_NATIVE="${THERAPY_ROBOT_AXIS_LIMIT_MARGIN_NATIVE:-}"
-AXIS_OFFSETS_NATIVE="${THERAPY_ROBOT_AXIS_OFFSETS_NATIVE:-auto}"
+AXIS_OFFSETS_NATIVE="${THERAPY_ROBOT_AXIS_OFFSETS_NATIVE-}"
+AXIS_OFFSETS_FILE="${THERAPY_ROBOT_AXIS_OFFSETS_FILE-}"
 AUTO_ZERO_ON_START="${THERAPY_ROBOT_AUTO_ZERO_ON_START:-1}"
 SERIAL_TIMEOUT_MS="${THERAPY_ROBOT_SERIAL_TIMEOUT_MS:-80}"
 WATCHDOG_MS="${THERAPY_ROBOT_WATCHDOG_MS:-1000}"
@@ -45,6 +77,51 @@ export THERAPY_ROBOT_COLLISION_REQUIRED="$COLLISION_REQUIRED"
 
 MOTOR_POLL_MS="${THERAPY_ROBOT_MOTOR_POLL_MS:-${THERAPY_ROBOT_HARDWARE_POLL_MS:-}}"
 MOTOR_POLL_COMMANDS="${THERAPY_ROBOT_MOTOR_POLL_COMMANDS:-${THERAPY_ROBOT_DEBUG_POLL:-}}"
+
+if [[ "$AXIS_OFFSETS_NATIVE" != "auto" ]]; then
+  echo "THERAPY_ROBOT_AXIS_OFFSETS_NATIVE must be exactly 'auto'; inline hardware offsets are forbidden" >&2
+  exit 2
+fi
+if [[ -z "$AXIS_OFFSETS_FILE" ]]; then
+  echo "THERAPY_ROBOT_AXIS_OFFSETS_FILE must name a persistent offsets file" >&2
+  exit 2
+fi
+python3 - "$AXIS_OFFSETS_FILE" <<'PY'
+from pathlib import Path
+import re
+import stat
+import sys
+
+path = Path(sys.argv[1])
+try:
+    file_status = path.stat()
+except OSError as exc:
+    raise SystemExit(f"required axis offsets file is missing or inaccessible: {path}: {exc}")
+if not stat.S_ISREG(file_status.st_mode):
+    raise SystemExit(f"required axis offsets file is not a regular file: {path}")
+try:
+    content = path.read_bytes()
+except OSError as exc:
+    raise SystemExit(f"required axis offsets file is unreadable: {path}: {exc}")
+
+content = content.strip()
+if not content:
+    raise SystemExit(f"required axis offsets file is empty: {path}")
+tokens = content.split(b",")
+if len(tokens) != 5:
+    raise SystemExit(f"axis offsets file must contain exactly 5 integers: {path}")
+minimum = -(1 << 63)
+maximum = (1 << 63) - 1
+for token in tokens:
+    token = token.strip()
+    if not token:
+        raise SystemExit(f"axis offsets file contains an empty value: {path}")
+    if re.fullmatch(rb"[+-]?[0-9]+", token) is None:
+        raise SystemExit(f"axis offsets file contains an invalid integer: {path}")
+    value = int(token, 10)
+    if value < minimum or value > maximum:
+        raise SystemExit(f"axis offsets file contains an out-of-range integer: {path}")
+PY
 
 if [[ "${THERAPY_ROBOT_G1_PORT:-}" == "" && ! -e "$G1_PORT" && -e /dev/ttyUSB0 ]]; then
   G1_PORT="/dev/ttyUSB0"
@@ -86,11 +163,38 @@ G0_PORT_RESOLVED="$(resolve_port "$G0_PORT")"
 G1_PORT_RESOLVED="$(resolve_port "$G1_PORT")"
 G2_PORT_RESOLVED="$(resolve_port "$G2_PORT")"
 
-mkdir -p "$LOG_DIR"
+mkdir -p "$LOG_DIR" "$RUNTIME_DIR"
 mkdir -p "$ROOT_DIR/data/backup"
-"$ROOT_DIR/scripts/kill-robot.sh" || true
-SHM_PATH="/dev/shm/therapy_robot_shared_state"
-rm -f "$SHM_PATH"
+PID_FILE="$RUNTIME_DIR/processes.pid"
+if [[ -f "$PID_FILE" ]]; then
+  "$ROOT_DIR/scripts/kill-robot.sh"
+  rm -f -- "$SHM_PATH"
+elif [[ -e "$SHM_PATH" ]]; then
+  echo "shared memory already exists without this runtime's process registry: $SHM_PATH" >&2
+  exit 1
+fi
+: > "$PID_FILE"
+
+STARTUP_COMPLETE=0
+cleanup_partial_startup() {
+  if [[ "$STARTUP_COMPLETE" == "0" ]]; then
+    "$ROOT_DIR/scripts/kill-robot.sh" || true
+    rm -f -- "$SHM_PATH"
+  fi
+}
+trap cleanup_partial_startup EXIT
+
+LAST_STARTED_PID=""
+start_component() {
+  local name="$1"
+  shift
+  "$@" > "$LOG_DIR/$name.log" 2>&1 &
+  local pid=$!
+  local start_time
+  start_time="$(awk '{print $22}' "/proc/$pid/stat")"
+  printf '%s %s %s\n' "$pid" "$start_time" "$name" >> "$PID_FILE"
+  LAST_STARTED_PID="$pid"
+}
 export LD_LIBRARY_PATH="$ROOT_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 MISSING_ACTIVE_PORT=0
@@ -109,7 +213,7 @@ for port in "$G0_PORT_RESOLVED" "$G1_PORT_RESOLVED" "$G2_PORT_RESOLVED"; do
 done
 
 cd "$ROOT_DIR"
-"$ROOT_DIR/bin/main_core" > "$LOG_DIR/main_core.log" 2>&1 &
+start_component main_core "$ROOT_DIR/bin/main_core"
 for _ in $(seq 1 50); do
   [[ -e "$SHM_PATH" ]] && break
   sleep 0.02
@@ -118,7 +222,8 @@ if [[ ! -e "$SHM_PATH" ]]; then
   echo "main_core did not create shared memory; see $LOG_DIR/main_core.log" >&2
   exit 1
 fi
-"$ROOT_DIR/bin/main_control" > "$LOG_DIR/main_control.log" 2>&1 &
+start_component main_control "$ROOT_DIR/bin/main_control"
+start_component main_motor env \
 THERAPY_ROBOT_HARDWARE=1 \
 THERAPY_ROBOT_G0_PORT="$G0_PORT_RESOLVED" \
 THERAPY_ROBOT_G1_PORT="$G1_PORT_RESOLVED" \
@@ -135,6 +240,7 @@ THERAPY_ROBOT_G2_MOTOR_IDS="$G2_MOTOR_IDS" \
 THERAPY_ROBOT_AXIS_DIRECTIONS="$AXIS_DIRECTIONS" \
 THERAPY_ROBOT_AXIS_LIMIT_MARGIN_NATIVE="$AXIS_LIMIT_MARGIN_NATIVE" \
 THERAPY_ROBOT_AXIS_OFFSETS_NATIVE="$AXIS_OFFSETS_NATIVE" \
+THERAPY_ROBOT_AXIS_OFFSETS_FILE="$AXIS_OFFSETS_FILE" \
 THERAPY_ROBOT_AUTO_ZERO_ON_START="$AUTO_ZERO_ON_START" \
 THERAPY_ROBOT_SERIAL_TIMEOUT_MS="$SERIAL_TIMEOUT_MS" \
 THERAPY_ROBOT_WATCHDOG_MS="$WATCHDOG_MS" \
@@ -147,17 +253,19 @@ THERAPY_ROBOT_MOTOR_POLL_MS="$MOTOR_POLL_MS" \
 THERAPY_ROBOT_MOTOR_POLL_COMMANDS="$MOTOR_POLL_COMMANDS" \
 THERAPY_ROBOT_HARDWARE_POLL_MS="${THERAPY_ROBOT_HARDWARE_POLL_MS:-}" \
 THERAPY_ROBOT_DEBUG_POLL="${THERAPY_ROBOT_DEBUG_POLL:-}" \
-"$ROOT_DIR/bin/main_motor" > "$LOG_DIR/main_motor.log" 2>&1 &
-MOTOR_PID=$!
+"$ROOT_DIR/bin/main_motor"
+MOTOR_PID="$LAST_STARTED_PID"
 sleep 0.5
 if ! kill -0 "$MOTOR_PID" 2>/dev/null; then
   echo "main_motor failed during hardware initialization; see $LOG_DIR/main_motor.log" >&2
-  "$ROOT_DIR/scripts/kill-robot.sh" || true
   exit 1
 fi
-"$ROOT_DIR/bin/main_sim" > "$LOG_DIR/main_sim.log" 2>&1 &
-"$ROOT_DIR/bin/main_web_control" > "$LOG_DIR/main_web_control.log" 2>&1 &
-"$ROOT_DIR/bin/main_web_sim" > "$LOG_DIR/main_web_sim.log" 2>&1 &
+start_component main_sim "$ROOT_DIR/bin/main_sim"
+start_component main_web_control "$ROOT_DIR/bin/main_web_control"
+start_component main_web_sim "$ROOT_DIR/bin/main_web_sim"
+
+STARTUP_COMPLETE=1
+trap - EXIT
 
 IP_ADDR="$(hostname -I 2>/dev/null | awk '{print $1}')"
 if [[ -z "${IP_ADDR:-}" ]]; then
@@ -189,7 +297,7 @@ Ports:
   motor_ids: G0=$G0_MOTOR_IDS G1=$G1_MOTOR_IDS G2=$G2_MOTOR_IDS
   axis_directions: $AXIS_DIRECTIONS
   axis_limit_margin_native: ${AXIS_LIMIT_MARGIN_NATIVE:-global default}
-  axis_offsets_native: $AXIS_OFFSETS_NATIVE
+  axis_offsets_source: $AXIS_OFFSETS_FILE
   auto_zero_on_start: $AUTO_ZERO_ON_START
   watchdog_ms: $WATCHDOG_MS
   allow_zero: $ALLOW_ZERO
@@ -206,6 +314,11 @@ Logs:
   $LOG_DIR/main_web_sim.log
 
 Open GUI:
-  control: http://$IP_ADDR:8080/control
-  sim:     http://$IP_ADDR:8081/sim
+  control: http://$IP_ADDR:$WEB_PORT/control
+  sim:     http://$IP_ADDR:$SIM_WEB_PORT/sim
+
+Runtime:
+  directory: $RUNTIME_DIR
+  shared_memory: $SHM_NAME
+  process_registry: $PID_FILE
 EOF

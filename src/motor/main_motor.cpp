@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cerrno>
 #include <chrono>
 #include <cctype>
 #include <cmath>
@@ -11,11 +12,13 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <sys/stat.h>
 #include <thread>
 #include <vector>
 
@@ -197,6 +200,100 @@ std::vector<int64_t> parse_integer_list(const std::string& text) {
   return values;
 }
 
+std::vector<int64_t> load_required_axis_offsets_file(
+    const std::string& path) {
+  if (path.empty()) {
+    throw std::runtime_error(
+        "THERAPY_ROBOT_AXIS_OFFSETS_FILE must name a persistent offsets file");
+  }
+
+  struct stat file_status {};
+  if (stat(path.c_str(), &file_status) != 0 ||
+      !S_ISREG(file_status.st_mode)) {
+    throw std::runtime_error(
+        "required axis offsets file is missing or is not a regular file: " +
+        path);
+  }
+
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    throw std::runtime_error(
+        "required axis offsets file is unreadable: " + path);
+  }
+  const std::string content((std::istreambuf_iterator<char>(in)),
+                            std::istreambuf_iterator<char>());
+  if (in.bad()) {
+    throw std::runtime_error(
+        "required axis offsets file could not be read completely: " + path);
+  }
+
+  const auto is_space = [](unsigned char value) {
+    return std::isspace(value) != 0;
+  };
+  std::size_t content_begin = 0;
+  while (content_begin < content.size() &&
+         is_space(static_cast<unsigned char>(content[content_begin]))) {
+    ++content_begin;
+  }
+  std::size_t content_end = content.size();
+  while (content_end > content_begin &&
+         is_space(static_cast<unsigned char>(content[content_end - 1]))) {
+    --content_end;
+  }
+  if (content_begin == content_end) {
+    throw std::runtime_error("required axis offsets file is empty: " + path);
+  }
+
+  std::vector<int64_t> offsets;
+  std::size_t token_begin = content_begin;
+  while (token_begin <= content_end) {
+    std::size_t token_end = content.find(',', token_begin);
+    if (token_end == std::string::npos || token_end > content_end) {
+      token_end = content_end;
+    }
+
+    std::size_t value_begin = token_begin;
+    while (value_begin < token_end &&
+           is_space(static_cast<unsigned char>(content[value_begin]))) {
+      ++value_begin;
+    }
+    std::size_t value_end = token_end;
+    while (value_end > value_begin &&
+           is_space(static_cast<unsigned char>(content[value_end - 1]))) {
+      --value_end;
+    }
+    if (value_begin == value_end) {
+      throw std::runtime_error(
+          "axis offsets file contains an empty value: " + path);
+    }
+
+    const std::string token =
+        content.substr(value_begin, value_end - value_begin);
+    errno = 0;
+    char* parsed_end = nullptr;
+    const long long parsed = std::strtoll(token.c_str(), &parsed_end, 10);
+    if (errno == ERANGE || parsed_end == token.c_str() ||
+        *parsed_end != '\0') {
+      throw std::runtime_error(
+          "axis offsets file contains an invalid integer: " + path);
+    }
+    offsets.push_back(static_cast<int64_t>(parsed));
+    if (offsets.size() > kAxisCount) {
+      throw std::runtime_error(
+          "axis offsets file must contain exactly 5 integers: " + path);
+    }
+
+    if (token_end == content_end) break;
+    token_begin = token_end + 1;
+  }
+
+  if (offsets.size() != kAxisCount) {
+    throw std::runtime_error(
+        "axis offsets file must contain exactly 5 integers: " + path);
+  }
+  return offsets;
+}
+
 bool group_is_active(int group, const std::string& active_groups) {
   std::string value = active_groups;
   std::transform(value.begin(), value.end(), value.begin(),
@@ -242,7 +339,9 @@ long step_toward(long current, long target, long max_step) {
 }
 
 double speed_multiplier() {
-  std::ifstream in("/tmp/therapy_robot/speed_multiplier");
+  const std::string runtime_dir =
+      env_string("THERAPY_ROBOT_RUNTIME_DIR", "/tmp/therapy_robot");
+  std::ifstream in(runtime_dir + "/speed_multiplier");
   double value = 0.65;
   if (in >> value && std::isfinite(value)) return std::clamp(value, 0.25, 1.0);
   return 0.65;
@@ -520,9 +619,11 @@ void configure_runtime(SharedState& state, HardwareRuntime& runtime) {
   runtime.allow_zero_command = env_flag("THERAPY_ROBOT_ALLOW_ZERO", false);
   runtime.allow_outside_limits = env_flag("THERAPY_ROBOT_ALLOW_OUTSIDE_LIMITS", false);
   runtime.clear_errors_on_enable = env_flag("THERAPY_ROBOT_CLEAR_ERRORS_ON_ENABLE", false);
-  runtime.offsets_file = env_string(
-      "THERAPY_ROBOT_AXIS_OFFSETS_FILE",
-      "/home/jetsonorin/Documents/therapy_robot/config/axis-offsets-native.txt");
+  const char* configured_offsets_file =
+      std::getenv("THERAPY_ROBOT_AXIS_OFFSETS_FILE");
+  runtime.offsets_file = configured_offsets_file
+      ? std::string(configured_offsets_file)
+      : "/home/jetsonorin/Documents/therapy_robot/config/axis-offsets-native.txt";
   runtime.k0_position_file = env_string(
       "THERAPY_ROBOT_K0_POSITION_FILE",
       "/home/jetsonorin/Documents/therapy_robot/config/k0-last-logical-native.txt");
@@ -622,36 +723,21 @@ void configure_runtime(SharedState& state, HardwareRuntime& runtime) {
     set_text(motor.brake_last_error, sizeof(motor.brake_last_error), "");
   }
 
-  const std::string offsets_setting =
-      env_string("THERAPY_ROBOT_AXIS_OFFSETS_NATIVE", "auto");
-  std::vector<int64_t> offsets;
+  const char* configured_offsets_setting =
+      std::getenv("THERAPY_ROBOT_AXIS_OFFSETS_NATIVE");
+  const std::string offsets_setting = configured_offsets_setting
+      ? std::string(configured_offsets_setting)
+      : "auto";
   if (offsets_setting != "auto") {
-    offsets = parse_integer_list(offsets_setting);
-    if (offsets.size() != kAxisCount) {
-      throw std::runtime_error("THERAPY_ROBOT_AXIS_OFFSETS_NATIVE must contain 5 values or 'auto'");
-    }
-  } else if (!runtime.offsets_file.empty()) {
-    std::ifstream offsets_in(runtime.offsets_file);
-    std::string persisted;
-    if (offsets_in && std::getline(offsets_in, persisted)) {
-      offsets = parse_integer_list(persisted);
-      if (offsets.size() != kAxisCount) {
-        throw std::runtime_error(
-            "persisted axis offsets file must contain exactly 5 values");
-      }
-    }
-  }
-  if (!offsets.empty()) {
-    runtime.auto_zero_on_start = false;
-    for (int idx = 0; idx < kAxisCount; ++idx) {
-      runtime.axes[idx].offset_native = offsets[idx];
-      runtime.axes[idx].calibration_valid = true;
-    }
-  }
-  if (runtime.collision_config.enabled && runtime.auto_zero_on_start) {
     throw std::runtime_error(
-        "enclosure collision checking requires calibrated absolute axis offsets; "
-        "hardware_relative startup is not sufficient");
+        "THERAPY_ROBOT_AXIS_OFFSETS_NATIVE must be 'auto'; inline hardware "
+        "offsets are forbidden");
+  }
+  const auto offsets = load_required_axis_offsets_file(runtime.offsets_file);
+  runtime.auto_zero_on_start = false;
+  for (int idx = 0; idx < kAxisCount; ++idx) {
+    runtime.axes[idx].offset_native = offsets[idx];
+    runtime.axes[idx].calibration_valid = true;
   }
 
   const uint32_t global_speed = static_cast<uint32_t>(
