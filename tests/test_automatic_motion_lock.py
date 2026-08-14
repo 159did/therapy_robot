@@ -143,6 +143,17 @@ def run(root: Path, build: Path, port: int) -> dict:
                 "THERAPY_ROBOT_MOTION_LOG_BACKUP_FILE": str(log_dir / "motor-motion-history.backup.jsonl"),
             }
         )
+        initial_offsets = [
+            buses[0].positions[1],
+            buses[1].positions[1],
+            buses[1].positions[2],
+            buses[2].positions[1],
+            buses[2].positions[2],
+        ]
+        (log_dir / "axis-offsets-native.txt").write_text(
+            ",".join(str(value) for value in initial_offsets) + "\n",
+            encoding="ascii",
+        )
         spawn("main_motor", hardware_environment)
 
         web_environment = base_environment.copy()
