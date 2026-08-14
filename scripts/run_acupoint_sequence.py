@@ -2,6 +2,7 @@
 import argparse
 import json
 import math
+import os
 import time
 import subprocess
 import urllib.error
@@ -11,6 +12,16 @@ from collections import Counter
 from types import SimpleNamespace
 
 from send_acupoint_endpoint import build_target, load_acupoints, post_json
+
+
+RUNTIME_DIR_TEXT = os.environ.get('THERAPY_ROBOT_RUNTIME_DIR', '/tmp/therapy_robot')
+if (len(RUNTIME_DIR_TEXT) < 2 or len(RUNTIME_DIR_TEXT) > 4095 or
+        not RUNTIME_DIR_TEXT.startswith('/') or RUNTIME_DIR_TEXT.endswith('/') or
+        any(part in ('', '.', '..') for part in RUNTIME_DIR_TEXT[1:].split('/')) or
+        any(not (char.isascii() and (char.isalnum() or char in '/_.-'))
+            for char in RUNTIME_DIR_TEXT)):
+    raise ValueError('invalid THERAPY_ROBOT_RUNTIME_DIR')
+RUNTIME_DIR = Path(RUNTIME_DIR_TEXT)
 
 
 def resolve_result_path(result):
@@ -215,7 +226,7 @@ def preview_step(name, step_name, info, ik):
 
 
 def write_progress(progress):
-    path = Path('/tmp/therapy_robot/acupoint_sequence_progress.json')
+    path = RUNTIME_DIR / 'acupoint_sequence_progress.json'
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix('.json.tmp')
     tmp.write_text(json.dumps(progress, ensure_ascii=False, indent=2), encoding='utf-8')

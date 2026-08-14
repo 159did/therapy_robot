@@ -68,4 +68,11 @@ if(BUILD_TESTING)
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_shared_memory_isolation.py
             --main-core $<TARGET_FILE:main_core>
   )
+  add_test(
+    NAME runtime_isolation
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_runtime_isolation.py
+            --main-core $<TARGET_FILE:main_core>
+            --main-web-control $<TARGET_FILE:main_web_control>
+            --kill-script ${CMAKE_SOURCE_DIR}/scripts/kill-robot.sh
+  )
 endif()

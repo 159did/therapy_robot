@@ -4,6 +4,7 @@
 import argparse
 import json
 import math
+import os
 import time
 import urllib.error
 import urllib.parse
@@ -11,7 +12,15 @@ import urllib.request
 from pathlib import Path
 
 
-PROGRESS_PATH = Path('/tmp/therapy_robot/motion_test_progress.json')
+RUNTIME_DIR_TEXT = os.environ.get('THERAPY_ROBOT_RUNTIME_DIR', '/tmp/therapy_robot')
+if (len(RUNTIME_DIR_TEXT) < 2 or len(RUNTIME_DIR_TEXT) > 4095 or
+        not RUNTIME_DIR_TEXT.startswith('/') or RUNTIME_DIR_TEXT.endswith('/') or
+        any(part in ('', '.', '..') for part in RUNTIME_DIR_TEXT[1:].split('/')) or
+        any(not (char.isascii() and (char.isalnum() or char in '/_.-'))
+            for char in RUNTIME_DIR_TEXT)):
+    raise ValueError('invalid THERAPY_ROBOT_RUNTIME_DIR')
+RUNTIME_DIR = Path(RUNTIME_DIR_TEXT)
+PROGRESS_PATH = RUNTIME_DIR / 'motion_test_progress.json'
 
 
 def get_json(url, timeout=3.0):

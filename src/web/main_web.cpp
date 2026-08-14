@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cerrno>
 #include <cctype>
 #include <cmath>
 #include <cstdio>
@@ -21,6 +22,7 @@ namespace fs = std::experimental::filesystem;
 #include <iostream>
 #include <signal.h>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <sys/types.h>
 #include <vector>
@@ -31,6 +33,72 @@ namespace {
 std::string root_dir() {
   if (const char* env = std::getenv("THERAPY_ROBOT_ROOT")) return env;
   return fs::current_path().string();
+}
+
+bool is_safe_runtime_path_character(char value) {
+  return (value >= 'a' && value <= 'z') ||
+         (value >= 'A' && value <= 'Z') ||
+         (value >= '0' && value <= '9') || value == '/' || value == '_' ||
+         value == '-' || value == '.';
+}
+
+const std::string& runtime_dir() {
+  static const std::string value = [] {
+    const char* configured = std::getenv("THERAPY_ROBOT_RUNTIME_DIR");
+    const std::string candidate = configured ? configured : "/tmp/therapy_robot";
+    if (candidate.size() < 2 || candidate.size() > 4095 || candidate[0] != '/' ||
+        candidate.back() == '/') {
+      throw std::invalid_argument(
+          "invalid THERAPY_ROBOT_RUNTIME_DIR: expected a non-root absolute path");
+    }
+    std::size_t component_start = 1;
+    for (std::size_t index = 1; index <= candidate.size(); ++index) {
+      if (index < candidate.size() &&
+          !is_safe_runtime_path_character(candidate[index])) {
+        throw std::invalid_argument(
+            "invalid THERAPY_ROBOT_RUNTIME_DIR: path contains unsafe characters");
+      }
+      if (index == candidate.size() || candidate[index] == '/') {
+        const std::string component =
+            candidate.substr(component_start, index - component_start);
+        if (component.empty() || component == "." || component == "..") {
+          throw std::invalid_argument(
+              "invalid THERAPY_ROBOT_RUNTIME_DIR: empty, '.' and '..' components are forbidden");
+        }
+        component_start = index + 1;
+      }
+    }
+    return candidate;
+  }();
+  return value;
+}
+
+std::string runtime_file(const char* filename) {
+  return (fs::path(runtime_dir()) / filename).string();
+}
+
+int configured_port(const char* variable, int fallback) {
+  const char* configured = std::getenv(variable);
+  if (!configured) return fallback;
+  if (*configured == '\0') {
+    throw std::invalid_argument(std::string("invalid ") + variable + ": empty value");
+  }
+  errno = 0;
+  char* end = nullptr;
+  const long value = std::strtol(configured, &end, 10);
+  if (errno != 0 || !end || *end != '\0' || value < 1 || value > 65535) {
+    throw std::invalid_argument(std::string("invalid ") + variable +
+                                ": expected an integer from 1 to 65535");
+  }
+  return static_cast<int>(value);
+}
+
+int current_web_port() {
+#ifdef THERAPY_ROBOT_WEB_SIM
+  return configured_port("THERAPY_ROBOT_SIM_WEB_PORT", 8081);
+#else
+  return configured_port("THERAPY_ROBOT_WEB_PORT", 8080);
+#endif
 }
 
 std::string read_file(const fs::path& path) {
@@ -248,11 +316,9 @@ std::string extract_string(const std::string& body, const std::string& key) {
   return value;
 }
 
-constexpr const char* kSpeedMultiplierFile = "/tmp/therapy_robot/speed_multiplier";
-
 void write_speed_multiplier(double value) {
-  fs::create_directories("/tmp/therapy_robot");
-  std::ofstream out(kSpeedMultiplierFile, std::ios::trunc);
+  fs::create_directories(runtime_dir());
+  std::ofstream out(runtime_file("speed_multiplier"), std::ios::trunc);
   out << value << '\n';
 }
 
@@ -264,10 +330,6 @@ std::string tail_text(const std::string& text, std::size_t max_chars) {
 bool ends_with(const std::string& value, const std::string& suffix) {
   return value.size() >= suffix.size() && value.compare(value.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
-
-constexpr const char* kAcupointSequencePidFile = "/tmp/therapy_robot/acupoint_sequence.pid";
-constexpr const char* kMotionTestSequencePidFile = "/tmp/therapy_robot/motion_test_sequence.pid";
-constexpr const char* kMotionTestProgressFile = "/tmp/therapy_robot/motion_test_progress.json";
 
 struct MotionTestPoint {
   int index;
@@ -447,7 +509,7 @@ std::vector<MotionPathPointCheck> check_motion_test_path(
 }
 
 int read_motion_test_sequence_pid() {
-  std::ifstream in(kMotionTestSequencePidFile);
+  std::ifstream in(runtime_file("motion_test_sequence.pid"));
   int pid = 0;
   in >> pid;
   return pid;
@@ -458,7 +520,7 @@ bool motion_test_sequence_running() {
 }
 
 int read_acupoint_sequence_pid() {
-  std::ifstream in(kAcupointSequencePidFile);
+  std::ifstream in(runtime_file("acupoint_sequence.pid"));
   int pid = 0;
   in >> pid;
   return pid;
@@ -521,6 +583,8 @@ int main() {
   try {
     auto* state = open_or_create_shared_state(false);
     const auto collision_config = collision_config_from_environment();
+    fs::create_directories(runtime_dir());
+    const int port = current_web_port();
     std::string web = root_dir() + "/web";
     httplib::Server server;
     server.Get("/api/acupoints/latest", [](const httplib::Request&, httplib::Response& res) {
@@ -1172,9 +1236,10 @@ int main() {
         return;
       }
       const std::string script = root_dir() + "/scripts/switch-run-mode.sh";
-      const std::string command = "mkdir -p /tmp/therapy_robot; nohup " + shell_quote(script) +
+      const std::string log_path = runtime_file("mode_switch_request.log");
+      const std::string command = "mkdir -p " + shell_quote(runtime_dir()) + "; nohup " + shell_quote(script) +
                                   " " + shell_quote(target) +
-                                  " >/tmp/therapy_robot/mode_switch_request.log 2>&1 </dev/null &";
+                                  " >" + shell_quote(log_path) + " 2>&1 </dev/null &";
       const int rc = std::system(command.c_str());
       if (rc != 0) {
         res.status = 500;
@@ -1345,15 +1410,16 @@ int main() {
     server.Post("/api/motion_test/sequence/stop", [state](const httplib::Request&, httplib::Response& res) {
       const int pid = read_motion_test_sequence_pid();
       if (process_running(pid)) kill(pid, SIGTERM);
-      std::remove(kMotionTestSequencePidFile);
+      const std::string pid_file = runtime_file("motion_test_sequence.pid");
+      std::remove(pid_file.c_str());
       state->command.command_id = 4;
       std::atomic_thread_fence(std::memory_order_release);
       state->command.command_seq++;
       res.set_content("{\"ok\":true,\"running\":false}", "application/json");
     });
     server.Get("/api/motion_test/sequence/status", [](const httplib::Request&, httplib::Response& res) {
-      const std::string log = read_file("/tmp/therapy_robot/motion_test_sequence.log");
-      const std::string progress = read_file(kMotionTestProgressFile);
+      const std::string log = read_file(runtime_file("motion_test_sequence.log"));
+      const std::string progress = read_file(runtime_file("motion_test_progress.json"));
       std::ostringstream out;
       out << "{\"ok\":true,\"execution_locked\":true,"
           << "\"error_code\":\"automatic_trajectory_locked\","
@@ -1364,7 +1430,7 @@ int main() {
           << "\",\"progress\":" << (progress.empty() ? "null" : progress) << "}";
       res.set_content(out.str(), "application/json");
     });
-    server.Post("/api/acupoint_sequence/start", [state](const httplib::Request& req, httplib::Response& res) {
+    server.Post("/api/acupoint_sequence/start", [state, port](const httplib::Request& req, httplib::Response& res) {
       if (state->emergency_stop) {
         res.status = 409;
         res.set_content("{\"ok\":false,\"error\":\"emergency stop is latched\"}", "application/json");
@@ -1382,10 +1448,19 @@ int main() {
       const std::string names = extract_string(req.body, "names");
       std::string root = root_dir();
       std::string names_arg = names.empty() ? "" : " --names " + shell_quote(names);
-      std::string cmd = "mkdir -p /tmp/therapy_robot; rm -f /tmp/therapy_robot/acupoint_sequence_progress.json; cd " + shell_quote(root) + " && nohup python3 scripts/run_acupoint_sequence.py --scan-once --skip-unreachable --scan-x-mm 0 --scan-y-mm 928 --scan-z-mm 450" + names_arg + " --execute > /tmp/therapy_robot/acupoint_sequence.log 2>&1 & echo $! > /tmp/therapy_robot/acupoint_sequence.pid";
+      const std::string progress_path = runtime_file("acupoint_sequence_progress.json");
+      const std::string log_path = runtime_file("acupoint_sequence.log");
+      const std::string pid_path = runtime_file("acupoint_sequence.pid");
+      const std::string base_url = "http://127.0.0.1:" + std::to_string(port);
+      std::string cmd = "mkdir -p " + shell_quote(runtime_dir()) + "; rm -f -- " +
+                        shell_quote(progress_path) + "; cd " + shell_quote(root) +
+                        " && nohup python3 scripts/run_acupoint_sequence.py --scan-once --skip-unreachable --scan-x-mm 0 --scan-y-mm 928 --scan-z-mm 450" +
+                        names_arg + " --base-url " + shell_quote(base_url) +
+                        " --execute > " + shell_quote(log_path) +
+                        " 2>&1 & echo $! > " + shell_quote(pid_path);
       int rc = std::system(cmd.c_str());
       std::ostringstream out;
-      out << "{\"ok\":" << (rc == 0 ? "true" : "false") << ",\"running\":" << (acupoint_sequence_running() ? "true" : "false") << ",\"selected\":\"" << escape_json(names.c_str()) << "\",\"log\":\"/tmp/therapy_robot/acupoint_sequence.log\"}";
+      out << "{\"ok\":" << (rc == 0 ? "true" : "false") << ",\"running\":" << (acupoint_sequence_running() ? "true" : "false") << ",\"selected\":\"" << escape_json(names.c_str()) << "\",\"log\":\"" << escape_json(log_path.c_str()) << "\"}";
       res.set_content(out.str(), "application/json");
     });
     server.Post("/api/speed", [state](const httplib::Request& req, httplib::Response& res) {
@@ -1402,15 +1477,17 @@ int main() {
       if (process_running(pid)) {
         kill(pid, SIGTERM);
       }
-      std::remove(kAcupointSequencePidFile);
+      const std::string pid_file = runtime_file("acupoint_sequence.pid");
+      std::remove(pid_file.c_str());
       res.set_content("{\"ok\":true,\"running\":false}", "application/json");
     });
     server.Get("/api/acupoint_sequence/status", [](const httplib::Request&, httplib::Response& res) {
-      std::string log = read_file("/tmp/therapy_robot/acupoint_sequence.log");
-      std::string progress = read_file("/tmp/therapy_robot/acupoint_sequence_progress.json");
+      const std::string log_path = runtime_file("acupoint_sequence.log");
+      std::string log = read_file(log_path);
+      std::string progress = read_file(runtime_file("acupoint_sequence_progress.json"));
       std::ostringstream out;
       out << "{\"ok\":true,\"running\":" << (acupoint_sequence_running() ? "true" : "false")
-          << ",\"log\":\"/tmp/therapy_robot/acupoint_sequence.log\",\"log_tail\":\"" << escape_json(tail_text(log, 4000).c_str())
+          << ",\"log\":\"" << escape_json(log_path.c_str()) << "\",\"log_tail\":\"" << escape_json(tail_text(log, 4000).c_str())
           << "\",\"progress\":" << (progress.empty() ? "null" : progress) << "}";
       res.set_content(out.str(), "application/json");
     });
@@ -1466,7 +1543,8 @@ int main() {
       }
       const int pid = read_motion_test_sequence_pid();
       if (process_running(pid)) kill(pid, SIGTERM);
-      std::remove(kMotionTestSequencePidFile);
+      const std::string pid_file = runtime_file("motion_test_sequence.pid");
+      std::remove(pid_file.c_str());
       state->command.command_id = 4;
       state->command.command_seq++;
       state->emergency_stop = 0;
@@ -1538,17 +1616,6 @@ int main() {
       if (path.empty()) path = "control.html";
       serve_file(res, web + "/" + path);
     });
-#ifdef THERAPY_ROBOT_WEB_SIM
-    int port = 8081;
-    if (const char* configured = std::getenv("THERAPY_ROBOT_SIM_WEB_PORT")) {
-      port = std::clamp(std::atoi(configured), 1, 65535);
-    }
-#else
-    int port = 8080;
-    if (const char* configured = std::getenv("THERAPY_ROBOT_WEB_PORT")) {
-      port = std::clamp(std::atoi(configured), 1, 65535);
-    }
-#endif
     std::cout << "web listening on " << port << '\n';
     server.listen("0.0.0.0", port);
   } catch (const std::exception& e) {
