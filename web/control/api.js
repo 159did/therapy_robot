@@ -28,6 +28,33 @@ export const api = {
   async getState() {
     return request('/api/state');
   },
+  async getWorkflowState() {
+    return request('/api/workflow/state', {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+  },
+  async getWorkflowSelfCheck() {
+    return request('/api/workflow/self_check', {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+  },
+  async getMotionPlanPreview(side) {
+    if (side !== 'left' && side !== 'right') {
+      throw new ApiError('/api/motion_plan/preview', 0, {
+        error: 'invalid motion plan side',
+        error_code: 'invalid_motion_plan_side',
+      });
+    }
+    return request(`/api/motion_plan/preview?side=${side}`, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+  },
   async get(path) {
     return request(path);
   },

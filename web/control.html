@@ -45,6 +45,64 @@
       <p id="runtimeModeStatus" class="pill">全局模式：读取中；切换前必须全部电机下电</p>
     </section>
 
+    <section id="workflowPanel" class="workflow-panel" data-workflow-status="locked" aria-labelledby="workflowTitle">
+      <div class="workflow-heading">
+        <div>
+          <p class="eyebrow">B2 Read-only Workflow</p>
+          <h2 id="workflowTitle">只读工作流</h2>
+          <div class="workflow-heading-status">
+            <span id="workflowViewStatus" class="pill bad">不可用 / 已锁定</span>
+            <span id="workflowUpdatedAt">更新时间：--</span>
+          </div>
+        </div>
+        <div class="workflow-toolbar">
+          <div class="workflow-side-control" role="group" aria-label="路线预览侧别">
+            <button type="button" class="selected" data-workflow-side="left" aria-pressed="true">左侧</button>
+            <button type="button" data-workflow-side="right" aria-pressed="false">右侧</button>
+          </div>
+          <button id="workflowRefresh" type="button" class="secondary">刷新状态</button>
+        </div>
+      </div>
+
+      <div class="workflow-overview-grid">
+        <section class="workflow-overview-block" aria-labelledby="workflowStateTitle">
+          <h3 id="workflowStateTitle">工作流状态</h3>
+          <dl class="workflow-facts">
+            <dt>当前状态</dt><dd id="workflowStateValue">--</dd>
+            <dt>Schema</dt><dd id="workflowSchemaValue">--</dd>
+            <dt>源序列</dt><dd id="workflowSourceState">--</dd>
+          </dl>
+          <h4>允许的只读动作</h4>
+          <div id="workflowAllowedActions" class="workflow-actions"><p class="workflow-empty">状态不可用</p></div>
+        </section>
+
+        <section class="workflow-overview-block" aria-labelledby="workflowSelfCheckTitle">
+          <h3 id="workflowSelfCheckTitle">自检结果</h3>
+          <p id="workflowSelfCheckSummary" class="workflow-summary">--</p>
+          <div id="workflowChecks" class="workflow-checks"><p class="workflow-empty">自检不可用</p></div>
+        </section>
+
+        <section class="workflow-overview-block" aria-labelledby="workflowBlockingTitle">
+          <h3 id="workflowBlockingTitle">阻塞原因</h3>
+          <div id="workflowBlockingReasons" class="workflow-reasons"><p class="workflow-empty">状态不可用</p></div>
+        </section>
+      </div>
+
+      <section class="workflow-plan" aria-labelledby="workflowPlanTitle">
+        <div class="workflow-plan-heading">
+          <div>
+            <h3 id="workflowPlanTitle">路线预览与逐段预检</h3>
+            <p id="workflowPlanStatus" class="pill bad">路线预览不可用 / 执行已锁定</p>
+          </div>
+          <dl class="workflow-plan-identity">
+            <dt>Plan ID</dt><dd><code id="workflowPlanId">--</code></dd>
+            <dt>Plan Hash</dt><dd><code id="workflowPlanHash">--</code></dd>
+          </dl>
+        </div>
+        <div id="workflowPlanSegments" class="workflow-segments"><p class="workflow-empty">路线预览不可用</p></div>
+      </section>
+    </section>
+
     <section class="panel pose-reconcile-panel" id="poseReconcilePanel">
       <div class="panel-title">
         <h2>突发状态核对与同步</h2>

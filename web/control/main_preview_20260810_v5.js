@@ -5,6 +5,7 @@ import { bindCommands } from './bindings_preview_20260810_v5.js';
 import { hydrateEndpointInputsFromState, estimateEndpointFromState, renderEndpointBackendStatus, renderEndpointPrecheck } from './endpoint.js';
 import { buildAxisMapIndex, hydrateAxisTargetInputsFromState, loadPersistedDrafts, renderInputRangeHints, renderStatusCards, showError, syncPhysicalInputsFromState } from './state.js';
 import { renderJointJogState } from './joint_jog.js';
+import { createWorkflowView } from './workflow_view.js';
 
 const physicalInputDirty = new Set();
 let latestState = null;
@@ -392,4 +393,5 @@ if (elements.acupointSourceImage) {
 }
 window.addEventListener('resize', renderAcupointImage);
 loadAcupointData();
+createWorkflowView();
 pollState();
