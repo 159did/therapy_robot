@@ -47,8 +47,13 @@ def static_checks(root: Path, frontend_only: bool = False) -> None:
     api = (web_root / "control/api.js").read_text(encoding="utf-8")
     main = (web_root / "control/main.js").read_text(encoding="utf-8")
     bindings = (web_root / "control/bindings.js").read_text(encoding="utf-8")
+    active_entry = (web_root / "control_preview_20260810_v5.js").read_text(encoding="utf-8")
+    active_main = (web_root / "control/main_preview_20260810_v5.js").read_text(encoding="utf-8")
+    active_bindings = (web_root / "control/bindings_preview_20260810_v5.js").read_text(encoding="utf-8")
     backend = (root / "src/web/main_web.cpp").read_text(encoding="utf-8")
 
+    require(html, 'src="/control_preview_20260810_v5.js"', "active control entry")
+    require(active_entry, "./control/main_preview_20260810_v5.js", "active main module")
     require(html, 'id="startMotionTestSequence" class="secondary" disabled', "motion sequence disabled control")
     require(html, 'id="startSelectedAcupoints" disabled', "selected acupoints disabled control")
     require(html, 'id="startAcupointSequence" class="secondary" disabled', "all acupoints disabled control")
@@ -56,10 +61,12 @@ def static_checks(root: Path, frontend_only: bool = False) -> None:
     require(api, "export class ApiError", "structured API error class")
     require(api, "this.errorCode", "structured API error code")
     require(api, "this.executionLocked", "structured API lock field")
-    require(main, "status?.execution_locked !== false", "acupoint default lock")
-    require(main, "catch(renderAcupointSequenceUnavailable)", "acupoint status fail-visible handling")
-    require(bindings, "if (elements.startSelectedAcupoints.disabled) return;", "selected acupoint click guard")
-    require(bindings, "if (elements.startAcupointSequence.disabled) return;", "all acupoint click guard")
+    for module in (main, active_main):
+        require(module, "status?.execution_locked !== false", "acupoint default lock")
+        require(module, "catch(renderAcupointSequenceUnavailable)", "acupoint status fail-visible handling")
+    for module in (bindings, active_bindings):
+        require(module, "if (elements.startSelectedAcupoints.disabled) return;", "selected acupoint click guard")
+        require(module, "if (elements.startAcupointSequence.disabled) return;", "all acupoint click guard")
 
     if frontend_only:
         print("PASS: frontend automatic-execution controls fail closed")
@@ -88,7 +95,7 @@ def static_checks(root: Path, frontend_only: bool = False) -> None:
         'server.Post("/api/speed"',
     )
     # This intentionally fails until B1-A supplies the same backend lock.
-    if '"automatic_trajectory_locked"' not in acupoint_start:
+    if "automatic_trajectory_locked" not in acupoint_start:
         raise AssertionError("acupoint backend start is not locked by automatic_trajectory_locked")
     require(acupoint_start, "res.status = 409", "acupoint lock HTTP 409")
     for field in LOCK_FIELDS:
