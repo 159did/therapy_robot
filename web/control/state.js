@@ -32,7 +32,11 @@ export function displayValue(value) {
 }
 
 export function showError(error) {
-  elements.connectionState.textContent = `错误: ${error.message}`;
+  const payload = error?.payload || {};
+  const code = payload.error_code || error?.errorCode;
+  const lock = payload.execution_locked === true || error?.executionLocked === true;
+  const details = [code, lock ? '自动执行已锁定' : ''].filter(Boolean).join('；');
+  elements.connectionState.textContent = `错误: ${error?.message || '请求失败'}${details ? `（${details}）` : ''}`;
   elements.connectionState.className = 'pill bad';
 }
 

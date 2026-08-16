@@ -38,8 +38,12 @@ function stepLabel(step) {
   }[step] || step || '--';
 }
 
-function renderAcupointSequenceProgress(progress) {
+function renderAcupointSequenceProgress(progress, executionLocked, lockReason) {
   if (!elements.acupointSequenceProgress) return;
+  if (executionLocked) {
+    elements.acupointSequenceProgress.textContent = lockReason || '自动穴位序列已锁定；当前仅允许只读预览。';
+    return;
+  }
   if (!progress) {
     elements.acupointSequenceProgress.textContent = '等待进度...';
     return;
@@ -57,12 +61,31 @@ function renderAcupointSequenceProgress(progress) {
 function renderAcupointSequenceStatus(status) {
   if (!elements.acupointSequenceStatus) return;
   const running = Boolean(status?.running);
-  elements.acupointSequenceStatus.textContent = running ? '自动序列: 运行中' : '自动序列: 已停止';
-  elements.acupointSequenceStatus.className = running ? 'pill good' : 'pill';
-  renderAcupointSequenceProgress(status?.progress);
+  // Missing lock metadata is intentionally treated as locked. The frontend
+  // must not turn an old backend response into an executable UI state.
+  const executionLocked = status?.execution_locked !== false;
+  const lockReason = status?.lock_reason || '自动穴位序列尚未完成安全复核，当前仅允许只读预览';
+  const startButtons = [elements.startSelectedAcupoints, elements.startAcupointSequence].filter(Boolean);
+  for (const button of startButtons) {
+    button.disabled = executionLocked;
+    button.title = executionLocked ? lockReason : '';
+  }
+  if (executionLocked) {
+    elements.acupointSequenceStatus.textContent = `自动序列: ${lockReason}`;
+    elements.acupointSequenceStatus.className = 'pill warn';
+  } else {
+    elements.acupointSequenceStatus.textContent = running ? '自动序列: 运行中' : '自动序列: 已停止';
+    elements.acupointSequenceStatus.className = running ? 'pill good' : 'pill';
+  }
+  renderAcupointSequenceProgress(status?.progress, executionLocked, lockReason);
   if (elements.acupointSequenceLog) {
     elements.acupointSequenceLog.textContent = status?.log_tail || '暂无日志';
   }
+}
+
+function renderAcupointSequenceUnavailable(error) {
+  const reason = `自动序列状态不可用：${error?.message || '连接失败'}；执行入口保持锁定`;
+  renderAcupointSequenceStatus({ execution_locked: true, lock_reason: reason, log_tail: '' });
 }
 
 function renderMotionTestStatus(status) {
@@ -327,7 +350,7 @@ function renderState(state) {
   if (now - lastSlowRenderAt >= 1000) {
     lastSlowRenderAt = now;
     renderEndpointPrecheck(state);
-    api.get('/api/acupoint_sequence/status').then(renderAcupointSequenceStatus).catch(() => {});
+    api.get('/api/acupoint_sequence/status').then(renderAcupointSequenceStatus).catch(renderAcupointSequenceUnavailable);
     api.get('/api/motion_test/sequence/status').then(renderMotionTestStatus).catch(() => {});
     renderStatusCards(state);
   }
