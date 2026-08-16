@@ -12,6 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
 add_library(therapy_robot_common STATIC
   src/common/collision.cpp
   src/common/kinematics.cpp
+  src/common/motion_plan.cpp
   src/common/shared_memory.cpp
   src/common/shared_memory_defaults.cpp
   src/common/time_utils.cpp
@@ -64,6 +65,9 @@ if(BUILD_TESTING)
   add_executable(test_kinematics tests/test_kinematics.cpp)
   target_link_libraries(test_kinematics PRIVATE therapy_robot_common)
   add_test(NAME kinematics_roundtrip COMMAND test_kinematics)
+  add_executable(test_motion_plan tests/test_motion_plan.cpp)
+  target_link_libraries(test_motion_plan PRIVATE therapy_robot_common)
+  add_test(NAME motion_plan COMMAND test_motion_plan)
   add_executable(test_workflow tests/test_workflow.cpp)
   target_link_libraries(test_workflow PRIVATE therapy_robot_common)
   add_test(NAME workflow_model COMMAND test_workflow)
@@ -89,5 +93,22 @@ if(BUILD_TESTING)
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_workflow_api.py
             --main-core $<TARGET_FILE:main_core>
             --main-web-control $<TARGET_FILE:main_web_control>
+  )
+  add_test(
+    NAME motion_plan_api
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_motion_plan_api.py
+            --main-core $<TARGET_FILE:main_core>
+            --main-web-control $<TARGET_FILE:main_web_control>
+  )
+  add_test(
+    NAME d405_quality_gate
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_d405_quality_gate.py
+  )
+  add_test(
+    NAME workflow_frontend
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_workflow_frontend.py
+            --root ${CMAKE_SOURCE_DIR}
   )
 endif()

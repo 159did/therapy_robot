@@ -1,5 +1,6 @@
 #include "therapy_robot/collision.hpp"
 #include "therapy_robot/kinematics.hpp"
+#include "therapy_robot/motion_plan.hpp"
 #include "therapy_robot/shared_memory.hpp"
 #include "therapy_robot/workflow.hpp"
 #include "httplib.h"
@@ -26,6 +27,7 @@ namespace fs = std::experimental::filesystem;
 #include <stdexcept>
 #include <string>
 #include <sys/types.h>
+#include <utility>
 #include <vector>
 
 using namespace therapy_robot;
@@ -250,6 +252,53 @@ std::string workflow_self_check_json(const WorkflowFacts& facts,
     out << ",\"observed\":\"" << escape_json(check.observed.c_str()) << "\"}";
   }
   out << "]}";
+  return out.str();
+}
+
+void add_motion_plan_blocker(WorkflowAssessment& assessment,
+                             std::string code, std::string source,
+                             std::string message) {
+  assessment.blocking_reasons.push_back(
+      {std::move(code), std::move(source), "blocking", std::move(message)});
+}
+
+std::string motion_plan_error_json(const WorkflowFacts& facts,
+                                   WorkflowAssessment assessment,
+                                   const char* error_code) {
+  add_motion_plan_blocker(assessment, error_code, "motion_plan.side",
+                          "exactly one side value, left or right, is required");
+  return workflow_common_json(assessment, facts.source_state, false,
+                              error_code) + "}";
+}
+
+std::string motion_plan_preview_json(const WorkflowFacts& facts,
+                                     WorkflowAssessment assessment,
+                                     const MotionPlan& plan) {
+  add_motion_plan_blocker(assessment, "synthetic_motion_plan_only",
+                          "motion_plan.parameters",
+                          "B2 route parameters are synthetic and not approved for formal use");
+  for (const auto& segment : plan.segments()) {
+    if (segment.preflight().ok() && segment.preflight().collision_checked()) {
+      continue;
+    }
+    std::ostringstream message;
+    message << segment.preflight().reason_code();
+    if (!segment.preflight().collision_link().empty()) {
+      message << "; link=" << segment.preflight().collision_link();
+    }
+    if (!segment.preflight().collision_obstacle().empty()) {
+      message << "; obstacle=" << segment.preflight().collision_obstacle();
+    }
+    add_motion_plan_blocker(assessment, "motion_plan_preflight_failed",
+                            segment.segment_id(), message.str());
+  }
+
+  std::ostringstream out;
+  out << workflow_common_json(assessment, facts.source_state, true)
+      << ",\"plan_id\":\"" << motion_plan_id(plan)
+      << "\",\"plan_hash\":\"" << motion_plan_hash(plan)
+      << "\",\"preview_valid\":false,\"execution_allowed\":false,\"plan\":"
+      << canonical_motion_plan_json(plan) << '}';
   return out.str();
 }
 
@@ -751,6 +800,52 @@ int main() {
       const auto facts = workflow_facts_snapshot(snapshot, collision_config);
       const auto assessment = evaluate_workflow(facts);
       res.set_content(workflow_self_check_json(facts, assessment), "application/json");
+    });
+    server.Get("/api/motion_plan/preview", [state, collision_config](const httplib::Request& req, httplib::Response& res) {
+      const SharedState snapshot = *state;
+      const auto facts = workflow_facts_snapshot(snapshot, collision_config);
+      auto assessment = evaluate_workflow(facts);
+      if (req.params.count("side") != 1) {
+        res.status = 400;
+        res.set_content(
+            motion_plan_error_json(facts, std::move(assessment),
+                                   "invalid_motion_plan_side"),
+            "application/json");
+        return;
+      }
+      try {
+        const auto side = parse_motion_plan_side(req.get_param_value("side"));
+        const SyntheticRouteParameters parameters(
+            {0.0, 0.0, 0.0, 0.0, 0.0}, 0.20, 0.30, 0.10, -0.20, 0.05);
+        const auto plan = make_synthetic_motion_plan(
+            side, parameters,
+            effective_collision_config(snapshot, collision_config));
+        res.set_content(
+            motion_plan_preview_json(facts, std::move(assessment), plan),
+            "application/json");
+      } catch (const std::invalid_argument&) {
+        res.status = 400;
+        res.set_content(
+            motion_plan_error_json(facts, std::move(assessment),
+                                   "invalid_motion_plan_side"),
+            "application/json");
+      } catch (const std::exception&) {
+        res.status = 500;
+        add_motion_plan_blocker(assessment, "motion_plan_preview_failed",
+                                "motion_plan.preview", "preview generation failed");
+        res.set_content(
+            workflow_common_json(assessment, facts.source_state, false,
+                                 "motion_plan_preview_failed") + "}",
+            "application/json");
+      } catch (...) {
+        res.status = 500;
+        add_motion_plan_blocker(assessment, "motion_plan_preview_failed",
+                                "motion_plan.preview", "preview generation failed");
+        res.set_content(
+            workflow_common_json(assessment, facts.source_state, false,
+                                 "motion_plan_preview_failed") + "}",
+            "application/json");
+      }
     });
     server.Get("/api/state", [state](const httplib::Request&, httplib::Response& res) {
       state->web_heartbeat_ms = now_ms();
