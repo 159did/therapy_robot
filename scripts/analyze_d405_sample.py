@@ -297,4 +297,5 @@ def main():
     write_json_atomic(output_paths['json'],res)
     print(json.dumps({'ok':analysis_valid,'json':str(output_paths['json']),'analysis_valid':analysis_valid,'valid_depth_ratio':valid_depth_ratio,'valid_template_points':len(valid_template),'blocking_reasons':blocking_reasons},ensure_ascii=False,indent=2))
     return 0 if analysis_valid else 2
-if __name__=='__main__':main()
+if __name__=='__main__':
+    raise SystemExit(main())

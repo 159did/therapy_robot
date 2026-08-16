@@ -140,6 +140,7 @@ class CalibrationToolsTest(unittest.TestCase):
         text = ANALYZE_TOOL.read_text(encoding="utf-8")
         for fragment in ("schema_version", "input_manifest", "analysis_valid", "execution_allowed", "--output-dir", "derived/analysis-b1c"):
             self.assertIn(fragment, text)
+        self.assertIn("raise SystemExit(main())", text)
 
 
 if __name__ == "__main__":
