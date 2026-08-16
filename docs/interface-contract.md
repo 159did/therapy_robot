@@ -1,4 +1,4 @@
-# B0/B1 Interface Contract
+# B0-B2 Interface Contract
 
 This document freezes the software contracts at the B0 to B1 boundary. It describes what B1 work may consume without editing another owner's hotspot.
 
@@ -55,3 +55,158 @@ For a custom runtime directory, `kill-robot.sh` checks all three fields and stop
 ## Gate Status
 
 The default `validate-software.sh --lock-only` profile passes. The extended full PTY regression remains blocked by the known K4 positive soft-limit continuous-jog timeout. This is a software regression record, not a Nano or physical acceptance result.
+
+The historical paragraph above records the B0 boundary. G1 later passed on
+`main=e6689d2`; the K4 regression was fixed before that gate. B2 starts from
+the B2 preparation commit recorded in the task cards and does not relax any
+B1 lock.
+
+## B2 Read-Only Workflow Contract
+
+B2 adds exactly three read-only endpoints:
+
+```text
+GET /api/workflow/state
+GET /api/workflow/self_check
+GET /api/motion_plan/preview?side=left|right
+```
+
+No B2 endpoint accepts `POST`, writes shared state, increments a sequence,
+starts a process, creates a PID file, opens a serial device, or changes a
+motor target. Every HTTP response, including HTTP 400/409/500 responses,
+contains these stable fields:
+
+```json
+{
+  "schema_version": "b2.v1",
+  "ok": true,
+  "motor_command_written": false,
+  "source_state": {
+    "command_seq": 0,
+    "target_command_seq": 0,
+    "endpoint_target_seq": 0
+  },
+  "blocking_reasons": []
+}
+```
+
+`blocking_reasons` is an array of objects. Each object contains stable string
+fields `code`, `source`, `severity`, and `message`. `severity` is one of
+`info`, `warning`, or `blocking`. Clients make no safety decision from
+`message`; `code` is the machine-readable value. Unknown fields are ignored.
+Missing stable fields, a schema version other than `b2.v1`, or a network
+failure must be treated by the frontend as blocked.
+
+### Workflow State
+
+`GET /api/workflow/state` additionally contains:
+
+```json
+{
+  "workflow_state": "storage",
+  "allowed_actions": ["view_state", "view_self_check", "preview_motion_plan"],
+  "self_check_summary": {
+    "status": "blocked",
+    "passed": 0,
+    "failed": 1,
+    "unknown": 0
+  },
+  "plan_id": null,
+  "plan_hash": null,
+  "execution_locked": true
+}
+```
+
+`workflow_state` is one of `offline`, `fault`, `locked`, `storage`,
+`standby`, `vision_blocked`, `ready_for_preview`, or `preview_blocked`.
+`allowed_actions` may contain only `view_state`, `view_self_check`,
+`refresh_state`, and `preview_motion_plan`. B2 never returns an execute,
+enable, home, jog, capture, deploy, or treatment action. Unknown or
+inconsistent input state maps to a blocked state, never to
+`ready_for_preview`.
+
+### Self Check
+
+`GET /api/workflow/self_check` additionally contains `self_check_summary` and
+a `checks` array. Each check contains:
+
+```json
+{
+  "id": "collision_config",
+  "status": "pass",
+  "blocking": true,
+  "reason_code": null,
+  "observed": "configured_enabled_required"
+}
+```
+
+`status` is `pass`, `fail`, or `unknown`. B2 reads only already-available
+state and files. It does not probe serial ports, connect a camera, release a
+brake, enable an axis, capture a software zero, or generate calibration.
+Missing formal camera extrinsics and unverified entity offsets remain
+blocking facts, even when synthetic fixtures are used by tests.
+
+### Motion Plan Preview
+
+`GET /api/motion_plan/preview` accepts exactly one `side` value, `left` or
+`right`. Missing, duplicate, or unsupported values return HTTP 400 with the
+common fields and `error_code=invalid_motion_plan_side`. A valid request
+additionally contains:
+
+```json
+{
+  "plan_id": "b2-0123456789abcdef",
+  "plan_hash": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "preview_valid": false,
+  "execution_allowed": false,
+  "plan": {
+    "schema_version": "b2.motion-plan.v1",
+    "side": "left",
+    "coordinate_frame": "robot_base",
+    "units": {"linear": "m", "angular": "rad"},
+    "segments": []
+  }
+}
+```
+
+The plan object is immutable after construction. Its canonical form is UTF-8
+JSON with object keys sorted lexicographically, no insignificant whitespace,
+JSON booleans/null in lowercase, and finite numbers rendered by the
+implementation's documented round-trip representation. `plan_hash` is
+`sha256:` followed by the lowercase SHA-256 of that canonical plan object.
+`plan_id` is `b2-` followed by the first 16 hash hex digits. Timestamps,
+source-state sequence values, diagnostics, `plan_id`, and `plan_hash` are not
+part of the hashed object. The same inputs produce the same ID and hash; any
+plan input change must produce both a new ID and a new hash.
+
+Each segment has a stable `segment_id`, `phase`, start and target waypoint,
+and a `preflight` object containing `ok`, `collision_checked`, `reason_code`,
+`collision_link`, `collision_obstacle`, and `path_fraction`. A rejected plan
+identifies the first rejected segment and preserves all segment diagnostics.
+The plan model has no motor-write or shared-memory-write interface.
+
+B2 contains no measured production route heights. Synthetic route fixtures
+must be labelled `formal_use_allowed=false`. Without verified production
+parameters, formal camera extrinsics, and all required preflight inputs, the
+response remains `preview_valid=false`, `execution_allowed=false`, and
+includes a blocking reason. `execution_allowed` is fixed false throughout
+B2 and G2, including for a collision-clear synthetic plan.
+
+### Read-Only Invariants
+
+Tests snapshot these values before and after repeated and concurrent calls:
+
+```text
+SharedState.command.command_seq
+SharedState.command.target_command_seq
+SharedState.control.endpoint_target.target_seq
+all configured motor enabled flags and target_native values
+automatic-sequence PID/progress files
+pseudo-bus action command counts
+```
+
+All values and files remain unchanged. Tests use an isolated shared-memory
+name, runtime directory, Web port, offline vision fixtures, and PTY pseudo
+hardware only. They never use Nano, an entity serial port, or an entity
+camera. The B1 automatic-trajectory HTTP 409 contract remains active and is
+retested at G2.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static, software-only checks for the frozen B0/B1 interface contract."""
+"""Static, software-only checks for the frozen B0-B2 interface contract."""
 
 import argparse
 from pathlib import Path
@@ -20,6 +20,7 @@ def main() -> int:
     shared_cpp = (root / "src/common/shared_memory.cpp").read_text(encoding="utf-8")
     runtime_test = (root / "tests/test_runtime_isolation.py").read_text(encoding="utf-8")
     validation = (root / "scripts/validate-software.sh").read_text(encoding="utf-8")
+    contract = (root / "docs/interface-contract.md").read_text(encoding="utf-8")
 
     lock_start = web.index('server.Post("/api/motion_test/sequence/start"')
     lock_end = web.index('server.Post("/api/motion_test/sequence/stop"', lock_start)
@@ -54,7 +55,38 @@ def main() -> int:
     require(validation, "hardware-emulator", "pseudo-hardware validation stage")
     require(validation, "overall", "validation summary return contract")
 
-    print("PASS: B0/B1 interface contract assertions are present")
+    for endpoint in (
+        "GET /api/workflow/state",
+        "GET /api/workflow/self_check",
+        "GET /api/motion_plan/preview?side=left|right",
+    ):
+        require(contract, endpoint, f"B2 endpoint {endpoint}")
+    for field in (
+        '"schema_version": "b2.v1"',
+        '"workflow_state"',
+        '"allowed_actions"',
+        '"blocking_reasons"',
+        '"self_check_summary"',
+        '"plan_id"',
+        '"plan_hash"',
+        '"motor_command_written": false',
+        '"execution_allowed": false',
+    ):
+        require(contract, field, f"B2 stable contract field {field}")
+    require(contract, "invalid_motion_plan_side", "B2 invalid side error code")
+    require(contract, "b2.motion-plan.v1", "B2 motion plan schema version")
+    require(contract, "sha256:", "B2 plan hash prefix")
+    require(contract, "execution_allowed` is fixed false", "B2 execution hard lock")
+    require(contract, "does not probe serial ports", "B2 passive self-check boundary")
+    for forbidden in (
+        "POST /api/workflow/state",
+        "POST /api/workflow/self_check",
+        "POST /api/motion_plan/preview",
+    ):
+        if forbidden in contract:
+            raise AssertionError(f"B2 contract must not define a write endpoint: {forbidden}")
+
+    print("PASS: B0-B2 interface contract assertions are present")
     return 0
 
 
