@@ -18,6 +18,26 @@ import { bindJointJog } from './joint_jog.js';
 
 export function bindCommands({ getLatestState, getSelectedAcupoints, physicalInputDirty, renderInputRangeHints, buildAxisMapIndex, playMotionPreview }) {
   let motionTestPoints = [];
+  const renderAcupointLockError = (error) => {
+    const payload = error?.payload || {};
+    const locked = payload.execution_locked === true
+      || error?.executionLocked === true
+      || payload.error_code === 'automatic_trajectory_locked';
+    if (!locked) {
+      showError(error);
+      return;
+    }
+    const reason = payload.lock_reason || payload.error || '自动穴位序列已锁定，当前仅允许只读预览';
+    for (const button of [elements.startSelectedAcupoints, elements.startAcupointSequence].filter(Boolean)) {
+      button.disabled = true;
+      button.title = reason;
+    }
+    if (elements.acupointSequenceStatus) {
+      elements.acupointSequenceStatus.textContent = `自动序列: ${reason}`;
+      elements.acupointSequenceStatus.className = 'pill warn';
+    }
+    showError(error);
+  };
   for (const binding of axisInputBindings) {
     const input = elements[binding.physicalInput];
     const nativeInput = elements[binding.nativeInput];
@@ -251,6 +271,7 @@ export function bindCommands({ getLatestState, getSelectedAcupoints, physicalInp
     elements.motionSpeed.dispatchEvent(new Event('change'));
   }
   elements.startSelectedAcupoints.addEventListener('click', async () => {
+    if (elements.startSelectedAcupoints.disabled) return;
     const names = getSelectedAcupoints();
     if (!names.length) {
       elements.acupointSequenceStatus.textContent = '自动序列: 请先点击选择穴位';
@@ -262,10 +283,14 @@ export function bindCommands({ getLatestState, getSelectedAcupoints, physicalInp
       elements.acupointSequenceStatus.textContent = `自动序列: 已启动所选 ${names.length} 个穴位`;
       elements.acupointSequenceStatus.className = 'pill good';
     } catch (error) {
-      showError(error);
+      renderAcupointLockError(error);
     }
   });
-  elements.startAcupointSequence.addEventListener('click', () => api.post('/api/acupoint_sequence/start', { names: '' }).catch(showError));
+  elements.startAcupointSequence.addEventListener('click', () => {
+    if (elements.startAcupointSequence.disabled) return;
+    api.post('/api/acupoint_sequence/start', { names: '' })
+      .catch(renderAcupointLockError);
+  });
   elements.stopAcupointSequence.addEventListener('click', () => api.post('/api/acupoint_sequence/stop').catch(showError));
 
   const renderMotionTestPointInfo = () => {
