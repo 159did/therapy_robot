@@ -1,0 +1,26 @@
+{
+  "schema_version": "b2.motion-plan.v1",
+  "side": "left",
+  "coordinate_frame": "robot_base",
+  "units": {
+    "linear": "m",
+    "angular": "rad"
+  },
+  "formal_use_allowed": false,
+  "synthetic_preview_only": true,
+  "parameters": {
+    "storage_joints": {
+      "k0_m": 0.0,
+      "k1_rad": 0.0,
+      "k2_rad": 0.0,
+      "k3_rad": 0.0,
+      "k4_rad": 0.0
+    },
+    "preview_lift_m": 0.20,
+    "side_sweep_rad": 0.30,
+    "elbow_preview_rad": 0.10,
+    "forearm_preview_rad": -0.20,
+    "wrist_preview_rad": 0.05
+  },
+  "warning": "Synthetic preview fixture only; not a formal route, treatment point, calibration, or execution command."
+}
