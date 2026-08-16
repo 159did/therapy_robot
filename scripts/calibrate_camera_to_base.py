@@ -1,108 +1,218 @@
 #!/usr/bin/env python3
+"""Build an offline D405-camera to robot-base calibration candidate."""
+
 import argparse
+import hashlib
 import json
+import os
+from datetime import datetime, timezone
 from pathlib import Path
+import tempfile
 
 import numpy as np
 
 
-def load_samples(path):
-    data = json.loads(Path(path).read_text(encoding='utf-8'))
-    samples = data.get('samples', data if isinstance(data, list) else [])
+SCHEMA_VERSION = 1
+TOOL_VERSION = "b1-c.1"
+FORMAL_OUTPUT_NAME = "camera_to_base.json"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def write_json_atomic(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(payload, stream, ensure_ascii=False, indent=2)
+            stream.write("\n")
+        os.replace(temporary, path)
+    except Exception:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+def load_samples(path: Path) -> tuple[dict, list[dict]]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("sample document must be a JSON object")
+    samples = data.get("samples", [])
+    if not isinstance(samples, list):
+        raise ValueError("samples must be a JSON array")
+
     clean = []
-    for i, s in enumerate(samples):
-        c = s.get('camera_point_m') or s.get('camera_m') or s.get('camera')
-        b = s.get('robot_point_m') or s.get('base_point_m') or s.get('robot_m') or s.get('base')
-        if c is None or b is None:
-            raise ValueError(f'样本 {i} 缺少 camera_point_m 或 robot_point_m')
-        c = np.asarray(c, dtype=float).reshape(3)
-        b = np.asarray(b, dtype=float).reshape(3)
-        if not np.all(np.isfinite(c)) or not np.all(np.isfinite(b)):
-            raise ValueError(f'样本 {i} 包含非数字坐标')
-        clean.append({'name': s.get('name', f'p{i + 1}'), 'camera': c, 'base': b})
+    names = set()
+    for index, sample in enumerate(samples):
+        if not isinstance(sample, dict):
+            raise ValueError(f"sample {index} must be an object")
+        camera = sample.get("camera_point_m") or sample.get("camera_m") or sample.get("camera")
+        base = sample.get("robot_point_m") or sample.get("base_point_m") or sample.get("robot_m") or sample.get("base")
+        if camera is None or base is None:
+            raise ValueError(f"sample {index} is missing camera_point_m or robot_point_m")
+        camera = np.asarray(camera, dtype=float).reshape(3)
+        base = np.asarray(base, dtype=float).reshape(3)
+        if not np.all(np.isfinite(camera)) or not np.all(np.isfinite(base)):
+            raise ValueError(f"sample {index} contains a non-finite coordinate")
+        name = str(sample.get("name", f"p{index + 1}"))
+        if name in names:
+            raise ValueError(f"duplicate sample name: {name}")
+        names.add(name)
+        clean.append({"name": name, "camera": camera, "base": base})
+
     if len(clean) < 3:
-        raise ValueError('至少需要 3 个不共线标定点，建议 9~20 个')
-    return clean
+        raise ValueError("at least 3 non-collinear point pairs are required")
+    return data, clean
 
 
 def solve_rigid_transform(camera_points, base_points):
-    c = np.asarray(camera_points, dtype=float)
-    b = np.asarray(base_points, dtype=float)
-    c_mean = c.mean(axis=0)
-    b_mean = b.mean(axis=0)
-    c0 = c - c_mean
-    b0 = b - b_mean
-    h = c0.T @ b0
-    u, _, vt = np.linalg.svd(h)
-    r = vt.T @ u.T
-    if np.linalg.det(r) < 0:
+    camera = np.asarray(camera_points, dtype=float)
+    base = np.asarray(base_points, dtype=float)
+    camera_mean = camera.mean(axis=0)
+    base_mean = base.mean(axis=0)
+    camera_centered = camera - camera_mean
+    base_centered = base - base_mean
+    u, _, vt = np.linalg.svd(camera_centered.T @ base_centered)
+    rotation = vt.T @ u.T
+    if np.linalg.det(rotation) < 0:
         vt[-1, :] *= -1
-        r = vt.T @ u.T
-    t = b_mean - r @ c_mean
-    pred = (r @ c.T).T + t
-    err = np.linalg.norm(pred - b, axis=1)
-    return r, t, pred, err
+        rotation = vt.T @ u.T
+    translation = base_mean - rotation @ camera_mean
+    predicted = (rotation @ camera.T).T + translation
+    errors = np.linalg.norm(predicted - base, axis=1)
+    return rotation, translation, predicted, errors
 
 
-def condition_report(points):
-    p = np.asarray(points, dtype=float)
-    _, s, _ = np.linalg.svd(p - p.mean(axis=0), full_matrices=False)
-    rank = int(np.sum(s > max(1e-9, s[0] * 1e-4))) if s.size else 0
-    return {'rank': rank, 'singular_values': [float(x) for x in s]}
+def condition_report(points) -> dict:
+    points = np.asarray(points, dtype=float)
+    _, singular_values, _ = np.linalg.svd(points - points.mean(axis=0), full_matrices=False)
+    rank = int(np.sum(singular_values > max(1e-9, singular_values[0] * 1e-4))) if singular_values.size else 0
+    return {
+        "rank": rank,
+        "singular_values": [float(value) for value in singular_values],
+    }
 
 
-def main():
-    parser = argparse.ArgumentParser(description='用多组对应点求解 D405 相机坐标系到机器人基坐标系的刚体外参')
-    parser.add_argument('--samples', default='/home/zzq/PTR/therapy_robot/calibration/camera_to_base_samples.json')
-    parser.add_argument('--out', default='/home/zzq/PTR/therapy_robot/calibration/camera_to_base.json')
-    parser.add_argument('--min-rmse-mm', type=float, default=10.0, help='超过该 RMSE 仅报警，不阻止输出')
+def calibration_report(source_path: Path, document: dict, samples: list[dict], args) -> dict:
+    camera = np.asarray([sample["camera"] for sample in samples], dtype=float)
+    base = np.asarray([sample["base"] for sample in samples], dtype=float)
+    condition = condition_report(camera)
+    rotation, translation, predicted, errors = solve_rigid_transform(camera, base)
+    rmse_mm = float(np.sqrt(np.mean(errors ** 2)) * 1000.0)
+    max_error_mm = float(np.max(errors) * 1000.0)
+    determinant = float(np.linalg.det(rotation))
+    orthonormal_error = float(np.linalg.norm(rotation.T @ rotation - np.eye(3), ord="fro"))
+    dataset_kind = str(document.get("dataset_kind", "unspecified"))
+
+    checks = {
+        "dataset_is_measurement_candidate": dataset_kind == "measurement_candidate",
+        "point_count": len(samples) >= args.min_points,
+        "camera_point_rank": condition["rank"] >= args.min_rank,
+        "rmse": rmse_mm <= args.max_rmse_mm,
+        "max_error": max_error_mm <= args.max_error_mm,
+        "rotation_determinant": abs(determinant - 1.0) <= 1e-6,
+        "rotation_orthonormal": orthonormal_error <= 1e-6,
+    }
+    blocking_reasons = [name for name, passed in checks.items() if not passed]
+    calibration_valid = not blocking_reasons
+
+    result_samples = []
+    for sample, point, error in zip(samples, predicted, errors):
+        result_samples.append(
+            {
+                "name": sample["name"],
+                "camera_point_m": [float(value) for value in sample["camera"]],
+                "robot_point_m": [float(value) for value in sample["base"]],
+                "pred_robot_point_m": [float(value) for value in point],
+                "error_mm": float(error * 1000.0),
+            }
+        )
+
+    return {
+        "type": "camera_to_robot_base_rigid_transform",
+        "schema_version": SCHEMA_VERSION,
+        "tool": {"name": "calibrate_camera_to_base.py", "version": TOOL_VERSION},
+        "generated_at_utc": utc_now(),
+        "dataset_kind": dataset_kind,
+        "calibration_valid": calibration_valid,
+        "formal_use_allowed": False,
+        "execution_allowed": False,
+        "source": {"path": str(source_path), "sha256": sha256_file(source_path)},
+        "coordinate_frames": {"source": "d405_camera", "target": "robot_base"},
+        "units": {"points": "m", "translation": "m", "residual": "mm"},
+        "point_count": len(samples),
+        "rotation": [[float(value) for value in row] for row in rotation],
+        "translation_m": [float(value) for value in translation],
+        "rmse_mm": rmse_mm,
+        "max_error_mm": max_error_mm,
+        "rotation_determinant": determinant,
+        "rotation_orthonormal_error": orthonormal_error,
+        "camera_point_condition": condition,
+        "quality": {
+            "thresholds": {
+                "min_points": args.min_points,
+                "min_rank": args.min_rank,
+                "max_rmse_mm": args.max_rmse_mm,
+                "max_error_mm": args.max_error_mm,
+            },
+            "checks": checks,
+            "blocking_reasons": blocking_reasons,
+        },
+        "usage": "p_base = R @ p_camera + t; normal_base = R @ normal_camera",
+        "samples": result_samples,
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Build an offline D405-to-base calibration candidate")
+    parser.add_argument("--samples", type=Path, default=PROJECT_ROOT / "calibration/camera_to_base_samples.json")
+    parser.add_argument("--out", type=Path, default=PROJECT_ROOT / "calibration/camera_to_base.candidate.json")
+    parser.add_argument("--min-points", type=int, default=9)
+    parser.add_argument("--min-rank", type=int, default=2)
+    parser.add_argument("--max-rmse-mm", "--min-rmse-mm", dest="max_rmse_mm", type=float, default=10.0)
+    parser.add_argument("--max-error-mm", type=float, default=20.0)
     args = parser.parse_args()
 
-    samples = load_samples(args.samples)
-    camera = np.asarray([s['camera'] for s in samples], dtype=float)
-    base = np.asarray([s['base'] for s in samples], dtype=float)
-    cond = condition_report(camera)
-    if cond['rank'] < 2:
-        raise SystemExit('标定点分布退化：至少需要不共线点，建议覆盖工作区九宫格')
+    if args.out.name == FORMAL_OUTPUT_NAME:
+        raise SystemExit("B1-C refuses to create camera_to_base.json; use a .candidate.json output")
+    if args.min_points < 3 or args.min_rank < 2:
+        raise SystemExit("min-points must be >= 3 and min-rank must be >= 2")
 
-    r, t, pred, err = solve_rigid_transform(camera, base)
-    rmse = float(np.sqrt(np.mean(err ** 2)) * 1000.0)
-    max_err = float(np.max(err) * 1000.0)
-    result_samples = []
-    for sample, p, e in zip(samples, pred, err):
-        result_samples.append({
-            'name': sample['name'],
-            'camera_point_m': [float(x) for x in sample['camera']],
-            'robot_point_m': [float(x) for x in sample['base']],
-            'pred_robot_point_m': [float(x) for x in p],
-            'error_mm': float(e * 1000.0),
-        })
-
-    out = {
-        'type': 'camera_to_robot_base_rigid_transform',
-        'source': str(args.samples),
-        'point_count': len(samples),
-        'rotation': [[float(x) for x in row] for row in r],
-        'translation_m': [float(x) for x in t],
-        'rmse_mm': rmse,
-        'max_error_mm': max_err,
-        'camera_point_condition': cond,
-        'usage': 'p_base = R @ p_camera + t; normal_base = R @ normal_camera',
-        'samples': result_samples,
-    }
-    out_path = Path(args.out)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps({
-        'ok': True,
-        'out': str(out_path),
-        'point_count': len(samples),
-        'rmse_mm': rmse,
-        'max_error_mm': max_err,
-        'rank': cond['rank'],
-        'warning': f'RMSE {rmse:.2f}mm 超过建议阈值 {args.min_rmse_mm:.2f}mm' if rmse > args.min_rmse_mm else '',
-    }, ensure_ascii=False, indent=2))
+    source_path = args.samples.resolve()
+    document, samples = load_samples(source_path)
+    report = calibration_report(source_path, document, samples, args)
+    write_json_atomic(args.out, report)
+    print(
+        json.dumps(
+            {
+                "ok": report["calibration_valid"],
+                "out": str(args.out),
+                "calibration_valid": report["calibration_valid"],
+                "formal_use_allowed": False,
+                "point_count": report["point_count"],
+                "rmse_mm": report["rmse_mm"],
+                "max_error_mm": report["max_error_mm"],
+                "blocking_reasons": report["quality"]["blocking_reasons"],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0 if report["calibration_valid"] else 2
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    raise SystemExit(main())
