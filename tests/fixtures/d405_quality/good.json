@@ -1,0 +1,9 @@
+{
+  "schema_version": "b2.vision-quality.input.v1",
+  "sample_id": "offline-good",
+  "frames": [
+    {"frame_id": "f1", "timestamp_utc": "2026-08-16T10:00:00Z", "depth_valid_ratio": 0.96, "plane_rmse_m": 0.003, "point_camera_m": [0.0000, 0.0000, 0.4000]},
+    {"frame_id": "f2", "timestamp_utc": "2026-08-16T10:00:01Z", "depth_valid_ratio": 0.95, "plane_rmse_m": 0.004, "point_camera_m": [0.0005, -0.0002, 0.4003]},
+    {"frame_id": "f3", "timestamp_utc": "2026-08-16T10:00:02Z", "depth_valid_ratio": 0.94, "plane_rmse_m": 0.005, "point_camera_m": [-0.0002, 0.0001, 0.3998]}
+  ]
+}

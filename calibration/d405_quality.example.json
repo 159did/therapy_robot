@@ -1,0 +1,20 @@
+{
+  "schema_version": "b2.vision-quality.input.v1",
+  "description": "Offline-only D405 quality input; this is not a calibration or execution artifact.",
+  "frames": [
+    {
+      "frame_id": "frame-001",
+      "timestamp_utc": "2026-08-16T10:00:00Z",
+      "depth_valid_ratio": 0.96,
+      "plane_rmse_m": 0.003,
+      "point_camera_m": [0.0, 0.0, 0.4]
+    },
+    {
+      "frame_id": "frame-002",
+      "timestamp_utc": "2026-08-16T10:00:01Z",
+      "depth_valid_ratio": 0.95,
+      "plane_rmse_m": 0.004,
+      "point_camera_m": [0.0005, -0.0002, 0.4003]
+    }
+  ]
+}

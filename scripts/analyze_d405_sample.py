@@ -280,6 +280,16 @@ def main():
     mask,c,near,far=depth_mask(z); mask=central_body_mask(largest_center_component(mask)); prof=estimate_back(middle_segment_profile(mask),depth.shape[0]); prof,score,luma=refine_profile_with_rgb(rgb,prof); obs=acupoints_from_profile(prof,depth,meta); tpl,scale=template_acupoints_from_profile(prof,depth,meta); fit=template_fit_contour(prof,scale)
     valid_template=[point for point in tpl if point.get('ok') and int(point.get('valid',0))>=a.min_depth_samples and float(point.get('residual_median_mm',float('inf')))<=a.max_point_residual_mm]
     rejected_template=[{'name':point.get('name'),'reason':('not_ok' if not point.get('ok') else 'depth_quality')} for point in tpl if point not in valid_template]
+    estimate_meta=meta.get('status',{}).get('estimate',{}) if isinstance(meta.get('status',{}),dict) else {}
+    plane_rmse_m=None
+    if isinstance(estimate_meta,dict) and estimate_meta.get('residual_mean_mm') is not None:
+        try:
+            candidate=float(estimate_meta['residual_mean_mm'])/1000.0
+            if np.isfinite(candidate) and candidate >= 0: plane_rmse_m=candidate
+        except (TypeError,ValueError):
+            plane_rmse_m=None
+    capture_timestamp=meta.get('captured_at_utc',meta.get('saved_at'))
+    frame_id=meta.get('frame_id',meta.get('status',{}).get('frame_number') if isinstance(meta.get('status',{}),dict) else None)
     quality_checks={
         'rgb_depth_shape_match':True,
         'valid_depth_ratio':valid_depth_ratio>=a.min_valid_depth_ratio,
@@ -293,7 +303,7 @@ def main():
     input_manifest=[{'path':str(path),'sha256':sha256_file(path),'size_bytes':path.stat().st_size} for path in input_paths]
     template_path=Path(STANDARD_TEMPLATE_PATH)
     if template_path.is_file(): input_manifest.append({'path':str(template_path),'sha256':sha256_file(template_path),'size_bytes':template_path.stat().st_size})
-    res={'type':'d405_back_analysis','schema_version':SCHEMA_VERSION,'tool':{'name':'analyze_d405_sample.py','version':TOOL_VERSION},'generated_at_utc':utc_now(),'sample':str(sample),'calibration_valid':False,'formal_use_allowed':False,'execution_allowed':False,'units':{'depth':'m','residual':'mm','image':'px'},'coordinate_frames':{'camera':'d405_camera'},'input_manifest':input_manifest,'depth_center_m':c,'depth_range_m':[near,far],'neck_y':prof['neck_y'],'back_top_y':prof['back_top'],'bottom_y':prof['bottom'],'shoulder_y':prof.get('shoulder_y'),'waist_narrow_y':prof.get('waist_narrow_y'),'rgb_boundary_confidence':prof.get('rgb_boundary_confidence',0.0),'spine_arc_length_px':float(s[-1]) if len(s) else 0,'template_width_scale_px':scale,'template_fit_contour':fit,'observed_acupoints':obs,'template_acupoints':tpl,'acupoints':tpl,'quality':{'analysis_valid':analysis_valid,'thresholds':{'min_valid_depth_ratio':a.min_valid_depth_ratio,'min_valid_template_points':a.min_valid_template_points,'min_depth_samples':a.min_depth_samples,'max_point_residual_mm':a.max_point_residual_mm},'checks':quality_checks,'valid_depth_ratio':valid_depth_ratio,'valid_template_points':len(valid_template),'rejected_template_points':rejected_template,'blocking_reasons':blocking_reasons},'outputs':{name:str(path) for name,path in output_paths.items()}}
+    res={'type':'d405_back_analysis','schema_version':SCHEMA_VERSION,'tool':{'name':'analyze_d405_sample.py','version':TOOL_VERSION},'generated_at_utc':utc_now(),'sample':str(sample),'frame_id':frame_id,'timestamp_utc':capture_timestamp,'calibration_valid':False,'formal_use_allowed':False,'execution_allowed':False,'units':{'depth':'m','residual':'mm','image':'px','plane_rmse':'m'},'coordinate_frames':{'camera':'d405_camera'},'input_manifest':input_manifest,'depth_center_m':c,'depth_range_m':[near,far],'neck_y':prof['neck_y'],'back_top_y':prof['back_top'],'bottom_y':prof['bottom'],'shoulder_y':prof.get('shoulder_y'),'waist_narrow_y':prof.get('waist_narrow_y'),'rgb_boundary_confidence':prof.get('rgb_boundary_confidence',0.0),'spine_arc_length_px':float(s[-1]) if len(s) else 0,'template_width_scale_px':scale,'template_fit_contour':fit,'observed_acupoints':obs,'template_acupoints':tpl,'acupoints':tpl,'quality':{'analysis_valid':analysis_valid,'thresholds':{'min_valid_depth_ratio':a.min_valid_depth_ratio,'min_valid_template_points':a.min_valid_template_points,'min_depth_samples':a.min_depth_samples,'max_point_residual_mm':a.max_point_residual_mm},'checks':quality_checks,'valid_depth_ratio':valid_depth_ratio,'valid_template_points':len(valid_template),'rejected_template_points':rejected_template,'plane_rmse_m':plane_rmse_m,'repeatability_rmse_m':None,'sample_count':1,'timestamp_utc':capture_timestamp,'blocking_reasons':blocking_reasons},'outputs':{name:str(path) for name,path in output_paths.items()}}
     write_json_atomic(output_paths['json'],res)
     print(json.dumps({'ok':analysis_valid,'json':str(output_paths['json']),'analysis_valid':analysis_valid,'valid_depth_ratio':valid_depth_ratio,'valid_template_points':len(valid_template),'blocking_reasons':blocking_reasons},ensure_ascii=False,indent=2))
     return 0 if analysis_valid else 2
