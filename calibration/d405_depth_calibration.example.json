@@ -1,38 +1,37 @@
 {
   "type": "d405_depth_z_calibration",
-  "model": "actual_z_m = measured_z_m * scale + offset_m",
-  "scale": 0.9999999999999997,
-  "offset_m": -1.0632044703312452e-16,
-  "rmse_mm": 2.3714374201337735e-13,
-  "max_abs_error_mm": 2.7755575615628914e-13,
-  "samples": [
-    {
-      "name": "z300",
-      "measured_z_m": 0.3,
-      "actual_z_m": 0.3,
-      "corrected_z_m": 0.29999999999999977,
-      "error_mm": -2.220446049250313e-13
+  "schema_version": 1,
+  "tool": {
+    "name": "calibrate_d405_depth.py",
+    "version": "b1-c.1"
+  },
+  "generated_at_utc": null,
+  "dataset_kind": "example",
+  "calibration_valid": false,
+  "formal_use_allowed": false,
+  "execution_allowed": false,
+  "source": {
+    "path": "calibration/d405_depth_samples.json",
+    "sha256": null
+  },
+  "coordinate_frame": "d405_camera",
+  "units": {
+    "distance": "m",
+    "residual": "mm"
+  },
+  "quality": {
+    "thresholds": {
+      "min_samples": 4,
+      "min_span_m": 0.1,
+      "min_scale": 0.9,
+      "max_scale": 1.1,
+      "max_abs_offset_m": 0.05,
+      "max_rmse_mm": 2.0,
+      "max_error_mm": 5.0
     },
-    {
-      "name": "z350",
-      "measured_z_m": 0.35,
-      "actual_z_m": 0.35,
-      "corrected_z_m": 0.34999999999999976,
-      "error_mm": -2.220446049250313e-13
-    },
-    {
-      "name": "z400",
-      "measured_z_m": 0.4,
-      "actual_z_m": 0.4,
-      "corrected_z_m": 0.3999999999999998,
-      "error_mm": -2.220446049250313e-13
-    },
-    {
-      "name": "z450",
-      "measured_z_m": 0.45,
-      "actual_z_m": 0.45,
-      "corrected_z_m": 0.44999999999999973,
-      "error_mm": -2.7755575615628914e-13
-    }
-  ]
+    "blocking_reasons": [
+      "dataset_is_measurement_candidate"
+    ]
+  },
+  "note": "Example values are for schema and parser tests only. They are not a measured depth calibration and cannot authorize coordinate export or motion."
 }
