@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static, software-only checks for the frozen B0-B2 interface contract."""
+"""Static, software-only checks for the frozen B0-B3 interface contract."""
 
 import argparse
 from pathlib import Path
@@ -86,7 +86,44 @@ def main() -> int:
         if forbidden in contract:
             raise AssertionError(f"B2 contract must not define a write endpoint: {forbidden}")
 
-    print("PASS: B0-B2 interface contract assertions are present")
+    require(contract, "# B0-B3 Interface Contract", "B3 contract title")
+    require(contract, "GET /api/readiness/attestation", "B3 readiness endpoint")
+    for schema in (
+        "schema_version=b3.v1",
+        "schema_version=b3.k0-prepare-sim.v1",
+        "schema_version=b3.camera-extrinsics-candidate.v1",
+        "schema_version=b3.audit-report.v1",
+    ):
+        require(contract, schema, f"B3 schema {schema}")
+    for field in (
+        "authorization_scope=software_precheck_only",
+        "entity_action_authorized=false",
+        "nano_deployment_authorized=false",
+        "attestation_id",
+        "issued_at_ms",
+        "expires_at_ms",
+        "source_fingerprint",
+        "software_commit",
+        "config_hashes",
+        "formal_use_allowed=false",
+        "promotion_locked=true",
+    ):
+        require(contract, field, f"B3 stable contract field {field}")
+    require(contract, "at most 300 seconds", "B3 attestation lifetime limit")
+    require(contract, "not a capability token", "B3 non-authorization boundary")
+    require(contract, "no production K0 preparation height", "B3 synthetic K0 boundary")
+    require(contract, "does not write `calibration/camera_to_base.json`", "B3 calibration write lock")
+    require(contract, "Passing G3 does not grant any B4 authorization", "G3 entity lock")
+    for forbidden in (
+        "POST /api/readiness/attestation",
+        "execution_allowed=true",
+        "entity_action_authorized=true",
+        "nano_deployment_authorized=true",
+    ):
+        if forbidden in contract:
+            raise AssertionError(f"B3 contract contains a forbidden capability: {forbidden}")
+
+    print("PASS: B0-B3 interface contract assertions are present")
     return 0
 
 

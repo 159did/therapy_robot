@@ -1,6 +1,8 @@
-# B0-B2 Interface Contract
+# B0-B3 Interface Contract
 
-This document freezes the software contracts at the B0 to B1 boundary. It describes what B1 work may consume without editing another owner's hotspot.
+This document freezes the software contracts from B0 through B3. It describes
+what each workstream may consume without editing another owner's hotspot or
+weakening an earlier safety boundary.
 
 ## Automatic Motion Lock
 
@@ -210,3 +212,123 @@ name, runtime directory, Web port, offline vision fixtures, and PTY pseudo
 hardware only. They never use Nano, an entity serial port, or an entity
 camera. The B1 automatic-trajectory HTTP 409 contract remains active and is
 retested at G2.
+
+## B3 Entity-Preparation Read-Only Contract
+
+B3 produces only software-readiness facts, a pure-simulation K0 preparation
+trace, offline camera-extrinsics candidate packages, and audit reports. It
+does not issue a motor-control authorization or a token consumable by a
+control path. It does not deploy Nano, connect an entity serial device or
+entity D405, enable or zero an axis, release a brake, or move a motor.
+
+B1 automatic-motion locks and all three B2 GET contracts remain unchanged.
+Every B3 result contains these stable values:
+
+```text
+motor_command_written=false
+execution_allowed=false
+entity_action_authorized=false
+nano_deployment_authorized=false
+```
+
+Consumers may ignore unknown fields. A missing stable field, unknown schema,
+type mismatch, clock rollback, corrupt input, or network failure is treated
+as blocked. No B3 output represents an entity-executable state.
+
+### Readiness Attestation
+
+B3 adds exactly one network endpoint:
+
+```text
+GET /api/readiness/attestation
+```
+
+Its response uses `schema_version=b3.v1` and contains at least:
+
+```text
+ok
+motor_command_written=false
+execution_allowed=false
+entity_action_authorized=false
+nano_deployment_authorized=false
+authorization_scope=software_precheck_only
+attestation_id
+issued_at_ms
+expires_at_ms
+source_state.command_seq
+source_state.target_command_seq
+source_state.endpoint_target_seq
+source_fingerprint
+software_commit
+config_hashes
+checks[]
+blocking_reasons[]
+```
+
+The lifetime is at most 300 seconds and is computed from an injected clock in
+the pure model. The attestation binds the software commit, the three source
+sequence values, emergency-stop, collision and recovery facts, and all named
+configuration hashes. Any bound-source change, expiration, clock rollback,
+unknown value, or corrupt value invalidates verification. A fixed clock and
+identical inputs produce the same `attestation_id`.
+
+This object is a snapshot of software preconditions, not a capability token.
+No existing or new POST endpoint, CLI command, shared-memory command, or motor
+path may accept it to unlock a B1 control path.
+
+### K0 Preparation-Height Simulation
+
+The pure-simulation result uses
+`schema_version=b3.k0-prepare-sim.v1`. It includes synthetic parameters, the
+state trace, operator-confirmation points, stop reasons, feedback, brake and
+watchdog facts, a final safe state, and stable reason codes.
+
+Heights, speeds, and stopping distances are normalized or explicitly marked
+`synthetic`. B3 defines no production K0 preparation height, native motor
+target, or entity offset. The model exposes intent and state only; it has no
+shared-memory, motor-driver, serial, or execution function.
+
+### Camera-Extrinsics Candidate Package
+
+The package uses `schema_version=b3.camera-extrinsics-candidate.v1`. It
+contains a candidate ID, fit-input hashes, independent-validation input
+hashes, the candidate matrix, units and coordinate frames, quality metrics,
+thresholds, tool versions, and blocking reasons. The fit and validation data
+sets must be provably disjoint.
+
+Even when every offline check passes, the package contains:
+
+```text
+formal_use_allowed=false
+promotion_locked=true
+execution_allowed=false
+```
+
+B3 does not write `calibration/camera_to_base.json` and does not relabel a
+fixture as formal data. Entity capture and formal promotion require a later,
+separately authorized V2/B4 window.
+
+### Audit Report
+
+The report uses `schema_version=b3.audit-report.v1`. It contains the source
+commit, build-artifact hashes, configuration and input hashes, readiness,
+K0-simulation and camera-candidate summaries, an event hash chain, test
+results, and entity-access declarations.
+
+The report generator reads only explicit inputs and writes only a
+user-selected output directory. Identical inputs produce an identical core
+report. A missing item, hash mismatch, event-order error, or broken chain
+returns nonzero and marks the report invalid. The frontend only displays the
+report and readiness facts; it does not create or modify an authorization or
+send a control POST.
+
+### G3 Invariants
+
+- Both B1 automatic APIs and both direct CLIs remain locked.
+- B2 and B3 GET requests do not change shared state, motor targets,
+  PID/progress files, or pseudo-bus action counts.
+- Missing formal extrinsics, production K0 height, entity offsets, or Nano
+  configuration remains a blocking fact.
+- x86, CTest, full PTY, Web/API, offline-vision, syntax, and ARM64 software
+  gates must all pass before a B4 entity window can be requested.
+- Passing G3 does not grant any B4 authorization.
