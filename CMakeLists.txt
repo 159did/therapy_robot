@@ -15,6 +15,7 @@ add_library(therapy_robot_common STATIC
   src/common/shared_memory.cpp
   src/common/shared_memory_defaults.cpp
   src/common/time_utils.cpp
+  src/common/workflow.cpp
 )
 
 target_link_libraries(therapy_robot_common PUBLIC pthread rt)
@@ -63,6 +64,9 @@ if(BUILD_TESTING)
   add_executable(test_kinematics tests/test_kinematics.cpp)
   target_link_libraries(test_kinematics PRIVATE therapy_robot_common)
   add_test(NAME kinematics_roundtrip COMMAND test_kinematics)
+  add_executable(test_workflow tests/test_workflow.cpp)
+  target_link_libraries(test_workflow PRIVATE therapy_robot_common)
+  add_test(NAME workflow_model COMMAND test_workflow)
   add_test(
     NAME shared_memory_isolation
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_shared_memory_isolation.py
@@ -79,5 +83,11 @@ if(BUILD_TESTING)
     NAME interface_contract
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_interface_contract.py
             --root ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
+    NAME workflow_api
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_workflow_api.py
+            --main-core $<TARGET_FILE:main_core>
+            --main-web-control $<TARGET_FILE:main_web_control>
   )
 endif()

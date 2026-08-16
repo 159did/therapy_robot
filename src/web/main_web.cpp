@@ -1,6 +1,7 @@
 #include "therapy_robot/collision.hpp"
 #include "therapy_robot/kinematics.hpp"
 #include "therapy_robot/shared_memory.hpp"
+#include "therapy_robot/workflow.hpp"
 #include "httplib.h"
 
 #include <algorithm>
@@ -118,6 +119,138 @@ std::string escape_json(const char* s) {
     else out += *p;
   }
   return out;
+}
+
+std::string escape_json_string(const std::string& value) {
+  return escape_json(value.c_str());
+}
+
+WorkflowFacts workflow_facts_snapshot(const SharedState& state,
+                                      const CollisionConfig& collision_config) {
+  WorkflowFacts facts;
+  facts.run_mode = state.run_mode;
+  facts.system_state = state.system_state;
+  facts.emergency_stop = state.emergency_stop != 0;
+  facts.collision_configured = collision_config.configured ||
+                               state.control.collision.configured != 0;
+  facts.collision_enabled = collision_config.enabled ||
+                            state.control.collision.enabled != 0;
+  facts.collision_required = collision_config.required;
+  facts.collision_alarm = state.control.collision.alarm != 0;
+  facts.manual_recovery = state.control.collision.manual_recovery != 0;
+  facts.axes_configured = true;
+  facts.axes_online = true;
+  facts.axes_fault_free = true;
+  facts.axes_enabled = false;
+  for (int index = 0; index < kAxisCount; ++index) {
+    const auto& axis = state.axis_map[index];
+    if (axis.group < 0 || axis.group >= kGroupCount || axis.axis < 0 ||
+        axis.axis >= kMaxMotorsPerGroup) {
+      facts.axes_configured = false;
+      facts.axes_online = false;
+      facts.axes_fault_free = false;
+      continue;
+    }
+    const auto& motor = state.groups[axis.group].motors[axis.axis];
+    facts.axes_configured = facts.axes_configured && motor.configured != 0;
+    facts.axes_online = facts.axes_online && motor.online != 0;
+    facts.axes_fault_free = facts.axes_fault_free && motor.fault == 0;
+    facts.axes_enabled = facts.axes_enabled || motor.enabled != 0;
+  }
+  const fs::path root = root_dir();
+  // Only an explicitly named production artifact counts.  Example/sample
+  // files are intentionally ignored so fixtures cannot unlock this gate.
+  facts.formal_camera_extrinsics_present =
+      fs::exists(root / "calibration/camera_to_base.json") ||
+      fs::exists(root / "calibration/camera_to_base_formal.json");
+  facts.entity_offsets_verified =
+      fs::exists(root / "calibration/entity-axis-offsets-verified.json") ||
+      fs::exists(root / "calibration/axis-offsets-native-verified.json");
+  facts.source_state.command_seq = state.command.command_seq;
+  facts.source_state.target_command_seq = state.command.target_command_seq;
+  facts.source_state.endpoint_target_seq = state.control.endpoint_target.target_seq;
+  return facts;
+}
+
+std::string workflow_blocking_reasons_json(
+    const std::vector<WorkflowBlockingReason>& reasons) {
+  std::ostringstream out;
+  out << '[';
+  for (std::size_t index = 0; index < reasons.size(); ++index) {
+    if (index) out << ',';
+    const auto& reason = reasons[index];
+    out << "{\"code\":\"" << escape_json_string(reason.code)
+        << "\",\"source\":\"" << escape_json_string(reason.source)
+        << "\",\"severity\":\"" << escape_json_string(reason.severity)
+        << "\",\"message\":\"" << escape_json_string(reason.message)
+        << "\"}";
+  }
+  out << ']';
+  return out.str();
+}
+
+std::string workflow_common_json(const WorkflowAssessment& assessment,
+                                 const WorkflowSourceState& source,
+                                 bool ok, const char* error_code = nullptr) {
+  std::ostringstream out;
+  out << "{\"schema_version\":\"b2.v1\",\"ok\":" << (ok ? "true" : "false")
+      << ",\"motor_command_written\":false,\"source_state\":{";
+  out << "\"command_seq\":" << source.command_seq
+      << ",\"target_command_seq\":" << source.target_command_seq
+      << ",\"endpoint_target_seq\":" << source.endpoint_target_seq << "},";
+  out << "\"blocking_reasons\":"
+      << workflow_blocking_reasons_json(assessment.blocking_reasons);
+  if (error_code) out << ",\"error_code\":\"" << escape_json(error_code) << "\"";
+  return out.str();
+}
+
+void append_workflow_summary(std::ostringstream& out,
+                             const WorkflowSummary& summary) {
+  out << "{\"status\":\"" << escape_json(summary.status.c_str())
+      << "\",\"passed\":" << summary.passed
+      << ",\"failed\":" << summary.failed
+      << ",\"unknown\":" << summary.unknown << '}';
+}
+
+std::string workflow_state_json(const WorkflowFacts& facts,
+                                const WorkflowAssessment& assessment) {
+  std::ostringstream out;
+  out << workflow_common_json(assessment, facts.source_state, true);
+  out << ",\"workflow_state\":\"" << escape_json(assessment.workflow_state.c_str())
+      << "\",\"allowed_actions\":[";
+  for (std::size_t index = 0; index < assessment.allowed_actions.size(); ++index) {
+    if (index) out << ',';
+    out << "\"" << escape_json(assessment.allowed_actions[index].c_str()) << "\"";
+  }
+  out << "],\"self_check_summary\":";
+  append_workflow_summary(out, assessment.self_check_summary);
+  out << ",\"plan_id\":null,\"plan_hash\":null,\"execution_locked\":true}";
+  return out.str();
+}
+
+std::string workflow_self_check_json(const WorkflowFacts& facts,
+                                     const WorkflowAssessment& assessment) {
+  std::ostringstream out;
+  out << workflow_common_json(assessment, facts.source_state, true)
+      << ",\"self_check_summary\":";
+  append_workflow_summary(out, assessment.self_check_summary);
+  out << ",\"checks\":[";
+  for (std::size_t index = 0; index < assessment.checks.size(); ++index) {
+    if (index) out << ',';
+    const auto& check = assessment.checks[index];
+    out << "{\"id\":\"" << escape_json(check.id.c_str())
+        << "\",\"status\":\"" << workflow_check_status_name(check.status)
+        << "\",\"blocking\":" << (check.blocking ? "true" : "false")
+        << ",\"reason_code\":";
+    if (check.reason_code.empty()) {
+      out << "null";
+    } else {
+      out << "\"" << escape_json(check.reason_code.c_str()) << "\"";
+    }
+    out << ",\"observed\":\"" << escape_json(check.observed.c_str()) << "\"}";
+  }
+  out << "]}";
+  return out.str();
 }
 
 JointState actual_joints(const SharedState& state) {
@@ -606,6 +739,18 @@ int main() {
       }
       const auto image_path = result_path.parent_path() / "rgb.png";
       serve_file(res, image_path.string());
+    });
+    server.Get("/api/workflow/state", [state, collision_config](const httplib::Request&, httplib::Response& res) {
+      const SharedState snapshot = *state;
+      const auto facts = workflow_facts_snapshot(snapshot, collision_config);
+      const auto assessment = evaluate_workflow(facts);
+      res.set_content(workflow_state_json(facts, assessment), "application/json");
+    });
+    server.Get("/api/workflow/self_check", [state, collision_config](const httplib::Request&, httplib::Response& res) {
+      const SharedState snapshot = *state;
+      const auto facts = workflow_facts_snapshot(snapshot, collision_config);
+      const auto assessment = evaluate_workflow(facts);
+      res.set_content(workflow_self_check_json(facts, assessment), "application/json");
     });
     server.Get("/api/state", [state](const httplib::Request&, httplib::Response& res) {
       state->web_heartbeat_ms = now_ms();
