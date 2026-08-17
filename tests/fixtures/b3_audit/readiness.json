@@ -1,0 +1,18 @@
+{
+  "schema_version": "b3.v1",
+  "ok": true,
+  "motor_command_written": false,
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "authorization_scope": "software_precheck_only",
+  "attestation_id": "attestation-offline-fixture",
+  "issued_at_ms": 1700000000000,
+  "expires_at_ms": 1700000000300,
+  "source_state": {"command_seq": 0, "target_command_seq": 0, "endpoint_target_seq": 0},
+  "source_fingerprint": "offline-fixture",
+  "software_commit": "ad971a0efecc8169babea88c50d4f637ed9a34bb",
+  "config_hashes": {"software": "sha256:2222222222222222222222222222222222222222222222222222222222222222"},
+  "checks": [{"name": "offline_fixture", "ok": true}],
+  "blocking_reasons": []
+}

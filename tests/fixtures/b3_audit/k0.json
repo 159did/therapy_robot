@@ -1,0 +1,11 @@
+{
+  "schema_version": "b3.k0-prepare-sim.v1",
+  "motor_command_written": false,
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "state_trace": [{"state": "safe"}],
+  "operator_confirmation_points": [],
+  "stop_reasons": ["simulation_complete"],
+  "final_safe_state": true
+}

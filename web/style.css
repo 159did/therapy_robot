@@ -370,6 +370,38 @@ a { color: #93c5fd; }
 .workflow-panel * { box-sizing: border-box; }
 .workflow-panel[data-workflow-status="locked"] { border-color: rgba(248, 113, 113, 0.64); }
 .workflow-panel[data-workflow-status="loaded"] { border-color: rgba(245, 158, 11, 0.7); }
+.b3-audit-panel {
+  margin: 0 0 20px;
+  padding: 20px;
+  border: 1px solid rgba(248, 113, 113, 0.64);
+  border-radius: 8px;
+  background: #111827;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+}
+.b3-audit-panel[data-audit-status="loaded"] { border-color: rgba(245, 158, 11, 0.7); }
+.b3-audit-panel[data-readiness-status="observed"] { border-left: 4px solid #f59e0b; }
+.b3-audit-panel[data-readiness-status="blocked"] { border-left: 4px solid #ef4444; }
+.b3-audit-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.b3-audit-heading h2 { margin: 0 0 8px; }
+.b3-audit-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.b3-audit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 18px; border-top: 1px solid #374151; border-bottom: 1px solid #374151; }
+.b3-audit-block { min-width: 0; padding: 16px 16px 16px 0; }
+.b3-audit-block + .b3-audit-block { padding-left: 16px; border-left: 1px solid #374151; }
+.b3-audit-block h3, .b3-report-row h3 { margin: 0 0 10px; color: #f9fafb; font-size: 16px; }
+.b3-audit-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 12px; margin: 0; }
+.b3-audit-facts dt { color: #9ca3af; font-size: 12px; }
+.b3-audit-facts dd { min-width: 0; margin: 0; color: #f3f4f6; overflow-wrap: anywhere; }
+.b3-audit-list { display: grid; gap: 7px; margin: 0; padding-left: 18px; color: #d1d5db; font-size: 13px; overflow-wrap: anywhere; }
+.b3-audit-muted { margin: 0 0 12px; color: #94a3b8; font-size: 13px; }
+.b3-report-row { display: grid; grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr); gap: 24px; padding-top: 18px; }
+.b3-file-label { display: inline-flex; flex-direction: column; gap: 7px; color: #e5e7eb; font-size: 13px; }
+.b3-file-label input { max-width: 100%; color: #cbd5e1; }
+.b3-report-facts { min-width: 0; }
+.b3-report-facts p { margin: 0 0 9px; overflow-wrap: anywhere; }
+.b3-report-facts code { display: block; color: #e5e7eb; font-size: 12px; overflow-wrap: anywhere; }
+.b3-audit-events { color: #9ca3af; font-size: 12px; line-height: 1.45; }
+.b3-audit-empty { margin: 0; color: #9ca3af; }
+.b3-audit-panel, .b3-audit-panel * { box-sizing: border-box; }
 .workflow-heading,
 .workflow-plan-heading {
   display: flex;
@@ -541,6 +573,11 @@ a { color: #93c5fd; }
   .workflow-heading,
   .workflow-plan-heading { flex-direction: column; }
   .workflow-overview-grid { grid-template-columns: 1fr; }
+  .b3-audit-heading { flex-direction: column; }
+  .b3-audit-grid, .b3-report-row { grid-template-columns: 1fr; }
+  .b3-audit-block,
+  .b3-audit-block + .b3-audit-block { padding: 16px 0; border-left: 0; }
+  .b3-audit-block + .b3-audit-block { border-top: 1px solid #374151; }
   .workflow-overview-block,
   .workflow-overview-block + .workflow-overview-block { padding: 16px 0; border-left: 0; }
   .workflow-overview-block + .workflow-overview-block { border-top: 1px solid #374151; }

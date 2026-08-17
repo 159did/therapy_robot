@@ -1,0 +1,21 @@
+{
+  "schema_version": "b3.audit-manifest.v1",
+  "source_commit": "ad971a0efecc8169babea88c50d4f637ed9a34bb",
+  "build_artifact_hashes": {"host_binary": "sha256:1111111111111111111111111111111111111111111111111111111111111111"},
+  "config_hashes": {"software": "sha256:2222222222222222222222222222222222222222222222222222222222222222"},
+  "input_hashes": {
+    "readiness": "sha256:d23f5ff3e80bc7fdce7fe6a6cbfaae7202e490920fb94d968231ff458b1009bb",
+    "k0": "sha256:89d4f85a90ffb6359aea8a034482878c7440306e3e97925ec8f1f75658b78328",
+    "camera": "sha256:62a07e2c9e0e3676441d70c06c64e7f31e5089e722f0777496e9268753cef0b6",
+    "test-results": "sha256:c22b609499398e571649fab9fd6634b6b13d7630d6f78c84e0e2b1bcdff06bb4",
+    "events": "sha256:770ce071db4b436de536e490f0f5f02f5441bb2bae79956cb772fe8b61f09dd2"
+  },
+  "entity_access_declaration": {
+    "nano_deployed": false,
+    "entity_serial_accessed": false,
+    "entity_d405_accessed": false,
+    "motors_enabled": false,
+    "motors_zeroed": false,
+    "motors_moved": false
+  }
+}

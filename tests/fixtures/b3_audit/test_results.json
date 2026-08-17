@@ -1,0 +1,8 @@
+{
+  "schema_version": "b3.audit-test-results.v1",
+  "motor_command_written": false,
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "results": [{"name": "offline_fixture", "ok": true}]
+}

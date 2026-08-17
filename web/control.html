@@ -103,6 +103,51 @@
       </section>
     </section>
 
+    <section id="b3AuditPanel" class="panel b3-audit-panel" data-audit-status="locked" data-readiness-status="unknown" aria-labelledby="b3AuditTitle">
+      <div class="panel-title b3-audit-heading">
+        <div>
+          <p class="eyebrow">B3 Read-only Audit</p>
+          <h2 id="b3AuditTitle">软件就绪证明与会话审计</h2>
+          <p>仅展示软件前置条件和用户选择的离线报告；此页面不签发许可、不改变状态，也不发送控制请求。</p>
+        </div>
+        <div class="b3-audit-actions">
+          <span id="readinessStatus" class="pill bad">就绪证明不可用 / 已锁定</span>
+          <button id="readinessRefresh" type="button" class="secondary">刷新就绪证明</button>
+        </div>
+      </div>
+      <div class="b3-audit-grid">
+        <section class="b3-audit-block" aria-labelledby="readinessFactsTitle">
+          <h3 id="readinessFactsTitle">证明摘要</h3>
+          <dl class="b3-audit-facts">
+            <dt>Attestation ID</dt><dd id="readinessAttestation">--</dd>
+            <dt>有效期</dt><dd id="readinessExpiry">--</dd>
+            <dt>源码提交</dt><dd id="readinessCommit">--</dd>
+          </dl>
+        </section>
+        <section class="b3-audit-block" aria-labelledby="readinessChecksTitle">
+          <h3 id="readinessChecksTitle">就绪检查</h3>
+          <ul id="readinessChecks" class="b3-audit-list"><li>自检不可用</li></ul>
+        </section>
+        <section class="b3-audit-block" aria-labelledby="readinessBlockingTitle">
+          <h3 id="readinessBlockingTitle">阻塞原因</h3>
+          <ul id="readinessBlocking" class="b3-audit-list"><li>阻塞原因不可用</li></ul>
+        </section>
+      </div>
+      <div class="b3-report-row">
+        <div>
+          <h3>离线审计报告</h3>
+          <p class="b3-audit-muted">选择本地 `b3.audit-report.v1` JSON；报告 hash 会在浏览器中重新计算。</p>
+          <label class="b3-file-label">读取报告 JSON<input id="auditReportFile" type="file" accept="application/json,.json" /></label>
+        </div>
+        <div class="b3-report-facts">
+          <p id="auditReportStatus" class="pill bad">未载入报告 / 已锁定</p>
+          <p id="auditReportSummary">--</p>
+          <code id="auditReportIdentity">--</code>
+          <p id="auditReportEvents" class="b3-audit-events">--</p>
+        </div>
+      </div>
+    </section>
+
     <section class="panel pose-reconcile-panel" id="poseReconcilePanel">
       <div class="panel-title">
         <h2>突发状态核对与同步</h2>

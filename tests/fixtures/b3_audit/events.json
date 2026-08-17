@@ -1,0 +1,25 @@
+{
+  "schema_version": "b3.audit-events.v1",
+  "events": [
+    {
+      "sequence": 1,
+      "event_type": "source_snapshot",
+      "occurred_at_ms": 1700000000001,
+      "source": "offline-fixture",
+      "evidence_kind": "offline_fixture",
+      "payload": {"commit": "ad971a0efecc8169babea88c50d4f637ed9a34bb"},
+      "previous_event_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "event_hash": "sha256:a62dd54622161e3cd0d54660b866e4eabaa14ae3e4b98196bc4691ebe04655b0"
+    },
+    {
+      "sequence": 2,
+      "event_type": "entity_access_declared",
+      "occurred_at_ms": 1700000000002,
+      "source": "offline-fixture",
+      "evidence_kind": "offline_fixture",
+      "payload": {"entity_accessed": false, "nano_deployed": false},
+      "previous_event_hash": "sha256:a62dd54622161e3cd0d54660b866e4eabaa14ae3e4b98196bc4691ebe04655b0",
+      "event_hash": "sha256:0d8cc3a154035ab22e8b4a90053996e4be4664fc5aeea8ee5f87eb701088eccc"
+    }
+  ]
+}

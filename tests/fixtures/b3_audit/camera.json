@@ -1,0 +1,12 @@
+{
+  "schema_version": "b3.camera-extrinsics-candidate.v1",
+  "candidate_id": "candidate-offline-fixture",
+  "motor_command_written": false,
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "formal_use_allowed": false,
+  "promotion_locked": true,
+  "fit_input_hashes": {"fit": "sha256:3333333333333333333333333333333333333333333333333333333333333333"},
+  "validation_input_hashes": {"validation": "sha256:4444444444444444444444444444444444444444444444444444444444444444"}
+}
