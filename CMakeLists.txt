@@ -13,6 +13,7 @@ add_library(therapy_robot_common STATIC
   src/common/collision.cpp
   src/common/kinematics.cpp
   src/common/motion_plan.cpp
+  src/common/readiness.cpp
   src/common/shared_memory.cpp
   src/common/shared_memory_defaults.cpp
   src/common/time_utils.cpp
@@ -75,6 +76,9 @@ if(BUILD_TESTING)
   add_executable(test_k0_prepare_sim tests/test_k0_prepare_sim.cpp)
   target_link_libraries(test_k0_prepare_sim PRIVATE therapy_robot_common)
   add_test(NAME k0_prepare_sim COMMAND test_k0_prepare_sim)
+  add_executable(test_readiness tests/test_readiness.cpp)
+  target_link_libraries(test_readiness PRIVATE therapy_robot_common)
+  add_test(NAME readiness_attestation COMMAND test_readiness)
   add_test(
     NAME shared_memory_isolation
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_shared_memory_isolation.py
@@ -101,6 +105,12 @@ if(BUILD_TESTING)
   add_test(
     NAME motion_plan_api
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_motion_plan_api.py
+            --main-core $<TARGET_FILE:main_core>
+            --main-web-control $<TARGET_FILE:main_web_control>
+  )
+  add_test(
+    NAME readiness_api
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_readiness_api.py
             --main-core $<TARGET_FILE:main_core>
             --main-web-control $<TARGET_FILE:main_web_control>
   )

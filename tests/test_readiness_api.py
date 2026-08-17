@@ -47,6 +47,14 @@ def stop(process: subprocess.Popen[str]) -> None:
         process.communicate(timeout=3.0)
 
 
+def repository_root(binary: Path) -> Path:
+    for parent in binary.parents:
+        if ((parent / "config/enclosure-collision.csv").is_file() and
+                (parent / "src/web/main_web.cpp").is_file()):
+            return parent
+    raise AssertionError(f"cannot locate repository root from {binary}")
+
+
 def state_signature(payload: dict) -> tuple:
     command = payload["command"]
     endpoint = payload["control"]["endpoint_target"]
@@ -64,7 +72,7 @@ def main() -> int:
     args = parser.parse_args()
     main_core = args.main_core.resolve()
     main_web = args.main_web_control.resolve()
-    repo = main_core.parents[1]
+    repo = repository_root(main_core)
     token = f"b3_readiness_{os.getpid()}_{uuid.uuid4().hex[:8]}"
     shm_name = f"/therapy_robot_{token}"
     runtime = Path("/tmp") / token
