@@ -1,0 +1,19 @@
+{
+  "schema_version": "b3.camera-samples.v1",
+  "dataset_kind": "measurement_candidate",
+  "batch_id": "fit-batch-20260816",
+  "captured_at_utc": "2026-08-16T10:00:00Z",
+  "coordinate_frames": {"source": "d405_camera", "target": "robot_base"},
+  "units": {"points": "m", "normal": "unitless"},
+  "samples": [
+    {"sample_id": "fit-01", "camera_point_m": [0.0, 0.0, 0.30], "robot_point_m": [0.12, 0.41, 1.13], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-02", "camera_point_m": [0.10, 0.0, 0.30], "robot_point_m": [0.2179868438, 0.4298669331, 1.13], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-03", "camera_point_m": [0.20, 0.0, 0.30], "robot_point_m": [0.3159736877, 0.4497338662, 1.13], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-04", "camera_point_m": [0.0, 0.10, 0.35], "robot_point_m": [0.1001330669, 0.5080066578, 1.18], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-05", "camera_point_m": [0.10, 0.10, 0.35], "robot_point_m": [0.1981199107, 0.5278735909, 1.18], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-06", "camera_point_m": [0.20, 0.10, 0.35], "robot_point_m": [0.2961067546, 0.5477405240, 1.18], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-07", "camera_point_m": [0.0, 0.20, 0.40], "robot_point_m": [0.0802661338, 0.6060133156, 1.23], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-08", "camera_point_m": [0.10, 0.20, 0.40], "robot_point_m": [0.1782529776, 0.6258802487, 1.23], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]},
+    {"sample_id": "fit-09", "camera_point_m": [0.20, 0.20, 0.40], "robot_point_m": [0.2762398215, 0.6457471818, 1.23], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [-0.1986693308, 0.9800665778, 0.0]}
+  ]
+}

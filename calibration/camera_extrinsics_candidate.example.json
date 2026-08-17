@@ -1,0 +1,11 @@
+{
+  "schema_version": "b3.camera-extrinsics-candidate.v1",
+  "candidate_id": null,
+  "candidate_valid": false,
+  "formal_use_allowed": false,
+  "promotion_locked": true,
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "note": "B3-C example only. Fit and validation data remain separate. This is not calibration/camera_to_base.json and cannot authorize promotion or motion."
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "b2.vision-quality.v1",
+  "tool_version": "b2-c.fixture",
+  "quality_valid": true,
+  "formal_use_allowed": false,
+  "execution_allowed": false,
+  "sample_count": 3,
+  "metrics": {"depth_valid_ratio": 0.95, "plane_rmse_m": 0.003, "repeatability_rmse_m": 0.0003, "timestamp_age_s": 3.0},
+  "thresholds": {"min_depth_valid_ratio": 0.85, "max_plane_rmse_m": 0.01, "max_repeatability_rmse_m": 0.005, "min_sample_count": 2, "max_timestamp_age_s": 86400.0},
+  "checks": [],
+  "blocking_reasons": []
+}

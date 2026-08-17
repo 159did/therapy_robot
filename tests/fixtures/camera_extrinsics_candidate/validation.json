@@ -1,0 +1,14 @@
+{
+  "schema_version": "b3.camera-samples.v1",
+  "dataset_kind": "measurement_candidate",
+  "batch_id": "validation-batch-20260816",
+  "captured_at_utc": "2026-08-16T10:00:03Z",
+  "coordinate_frames": {"source": "d405_camera", "target": "robot_base"},
+  "units": {"points": "m", "normal": "unitless"},
+  "samples": [
+    {"sample_id": "val-01", "camera_point_m": [0.03, 0.03, 0.31], "robot_point_m": [0.1434419174, 0.4453620773, 1.14], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [0.0, 0.0, 1.0]},
+    {"sample_id": "val-02", "camera_point_m": [0.17, 0.04, 0.36], "robot_point_m": [0.2786645450, 0.4829764493, 1.19], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [0.0, 0.0, 1.0]},
+    {"sample_id": "val-03", "camera_point_m": [0.04, 0.17, 0.39], "robot_point_m": [0.1254288769, 0.5845580915, 1.22], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [0.0, 0.0, 1.0]},
+    {"sample_id": "val-04", "camera_point_m": [0.18, 0.18, 0.41], "robot_point_m": [0.2606515045, 0.6221724636, 1.24], "camera_normal": [0.0, 0.0, 1.0], "robot_normal": [0.0, 0.0, 1.0]}
+  ]
+}
