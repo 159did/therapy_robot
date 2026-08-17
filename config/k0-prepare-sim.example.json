@@ -1,0 +1,26 @@
+{
+  "schema_version": "b3.k0-prepare-sim.config.v1",
+  "synthetic": true,
+  "formal_use_allowed": false,
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "units": {
+    "position": "normalized",
+    "velocity": "normalized_per_second",
+    "time": "milliseconds"
+  },
+  "parameters": {
+    "storage_position_normalized": 0.0,
+    "prepare_position_normalized": 1.0,
+    "position_tolerance_normalized": 0.01,
+    "simulated_velocity_normalized_per_second": 0.25,
+    "simulated_stop_distance_normalized": 0.05,
+    "confirmation_timeout_ms": 10000,
+    "brake_precheck_timeout_ms": 2000,
+    "feedback_timeout_ms": 500,
+    "watchdog_timeout_ms": 1000,
+    "hold_duration_ms": 500
+  },
+  "warning": "Synthetic state-machine fixture only. Values are not formal K0 height, motor velocity, stopping distance, entity offset, or an execution command."
+}
