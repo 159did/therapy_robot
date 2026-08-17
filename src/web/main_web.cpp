@@ -1,6 +1,7 @@
 #include "therapy_robot/collision.hpp"
 #include "therapy_robot/kinematics.hpp"
 #include "therapy_robot/motion_plan.hpp"
+#include "therapy_robot/readiness.hpp"
 #include "therapy_robot/shared_memory.hpp"
 #include "therapy_robot/workflow.hpp"
 #include "httplib.h"
@@ -172,6 +173,108 @@ WorkflowFacts workflow_facts_snapshot(const SharedState& state,
   facts.source_state.target_command_seq = state.command.target_command_seq;
   facts.source_state.endpoint_target_seq = state.control.endpoint_target.target_seq;
   return facts;
+}
+
+std::string hash_file_or_missing(const fs::path& path) {
+  if (!fs::exists(path)) return "missing";
+  return "sha256:" + sha256_hex(read_file(path));
+}
+
+fs::path first_existing_path(const fs::path& first, const fs::path& second) {
+  return fs::exists(first) ? first : second;
+}
+
+std::string trimmed_line(std::string value) {
+  while (!value.empty() && (value.back() == '\n' || value.back() == '\r' ||
+                            value.back() == ' ' || value.back() == '\t')) {
+    value.pop_back();
+  }
+  return value;
+}
+
+bool is_commit_hash(const std::string& value) {
+  return value.size() == 40 &&
+         std::all_of(value.begin(), value.end(), [](unsigned char c) {
+           return std::isxdigit(c) != 0;
+         });
+}
+
+std::string repository_commit(const fs::path& root) {
+  fs::path git_dir = root / ".git";
+  if (fs::is_regular_file(git_dir)) {
+    const std::string marker = "gitdir: ";
+    const auto pointer = trimmed_line(read_file(git_dir));
+    if (pointer.rfind(marker, 0) != 0) return "unknown";
+    git_dir = fs::path(pointer.substr(marker.size()));
+    if (git_dir.is_relative()) git_dir = root / git_dir;
+  }
+  const auto head = trimmed_line(read_file(git_dir / "HEAD"));
+  if (is_commit_hash(head)) return head;
+  const std::string ref_marker = "ref: ";
+  if (head.rfind(ref_marker, 0) != 0) return "unknown";
+  const auto ref = head.substr(ref_marker.size());
+  auto commit = trimmed_line(read_file(git_dir / ref));
+  if (!is_commit_hash(commit)) {
+    const auto common_pointer = trimmed_line(read_file(git_dir / "commondir"));
+    if (!common_pointer.empty()) {
+      fs::path common_dir = common_pointer;
+      if (common_dir.is_relative()) common_dir = git_dir / common_dir;
+      commit = trimmed_line(read_file(common_dir / ref));
+    }
+  }
+  return is_commit_hash(commit) ? commit : "unknown";
+}
+
+ReadinessInput readiness_input_snapshot(const SharedState& state,
+                                        const CollisionConfig& collision_config) {
+  const auto facts = workflow_facts_snapshot(state, collision_config);
+  ReadinessInput input;
+  input.source_state = {facts.source_state.command_seq,
+                        facts.source_state.target_command_seq,
+                        facts.source_state.endpoint_target_seq};
+  input.source_state_known = state.magic == 0x54524f42 && state.version == 2;
+  input.safety_state_known = input.source_state_known;
+  input.configuration_known = input.source_state_known;
+  input.emergency_stop = facts.emergency_stop;
+  input.collision_configured = facts.collision_configured;
+  input.collision_enabled = facts.collision_enabled;
+  input.collision_alarm = facts.collision_alarm;
+  input.manual_recovery = facts.manual_recovery;
+  input.axes_configured = facts.axes_configured;
+  input.axes_online = facts.axes_online;
+  input.axes_fault_free = facts.axes_fault_free;
+  input.axes_enabled = facts.axes_enabled;
+  input.formal_camera_extrinsics_present = facts.formal_camera_extrinsics_present;
+  input.entity_offsets_verified = facts.entity_offsets_verified;
+  const fs::path root = root_dir();
+  const auto camera_path = first_existing_path(
+      root / "calibration/camera_to_base.json",
+      root / "calibration/camera_to_base_formal.json");
+  const auto offsets_path = first_existing_path(
+      root / "calibration/entity-axis-offsets-verified.json",
+      root / "calibration/axis-offsets-native-verified.json");
+  const auto k0_path = first_existing_path(
+      root / "calibration/k0-parameters.json",
+      root / "calibration/k0_formal_parameters.json");
+  input.formal_k0_parameters_present =
+      fs::exists(k0_path);
+  input.nano_configuration_present = fs::exists(root / "config/jetson-hardware.env");
+  input.software_commit = std::getenv("THERAPY_ROBOT_SOFTWARE_COMMIT")
+                              ? std::getenv("THERAPY_ROBOT_SOFTWARE_COMMIT")
+                              : repository_commit(root);
+  input.config_hashes["collision_config"] =
+      hash_file_or_missing(collision_config.source_path.empty()
+                               ? root / "config/enclosure-collision.csv"
+                               : fs::path(collision_config.source_path));
+  input.config_hashes["formal_camera_extrinsics"] =
+      hash_file_or_missing(camera_path);
+  input.config_hashes["entity_offsets"] =
+      hash_file_or_missing(offsets_path);
+  input.config_hashes["formal_k0_parameters"] =
+      hash_file_or_missing(k0_path);
+  input.config_hashes["nano_configuration"] =
+      hash_file_or_missing(root / "config/jetson-hardware.env");
+  return input;
 }
 
 std::string workflow_blocking_reasons_json(
@@ -788,6 +891,14 @@ int main() {
       }
       const auto image_path = result_path.parent_path() / "rgb.png";
       serve_file(res, image_path.string());
+    });
+    server.Get("/api/readiness/attestation", [state, collision_config](const httplib::Request&, httplib::Response& res) {
+      // This route takes a value snapshot only.  It deliberately does not
+      // update the web heartbeat or any command/target field.
+      const SharedState snapshot = *state;
+      const auto input = readiness_input_snapshot(snapshot, collision_config);
+      const auto attestation = issue_readiness_attestation(input, now_ms());
+      res.set_content(readiness_attestation_json(attestation), "application/json");
     });
     server.Get("/api/workflow/state", [state, collision_config](const httplib::Request&, httplib::Response& res) {
       const SharedState snapshot = *state;
