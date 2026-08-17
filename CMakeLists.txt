@@ -17,6 +17,7 @@ add_library(therapy_robot_common STATIC
   src/common/shared_memory_defaults.cpp
   src/common/time_utils.cpp
   src/common/workflow.cpp
+  src/common/k0_prepare_sim.cpp
 )
 
 target_link_libraries(therapy_robot_common PUBLIC pthread rt)
@@ -71,6 +72,9 @@ if(BUILD_TESTING)
   add_executable(test_workflow tests/test_workflow.cpp)
   target_link_libraries(test_workflow PRIVATE therapy_robot_common)
   add_test(NAME workflow_model COMMAND test_workflow)
+  add_executable(test_k0_prepare_sim tests/test_k0_prepare_sim.cpp)
+  target_link_libraries(test_k0_prepare_sim PRIVATE therapy_robot_common)
+  add_test(NAME k0_prepare_sim COMMAND test_k0_prepare_sim)
   add_test(
     NAME shared_memory_isolation
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_shared_memory_isolation.py
@@ -104,6 +108,11 @@ if(BUILD_TESTING)
     NAME d405_quality_gate
     COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_SOURCE_DIR}/tests/test_d405_quality_gate.py
+  )
+  add_test(
+    NAME camera_extrinsics_candidate
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_camera_extrinsics_candidate.py
   )
   add_test(
     NAME workflow_frontend
