@@ -1,0 +1,14 @@
+{
+  "schema_version": "b4.k0-observation.v1",
+  "synthetic": true,
+  "source": {"kind": "synthetic_fixture", "session_id": "fixture-timeout", "device_id": "none", "generated_at_utc": "2026-08-18T02:30:00Z"},
+  "safety": {"formal_use_allowed": false, "execution_allowed": false, "entity_action_authorized": false, "nano_deployment_authorized": false, "h1_window_authorized": false},
+  "limits": {"height_unit": "normalized", "velocity_unit": "normalized_per_second", "time_unit": "milliseconds", "lower": 0.1, "upper": 0.9, "max_feedback_age_ms": 50, "max_sample_gap_ms": 100},
+  "samples": [
+    {"sequence": 1, "monotonic_ms": 1000, "height": 0.4, "velocity": 0.02, "brake_state": "released", "feedback_quality": "valid", "feedback_age_ms": 5, "stop_state": "observing"},
+    {"sequence": 2, "monotonic_ms": 1050, "height": 0.401, "velocity": 0.02, "brake_state": "released", "feedback_quality": "valid", "feedback_age_ms": 5, "stop_state": "stop_requested"},
+    {"sequence": 3, "monotonic_ms": 1250, "height": 0.4017, "velocity": 0.01, "brake_state": "released", "feedback_quality": "valid", "feedback_age_ms": 5, "stop_state": "stopping"},
+    {"sequence": 4, "monotonic_ms": 1300, "height": 0.402, "velocity": 0.0, "brake_state": "engaged", "feedback_quality": "valid", "feedback_age_ms": 5, "stop_state": "stopped"}
+  ],
+  "integrity": {"algorithm": "sha256", "payload_sha256": "92c87af7899b1ee0c34ee2aa613261777fb0f013978d63fd959c33bf7bdd8de0"}
+}
