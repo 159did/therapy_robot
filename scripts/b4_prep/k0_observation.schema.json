@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://therapy-robot.invalid/schemas/b4/k0-observation-v1.json",
+  "title": "B4 synthetic K0 observation replay input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "synthetic", "source", "safety", "limits", "samples", "integrity"],
+  "properties": {
+    "schema_version": {"const": "b4.k0-observation.v1"},
+    "synthetic": {"const": true},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "session_id", "device_id", "generated_at_utc"],
+      "properties": {
+        "kind": {"const": "synthetic_fixture"},
+        "session_id": {"type": "string", "minLength": 1},
+        "device_id": {"const": "none"},
+        "generated_at_utc": {"type": "string", "pattern": "Z$"}
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formal_use_allowed", "execution_allowed", "entity_action_authorized", "nano_deployment_authorized", "h1_window_authorized"],
+      "properties": {
+        "formal_use_allowed": {"const": false},
+        "execution_allowed": {"const": false},
+        "entity_action_authorized": {"const": false},
+        "nano_deployment_authorized": {"const": false},
+        "h1_window_authorized": {"const": false}
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["height_unit", "velocity_unit", "time_unit", "lower", "upper", "max_feedback_age_ms", "max_sample_gap_ms"],
+      "properties": {
+        "height_unit": {"const": "normalized"},
+        "velocity_unit": {"const": "normalized_per_second"},
+        "time_unit": {"const": "milliseconds"},
+        "lower": {"type": "number", "minimum": 0, "maximum": 1},
+        "upper": {"type": "number", "minimum": 0, "maximum": 1},
+        "max_feedback_age_ms": {"type": "integer", "minimum": 1},
+        "max_sample_gap_ms": {"type": "integer", "minimum": 1}
+      }
+    },
+    "samples": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "monotonic_ms", "height", "velocity", "brake_state", "feedback_quality", "feedback_age_ms", "stop_state"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1},
+          "monotonic_ms": {"type": "integer", "minimum": 0},
+          "height": {"type": "number"},
+          "velocity": {"type": "number"},
+          "brake_state": {"enum": ["engaged", "released", "unknown"]},
+          "feedback_quality": {"enum": ["valid", "degraded", "lost"]},
+          "feedback_age_ms": {"type": "integer", "minimum": 0},
+          "stop_state": {"enum": ["observing", "stop_requested", "stopping", "stopped"]}
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "payload_sha256"],
+      "properties": {
+        "algorithm": {"const": "sha256"},
+        "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}
