@@ -1,0 +1,25 @@
+{
+  "schema_version": "b4.m1-m2-sim-input.v1",
+  "synthetic": true,
+  "source": {"kind": "synthetic_fixture", "fixture_id": "m1-m2-nominal"},
+  "units": {"position": "normalized", "speed": "normalized_per_second", "time": "milliseconds"},
+  "scenario": "nominal",
+  "config": {"min_speed_norm_s": 0.1, "min_displacement_norm": 0.05, "stop_decel_norm_s2": 0.5, "watchdog_timeout_ms": 200, "sample_period_ms": 20},
+  "segments": [
+    {"side": "left", "actions": [
+      {"kind": "high_lift", "distance_norm": 0.10, "speed_norm_s": 0.10},
+      {"kind": "lateral_expand", "distance_norm": 0.20, "speed_norm_s": 0.10},
+      {"kind": "retract", "distance_norm": 0.20, "speed_norm_s": 0.10},
+      {"kind": "high_return", "distance_norm": 0.10, "speed_norm_s": 0.10},
+      {"kind": "stow", "distance_norm": 0.05, "speed_norm_s": 0.10}
+    ]},
+    {"side": "right", "actions": [
+      {"kind": "high_lift", "distance_norm": 0.10, "speed_norm_s": 0.10},
+      {"kind": "lateral_expand", "distance_norm": 0.20, "speed_norm_s": 0.10},
+      {"kind": "retract", "distance_norm": 0.20, "speed_norm_s": 0.10},
+      {"kind": "high_return", "distance_norm": 0.10, "speed_norm_s": 0.10},
+      {"kind": "stow", "distance_norm": 0.05, "speed_norm_s": 0.10}
+    ]}
+  ],
+  "payload_sha256": "d9599ced261472e73a9a418668f389ccdd16879e6bd2856f96e4032abb817cb1"
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "b4.m1-m2-sim-input.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "synthetic", "source", "units", "scenario", "config", "segments", "payload_sha256"],
+  "properties": {
+    "schema_version": {"const": "b4.m1-m2-sim-input.v1"},
+    "synthetic": {"const": true},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "fixture_id"],
+      "properties": {"kind": {"const": "synthetic_fixture"}, "fixture_id": {"type": "string", "minLength": 1}}
+    },
+    "units": {
+      "const": {"position": "normalized", "speed": "normalized_per_second", "time": "milliseconds"}
+    },
+    "scenario": {"type": "string", "minLength": 1},
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_speed_norm_s", "min_displacement_norm", "stop_decel_norm_s2", "watchdog_timeout_ms", "sample_period_ms"],
+      "properties": {
+        "min_speed_norm_s": {"type": "number", "exclusiveMinimum": 0},
+        "min_displacement_norm": {"type": "number", "exclusiveMinimum": 0},
+        "stop_decel_norm_s2": {"type": "number", "exclusiveMinimum": 0},
+        "watchdog_timeout_ms": {"type": "integer", "minimum": 1},
+        "sample_period_ms": {"type": "integer", "minimum": 1}
+      }
+    },
+    "segments": {"type": "array", "minItems": 2, "maxItems": 2},
+    "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
