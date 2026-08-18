@@ -115,6 +115,15 @@ if(BUILD_TESTING)
             --main-web-control $<TARGET_FILE:main_web_control>
   )
   add_test(
+    NAME b3_audit_report
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_b3_audit_report.py
+  )
+  add_test(
+    NAME readiness_frontend
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_readiness_frontend.py
+            --root ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
     NAME d405_quality_gate
     COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_SOURCE_DIR}/tests/test_d405_quality_gate.py
