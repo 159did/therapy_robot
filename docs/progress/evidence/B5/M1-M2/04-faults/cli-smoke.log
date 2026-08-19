@@ -1,0 +1,8 @@
+left/nominal: rc=0 status=PASS states=['SAFE_HIGH', 'LEFT_CAMERA_POSITION', 'SAFE_HIGH']
+left/emergency_stop: rc=0 status=FAIL_CLOSED states=['SAFE_HIGH']
+left/watchdog_timeout: rc=0 status=FAIL_CLOSED states=['SAFE_HIGH']
+left/feedback_loss: rc=0 status=FAIL_CLOSED states=['SAFE_HIGH']
+right/nominal: rc=0 status=PASS states=['SAFE_HIGH', 'RIGHT_CAMERA_POSITION', 'SAFE_HIGH']
+right/emergency_stop: rc=0 status=FAIL_CLOSED states=['SAFE_HIGH']
+right/watchdog_timeout: rc=0 status=FAIL_CLOSED states=['SAFE_HIGH']
+right/feedback_loss: rc=0 status=FAIL_CLOSED states=['SAFE_HIGH']

@@ -1,0 +1,11 @@
+test_emergency_watchdog_and_feedback_loss_stop_safely (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_emergency_watchdog_and_feedback_loss_stop_safely) ... ok
+test_hash_nan_unknown_and_unit_tampering_fail_closed (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_hash_nan_unknown_and_unit_tampering_fail_closed) ... ok
+test_nominal_left_right_route_finishes_stowed_and_locked (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_nominal_left_right_route_finishes_stowed_and_locked) ... ok
+test_simulation_id_is_deterministic_and_input_sensitive (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_simulation_id_is_deterministic_and_input_sensitive) ... ok
+test_source_has_no_runtime_or_hardware_imports (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_source_has_no_runtime_or_hardware_imports) ... ok
+test_threshold_route_and_stop_distance_fail_closed (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_threshold_route_and_stop_distance_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 12.882s
+
+OK
