@@ -19,3 +19,11 @@ jobs:
         run: git diff --check HEAD^ HEAD
       - name: Publication safety scan
         run: python3 scripts/repository_safety_scan.py --root .
+      - name: CMake and CTest
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=ON
+          cmake --build build --target \
+            main_core main_control main_motor main_sim main_web_control main_web_sim \
+            test_collision test_kinematics test_motion_plan test_workflow \
+            test_k0_prepare_sim test_readiness --parallel 2
+          ctest --test-dir build --output-on-failure
