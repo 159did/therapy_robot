@@ -1,0 +1,22 @@
+{
+  "schema_version": "b5.demo-vision.v1",
+  "synthetic": true,
+  "quality_valid": true,
+  "confidence": 0.96,
+  "acupoints": [
+    {
+      "name": "BL23_demo",
+      "x_norm": 0.12,
+      "y_norm": -0.08,
+      "z_norm": 0.31
+    }
+  ],
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "entity_serial_accessed": false,
+  "entity_d405_accessed": false,
+  "motor_enabled": false,
+  "motor_zeroed": false,
+  "motor_moved": false
+}

@@ -1,0 +1,65 @@
+{
+  "blocking_reasons": [],
+  "current_stage": "COMPLETE",
+  "demo_id": "b5-demo-aef645156c6f49ea",
+  "entity_action_authorized": false,
+  "entity_d405_accessed": false,
+  "entity_serial_accessed": false,
+  "execution_allowed": false,
+  "image": {
+    "bytes": 62,
+    "passed": true,
+    "sha256": "5d6c9ab18694a93e9bbe31cbc3755aa1ab6bc854bd39ad38e4ddbff05b2cda49"
+  },
+  "input_hash": "c1f2b79284135f0a90038aa7dc200fa25bd67e7bbdbd3f01e21becaa9f3268dd",
+  "motor_enabled": false,
+  "motor_moved": false,
+  "motor_zeroed": false,
+  "nano_deployment_authorized": false,
+  "schema_version": "b5.demo-flow.v1",
+  "side": "left",
+  "simulation": {
+    "approach_target": {
+      "x_norm": 0.12,
+      "y_norm": -0.08,
+      "z_norm": 0.36
+    },
+    "end_effector_target": {
+      "x_norm": 0.12,
+      "y_norm": -0.08,
+      "z_norm": 0.31
+    },
+    "non_contact_offset_norm": 0.05,
+    "passed": true,
+    "return_high_target": {
+      "x_norm": 0.0,
+      "y_norm": 0.0,
+      "z_norm": 0.8
+    },
+    "side": "left"
+  },
+  "states": [
+    "IDLE",
+    "SAFE_HIGH",
+    "CAMERA_READY",
+    "ACUPOINT_FOUND",
+    "APPROACH_SIMULATED",
+    "HOLD",
+    "RETRACT",
+    "RETURN_HIGH",
+    "COMPLETE"
+  ],
+  "valid": true,
+  "vision": {
+    "acupoints": [
+      {
+        "name": "BL23_demo",
+        "x": 0.12,
+        "y": -0.08,
+        "z": 0.31
+      }
+    ],
+    "confidence": 0.96,
+    "passed": true
+  }
+}
