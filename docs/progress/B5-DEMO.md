@@ -1,7 +1,7 @@
 # B5-DEMO 进度
 
-任务基线：`d8ad99a8270121eecad61f576710ee31d2b34a25`  
-分支：`batch/b5-demo`  
+任务基线：`d8ad99a8270121eecad61f576710ee31d2b34a25`
+分支：`batch/b5-demo`
 worktree：`/home/zzq/PTR/worktrees/b5-demo`
 
 当前状态：待集成（纯软件离线演示）
