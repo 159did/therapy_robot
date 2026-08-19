@@ -1,0 +1,6 @@
+baseline=d8ad99a8270121eecad61f576710ee31d2b34a25
+branch=batch/b5-m1-m2
+worktree=/home/zzq/PTR/worktrees/b5-m1-m2
+reuse=scripts/b4_prep/m1_m2_motion_sim.py
+states=SAFE_HIGH,LEFT_CAMERA_POSITION,RIGHT_CAMERA_POSITION
+hardware_access=false

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "b5.m1-m2-sim-input.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "synthetic", "source", "route_side", "scenario", "b4_input", "payload_sha256"],
+  "properties": {
+    "schema_version": {"const": "b5.m1-m2-sim-input.v1"},
+    "synthetic": {"const": true},
+    "source": {"type": "object", "additionalProperties": false, "required": ["kind", "fixture_id"], "properties": {"kind": {"const": "synthetic_fixture"}, "fixture_id": {"type": "string", "minLength": 1}}},
+    "route_side": {"enum": ["left", "right"]},
+    "scenario": {"enum": ["nominal", "emergency_stop", "watchdog_timeout", "feedback_loss"]},
+    "b4_input": {"type": "object"},
+    "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
