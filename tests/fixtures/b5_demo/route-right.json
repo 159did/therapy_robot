@@ -1,0 +1,21 @@
+{
+  "schema_version": "b5.demo-route.v1",
+  "synthetic": true,
+  "valid": true,
+  "side": "right",
+  "non_contact_offset_norm": 0.05,
+  "waypoints": {
+    "safe_high": {"x_norm": 0.0, "y_norm": 0.0, "z_norm": 0.8},
+    "approach_offset": {"x_norm": 0.12, "y_norm": -0.08, "z_norm": 0.36},
+    "retract_offset": {"x_norm": 0.12, "y_norm": -0.08, "z_norm": 0.5},
+    "return_high": {"x_norm": 0.0, "y_norm": 0.0, "z_norm": 0.8}
+  },
+  "execution_allowed": false,
+  "entity_action_authorized": false,
+  "nano_deployment_authorized": false,
+  "entity_serial_accessed": false,
+  "entity_d405_accessed": false,
+  "motor_enabled": false,
+  "motor_zeroed": false,
+  "motor_moved": false
+}
