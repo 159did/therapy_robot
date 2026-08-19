@@ -1,0 +1,49 @@
+{
+  "schema_version": "b5.vision-paper-results.v1",
+  "image_sha256": "c2f8ab41092c1a6f00867cd7970991c24b38692e94bf627c19b624596776b933",
+  "normal_result": {
+    "path": "docs/tasks/B5-VISION-PAPER-RESULTS/normal_result.json",
+    "pipeline_id": "vision-9e2633f99c52a19fc0401a0e",
+    "pipeline_valid": true,
+    "acupoint_count": 7
+  },
+  "blocked_result": {
+    "path": "docs/tasks/B5-VISION-PAPER-RESULTS/low_confidence_result.json",
+    "pipeline_id": "vision-4e3638070b809eb64698bb7e",
+    "pipeline_valid": false,
+    "blocking_reasons": [
+      "low_confidence:大椎",
+      "low_confidence:肺俞-L",
+      "low_confidence:肺俞-R",
+      "low_confidence:心俞-L",
+      "low_confidence:心俞-R",
+      "low_confidence:肾俞-L",
+      "low_confidence:肾俞-R",
+      "target_region_confidence_below_minimum"
+    ]
+  },
+  "locks": {
+    "formal_use_allowed": false,
+    "promotion_locked": true,
+    "execution_allowed": false
+  },
+  "hardware_access": {
+    "camera_device_opened": false,
+    "d405_accessed": false,
+    "motor_command_generated": false,
+    "nano_accessed": false,
+    "serial_accessed": false
+  },
+  "outputs": [
+    "01_input_overview.png",
+    "01_input_rgb.png",
+    "02_target_region.png",
+    "03_acupoints_annotated.png",
+    "04_normal_vs_blocked.png",
+    "acupoint_results.csv",
+    "acupoint_results.md",
+    "low_confidence_result.json",
+    "normal_result.json",
+    "paper_results_summary.json"
+  ]
+}
