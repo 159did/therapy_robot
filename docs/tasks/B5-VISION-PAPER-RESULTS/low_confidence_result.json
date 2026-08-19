@@ -1,0 +1,227 @@
+{
+  "acupoint_count": 7,
+  "acupoints": [
+    {
+      "coordinate_confidence": 0.6544796007503485,
+      "name": "大椎",
+      "pixel": [
+        320,
+        38
+      ],
+      "point_camera_m": [
+        -0.007006098508884479,
+        -0.2405697759876198,
+        0.4635
+      ],
+      "point_robot_candidate_m": [
+        0.1609163181992805,
+        0.1728330895391088,
+        1.2935009362530452
+      ],
+      "simulation_endpoint_target": null,
+      "valid": false,
+      "valid_depth_samples": 121
+    },
+    {
+      "coordinate_confidence": 0.9013020293848181,
+      "name": "肺俞-L",
+      "pixel": [
+        271,
+        120
+      ],
+      "point_camera_m": [
+        -0.05433160696360722,
+        -0.1207335962036833,
+        0.389
+      ],
+      "point_robot_candidate_m": [
+        0.09072339341493893,
+        0.28087673234156785,
+        1.2190013503756703
+      ],
+      "simulation_endpoint_target": null,
+      "valid": false,
+      "valid_depth_samples": 121
+    },
+    {
+      "coordinate_confidence": 0.8968067667595815,
+      "name": "肺俞-R",
+      "pixel": [
+        368,
+        120
+      ],
+      "point_camera_m": [
+        0.0431542135222814,
+        -0.1252960225897865,
+        0.4037
+      ],
+      "point_robot_candidate_m": [
+        0.18717220231524825,
+        0.29577482852081916,
+        1.2337004973672787
+      ],
+      "simulation_endpoint_target": null,
+      "valid": false,
+      "valid_depth_samples": 121
+    },
+    {
+      "coordinate_confidence": 0.9013020293848155,
+      "name": "心俞-L",
+      "pixel": [
+        271,
+        201
+      ],
+      "point_camera_m": [
+        -0.05396846511757797,
+        -0.040283849532713474,
+        0.3864
+      ],
+      "point_robot_candidate_m": [
+        0.07509465088007189,
+        0.3597946390658636,
+        1.2164013472107205
+      ],
+      "simulation_endpoint_target": null,
+      "valid": false,
+      "valid_depth_samples": 121
+    },
+    {
+      "coordinate_confidence": 0.8968067667595815,
+      "name": "心俞-R",
+      "pixel": [
+        368,
+        201
+      ],
+      "point_camera_m": [
+        0.04247007439287194,
+        -0.04142022106456279,
+        0.39730000000000004
+      ],
+      "point_robot_candidate_m": [
+        0.16983630119660706,
+        0.3778423905477576,
+        1.2273005033667808
+      ],
+      "simulation_endpoint_target": null,
+      "valid": false,
+      "valid_depth_samples": 121
+    },
+    {
+      "coordinate_confidence": 0.8033901144281459,
+      "name": "肾俞-L",
+      "pixel": [
+        263,
+        345
+      ],
+      "point_camera_m": [
+        -0.06413013908907132,
+        0.10507860645581334,
+        0.40080000000000005
+      ],
+      "point_robot_candidate_m": [
+        0.036253523663957135,
+        0.5002398864190575,
+        1.2308014361479849
+      ],
+      "simulation_endpoint_target": null,
+      "valid": false,
+      "valid_depth_samples": 121
+    },
+    {
+      "coordinate_confidence": 0.9287507626410911,
+      "name": "肾俞-R",
+      "pixel": [
+        376,
+        345
+      ],
+      "point_camera_m": [
+        0.05046026483552116,
+        0.10397748333427037,
+        0.3966
+      ],
+      "point_robot_candidate_m": [
+        0.14877799771260372,
+        0.521928765143977,
+        1.2266004334746619
+      ],
+      "simulation_endpoint_target": null,
+      "valid": false,
+      "valid_depth_samples": 121
+    }
+  ],
+  "blocking_reasons": [
+    "low_confidence:大椎",
+    "low_confidence:肺俞-L",
+    "low_confidence:肺俞-R",
+    "low_confidence:心俞-L",
+    "low_confidence:心俞-R",
+    "low_confidence:肾俞-L",
+    "low_confidence:肾俞-R",
+    "target_region_confidence_below_minimum"
+  ],
+  "candidate_extrinsics": {
+    "candidate_id": "camcand-7827ed89d1c259219537a4f6",
+    "formal_use_allowed": false,
+    "path": "/tmp/b5-vision-run/candidate.json",
+    "promotion_locked": true,
+    "sha256": "9d1995e496f1e4a392eff487601b7f62693337c9d9f1fdb52acf53c8b038eebe"
+  },
+  "coordinate_frames": {
+    "camera": "d405_camera_offline",
+    "image": "rgb_pixel",
+    "robot": "robot_base_candidate"
+  },
+  "entity_action_authorized": false,
+  "execution_allowed": false,
+  "formal_blocking_reasons": [
+    "formal_extrinsics_missing"
+  ],
+  "formal_extrinsics": {
+    "exists": false,
+    "path": "/home/zzq/PTR/worktrees/b5-vision/calibration/camera_to_base.json",
+    "used": false
+  },
+  "formal_transform_valid": false,
+  "formal_use_allowed": false,
+  "generated_at_utc": "2026-08-19T08:07:23Z",
+  "hardware_access": {
+    "camera_device_opened": false,
+    "d405_accessed": false,
+    "motor_command_generated": false,
+    "nano_accessed": false,
+    "serial_accessed": false
+  },
+  "input": {
+    "candidate_extrinsics_sha256": "9d1995e496f1e4a392eff487601b7f62693337c9d9f1fdb52acf53c8b038eebe",
+    "depth_path": "/home/zzq/PTR/worktrees/b5-vision/data/d405_samples/back_20260617_212933_470/depth_z16.npy",
+    "depth_sha256": "44f593990b5187ba6a3936f8da9819b7fbaa3adac8537b1d22aed1fbb6926ca8",
+    "image_path": "/home/zzq/PTR/worktrees/b5-vision/data/d405_samples/back_20260617_212933_470/rgb.png",
+    "image_sha256": "c2f8ab41092c1a6f00867cd7970991c24b38692e94bf627c19b624596776b933",
+    "meta_path": "/home/zzq/PTR/worktrees/b5-vision/data/d405_samples/back_20260617_212933_470/meta.json",
+    "meta_sha256": "231ad583d795fb9a3767435e6ce83849257233193a681d5897b1854ff6baea18"
+  },
+  "nano_deployment_authorized": false,
+  "offline_simulation_valid": false,
+  "pipeline_id": "vision-4e3638070b809eb64698bb7e",
+  "pipeline_valid": false,
+  "promotion_locked": true,
+  "safety_note": "Targets are offline simulation data, not motor commands.",
+  "schema_version": "b5.vision-offline.v1",
+  "target_region": {
+    "area_ratio": 0.628125,
+    "bbox_px": [
+      119,
+      0,
+      520,
+      479
+    ],
+    "center_depth_m": 0.3987,
+    "confidence": 0.9618325943537938,
+    "depth_coverage": 0.7391531923714759,
+    "image_contrast_score": 0.6183259435379374
+  },
+  "thresholds": {
+    "minimum_coordinate_confidence": 0.99
+  },
+  "tool_version": "b5-vision.1"
+}
