@@ -53,3 +53,16 @@ Thumbs.db
 /config/*.local.env
 /config/*.override.env
 /config/*.local.json
+
+# Never add new machine-specific hardware, calibration, or captured-person data.
+# Existing tracked historical files require explicit review before any public release.
+/config/jetson-hardware.env
+/calibration/axis-offsets-native_*.txt
+/calibration/five_axis_absolute_zero_*.json
+/calibration/five_axis_software_zero_*.json
+/calibration/k0-*.json
+/calibration/k0_*.json
+/calibration/K0*.md
+/calibration/camera_to_base_samples.json
+/data/d405_samples/
+/back/back.png
