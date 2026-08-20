@@ -1,0 +1,7 @@
+B6-EE-SIM offline dependency scan
+source: scripts/b6_ee_sim.py
+test: tests/test_b6_ee_sim.py::test_source_has_no_hardware_control_or_motor_target_output
+forbidden: import serial, import socket, import requests, subprocess, shared_memory
+forbidden: pyrealsense, /dev/tty, write_serial, send_position, motor_axis
+forbidden outputs: literal G0, G1, G2 motor targets
+result: PASS; no forbidden dependency or motor-target output was found

@@ -1,0 +1,161 @@
+{
+  "blocking_reasons": [],
+  "command_id": "ee-left-0001",
+  "entity_action_authorized": false,
+  "executable": false,
+  "execution_allowed": false,
+  "final_state": "COMPLETE",
+  "formal_use_allowed": false,
+  "metrics": {
+    "available_non_contact_stop_distance_m": 0.05,
+    "maximum_acceleration_m_s2": 0.1,
+    "maximum_speed_m_s": 0.02,
+    "maximum_stopping_distance_m": 0.002,
+    "minimum_clearance_m": 0.6010298622319197,
+    "trajectory_point_count": 7
+  },
+  "motor_command_generated": false,
+  "motor_target_generated": false,
+  "nano_deployment_authorized": false,
+  "promotion_locked": true,
+  "safety_model": {
+    "fault_events": [],
+    "source": "scripts/b4_prep/m1_m2_motion_sim.py",
+    "tool_version": "b4-prep-c.1"
+  },
+  "schema_version": "b6.ee-sim.v1",
+  "serial_payload_generated": false,
+  "side": "left",
+  "simulation_id": "b6-ee-sim-730ad7341a70bc63f2f4a34a",
+  "simulation_only": true,
+  "simulation_valid": true,
+  "states": [
+    {
+      "distance_to_target_m": 0.38691990687755434,
+      "minimum_clearance_m": 0.8515,
+      "simulated_position_m": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "state": "IDLE",
+      "step": 0,
+      "stopping_distance_m": 0.0,
+      "timestamp_ms": 0
+    },
+    {
+      "distance_to_target_m": 0.38691990687755434,
+      "minimum_clearance_m": 0.8515,
+      "simulated_position_m": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "state": "SAFE_HIGH",
+      "step": 1,
+      "stopping_distance_m": 0.0,
+      "timestamp_ms": 0
+    },
+    {
+      "distance_to_target_m": 0.050000000000000044,
+      "minimum_clearance_m": 0.6010298622319197,
+      "simulated_position_m": [
+        0.1609163182,
+        0.1728330895,
+        1.3435009363000001
+      ],
+      "simulated_velocity_m_s": [
+        0.009230811946059523,
+        0.009914406227267103,
+        -0.014713825470529825
+      ],
+      "state": "APPROACH",
+      "step": 2,
+      "stopping_distance_m": 0.002,
+      "timestamp_ms": 17433
+    },
+    {
+      "distance_to_target_m": 0.050000000000000044,
+      "minimum_clearance_m": 0.6010298622319197,
+      "simulated_position_m": [
+        0.1609163182,
+        0.1728330895,
+        1.3435009363000001
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "state": "HOLD",
+      "step": 3,
+      "stopping_distance_m": 0.0,
+      "timestamp_ms": 18433
+    },
+    {
+      "distance_to_target_m": 0.08000000000000007,
+      "minimum_clearance_m": 0.6010298622319197,
+      "simulated_position_m": [
+        0.1609163182,
+        0.1728330895,
+        1.3735009363000001
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.02
+      ],
+      "state": "RETRACT",
+      "step": 4,
+      "stopping_distance_m": 0.002,
+      "timestamp_ms": 19934
+    },
+    {
+      "distance_to_target_m": 0.38691990687755434,
+      "minimum_clearance_m": 0.6307431739404877,
+      "simulated_position_m": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "simulated_velocity_m_s": [
+        -0.00983562434001215,
+        -0.010564008429107213,
+        0.013844212500244004
+      ],
+      "state": "RETURN_HIGH",
+      "step": 5,
+      "stopping_distance_m": 0.002,
+      "timestamp_ms": 36295
+    },
+    {
+      "distance_to_target_m": 0.38691990687755434,
+      "minimum_clearance_m": 0.8515,
+      "simulated_position_m": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "state": "COMPLETE",
+      "step": 6,
+      "stopping_distance_m": 0.0,
+      "timestamp_ms": 36295
+    }
+  ],
+  "tool_version": "b6-ee-sim.1"
+}

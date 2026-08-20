@@ -1,0 +1,3 @@
+branch=batch/b6-ee-sim
+worktree=/home/zzq/PTR/worktrees/b6-ee-sim
+baseline=659a1e51f0ef27c934ddbd1add177383eedfe92b

@@ -1,0 +1,74 @@
+{
+  "command": {
+    "approach_offset_m": [
+      0.0,
+      0.0,
+      0.05
+    ],
+    "collision_check_required": true,
+    "command_id": "ee-right-0001",
+    "contract_sha256": "987089c0c5bdd639975c73b4da304d9f3b41eb0e62fa7ac7ab0df359622c559c",
+    "coordinate_frame": "robot_base_candidate",
+    "created_at": "2026-08-20T04:00:00Z",
+    "emergency_stop_required_clear": true,
+    "entity_action_authorized": false,
+    "executable": false,
+    "execution_allowed": false,
+    "feedback_required": true,
+    "formal_use_allowed": false,
+    "h1_required": true,
+    "idempotency_key": "ee-right-0001-v1",
+    "max_acceleration": {
+      "unit": "m/s^2",
+      "value": 0.1
+    },
+    "max_jerk": {
+      "supported": false,
+      "unit": "unsupported",
+      "value": null
+    },
+    "max_speed": {
+      "unit": "m/s",
+      "value": 0.02
+    },
+    "orientation_policy": "keep_current",
+    "position_m": [
+      -0.1609163182,
+      0.1728330895,
+      1.2935009363
+    ],
+    "promotion_locked": true,
+    "retract_offset_m": [
+      0.0,
+      0.0,
+      0.08
+    ],
+    "schema_version": "b6.end-effector-command.v1",
+    "sequence": 1,
+    "simulation_only": true,
+    "source": "offline_vision",
+    "status": "APPROACH",
+    "target_kind": "offline_simulation_only",
+    "timeout_ms": 120000
+  },
+  "input_sha256": "de7126198a70c763254a593a5731010f70efabd2377b1182184e4ac94b312bb2",
+  "safe_high_position_m": [
+    0.0,
+    0.0,
+    1.6
+  ],
+  "scenario": "target_out_of_workspace",
+  "schema_version": "b6.ee-sim-input.v1",
+  "side": "right",
+  "simulation_config": {
+    "hold_duration_ms": 1000,
+    "sample_period_ms": 50,
+    "stop_deceleration_m_s2": 0.1
+  },
+  "start_position_m": [
+    0.0,
+    0.0,
+    1.6
+  ],
+  "synthetic": true
+}
