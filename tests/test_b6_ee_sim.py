@@ -42,6 +42,7 @@ def make_command(side: str = "left") -> dict:
         "promotion_locked": True,
         "execution_allowed": False,
         "entity_action_authorized": False,
+        "nano_deployment_authorized": False,
         "h1_required": True,
         "feedback_required": True,
         "emergency_stop_required_clear": True,
@@ -97,27 +98,27 @@ class EndEffectorSimulationTests(unittest.TestCase):
         document["input_sha256"] = MODULE.content_hash(document, "input_sha256")
         report = MODULE.run_document(document)
         self.assertFalse(report["simulation_valid"])
-        self.assertIn("command_missing_fields:approach_offset_m", report["blocking_reasons"])
+        self.assertIn("missing_fields:approach_offset_m", report["blocking_reasons"])
 
     def test_target_out_of_workspace_blocks(self):
         document = make_input()
         document["command"]["position_m"] = [0.70, 0.0, 1.0]
         report = MODULE.run_document(resign(document))
         self.assertFalse(report["simulation_valid"])
-        self.assertIn("target_out_of_workspace", report["blocking_reasons"])
+        self.assertIn("position_x_outside_workspace", report["blocking_reasons"])
 
     def test_maximum_speed_violation_blocks(self):
         document = make_input()
         document["command"]["max_speed"]["value"] = 0.051
         report = MODULE.run_document(resign(document))
-        self.assertIn("maximum_speed_exceeds_contract_limit", report["blocking_reasons"])
+        self.assertIn("max_speed_exceeds_experimental_limit", report["blocking_reasons"])
         self.assertEqual(report["final_state"], "BLOCKED")
 
     def test_maximum_acceleration_violation_blocks(self):
         document = make_input()
         document["command"]["max_acceleration"]["value"] = 0.201
         report = MODULE.run_document(resign(document))
-        self.assertIn("maximum_acceleration_exceeds_contract_limit", report["blocking_reasons"])
+        self.assertIn("max_acceleration_exceeds_experimental_limit", report["blocking_reasons"])
 
     def test_insufficient_stopping_distance_blocks(self):
         document = make_input()
@@ -205,7 +206,7 @@ class EndEffectorSimulationTests(unittest.TestCase):
             document = make_input()
             document["command"][field] = unsafe
             report = MODULE.run_document(resign(document))
-            self.assertIn(f"command_{field}_must_be_false", report["blocking_reasons"])
+            self.assertIn(f"{field}_must_be_false", report["blocking_reasons"])
 
     def test_trajectory_respects_reported_speed_and_non_contact_offset(self):
         report = MODULE.run_document(make_input())

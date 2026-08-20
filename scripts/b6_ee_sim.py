@@ -15,7 +15,6 @@ import json
 import math
 import re
 import sys
-from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -23,7 +22,6 @@ from typing import Any
 
 INPUT_SCHEMA = "b6.ee-sim-input.v1"
 OUTPUT_SCHEMA = "b6.ee-sim.v1"
-CONTRACT_SCHEMA = "b6.end-effector-command.v1"
 TOOL_VERSION = "b6-ee-sim.1"
 NORMAL_STATES = ("IDLE", "SAFE_HIGH", "APPROACH", "HOLD", "RETRACT", "RETURN_HIGH", "COMPLETE")
 FAULTS = (
@@ -40,35 +38,12 @@ WORKSPACE = ([-0.60, -0.60, 0.20], [0.60, 1.50, 1.80])
 SOFT_LIMITS = ([-0.55, -0.55, 0.25], [0.55, 1.45, 1.75])
 CHASSIS_BOX = ([-0.075, -0.100, -0.0125], [0.075, 0.650, 0.7475])
 CHASSIS_MARGIN_M = 0.001
-MIN_OFFSET_M = 0.01
-MAX_OFFSET_M = 0.20
-MAX_SPEED_M_S = 0.05
-MAX_ACCELERATION_M_S2 = 0.20
 MIN_SAFE_HIGH_Z_M = 1.50
 ENVELOPE_KEYS = {
     "schema_version", "synthetic", "side", "scenario", "command",
     "start_position_m", "safe_high_position_m", "simulation_config", "input_sha256",
 }
 CONFIG_KEYS = {"sample_period_ms", "hold_duration_ms", "stop_deceleration_m_s2"}
-COMMAND_KEYS = {
-    "schema_version", "command_id", "sequence", "created_at", "source", "idempotency_key",
-    "coordinate_frame", "position_m", "orientation_policy", "target_kind", "executable",
-    "max_speed", "max_acceleration", "max_jerk", "timeout_ms", "approach_offset_m",
-    "retract_offset_m", "simulation_only", "formal_use_allowed", "promotion_locked",
-    "execution_allowed", "entity_action_authorized", "h1_required", "feedback_required",
-    "emergency_stop_required_clear", "collision_check_required", "status", "contract_sha256",
-}
-LOCKS = {
-    "simulation_only": True,
-    "formal_use_allowed": False,
-    "promotion_locked": True,
-    "execution_allowed": False,
-    "entity_action_authorized": False,
-    "h1_required": True,
-    "feedback_required": True,
-    "emergency_stop_required_clear": True,
-    "collision_check_required": True,
-}
 FALSE_OUTPUTS = {
     "formal_use_allowed": False,
     "execution_allowed": False,
@@ -100,6 +75,19 @@ def load_b4_module():
     spec = importlib.util.spec_from_file_location("b4_m1_m2_motion_sim", path)
     if spec is None or spec.loader is None:
         raise SimulationError("b4_motion_model_unavailable")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@lru_cache(maxsize=1)
+def load_contract_module():
+    """Load the canonical B6 command validator owned by EE-CONTRACT."""
+
+    path = Path(__file__).resolve().parent / "b6" / "validate_end_effector_command.py"
+    spec = importlib.util.spec_from_file_location("b6_end_effector_contract", path)
+    if spec is None or spec.loader is None:
+        raise SimulationError("end_effector_contract_validator_unavailable")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -143,90 +131,20 @@ def box_clearance(point: list[float]) -> float:
     return norm(gaps)
 
 
-def validate_utc(value: Any) -> None:
-    if not isinstance(value, str) or not value.endswith("Z"):
-        raise SimulationError("created_at_must_be_utc_iso8601")
-    try:
-        parsed = datetime.fromisoformat(value[:-1] + "+00:00")
-    except ValueError as exc:
-        raise SimulationError("created_at_invalid") from exc
-    if parsed.tzinfo != timezone.utc:
-        raise SimulationError("created_at_must_be_utc")
-
-
-def validate_offset(value: Any, label: str, target: list[float]) -> list[float]:
-    offset = vector(value, label)
-    magnitude = norm(offset)
-    if magnitude < MIN_OFFSET_M:
-        raise SimulationError(f"{label}_must_be_non_contact")
-    if magnitude > MAX_OFFSET_M:
-        raise SimulationError(f"{label}_exceeds_0.2_m")
-    if not within(add(target, offset), WORKSPACE):
-        raise SimulationError(f"{label}_endpoint_outside_workspace")
-    return offset
-
-
-def validate_measure(value: Any, label: str, unit: str, maximum: float) -> float:
-    if not isinstance(value, dict) or set(value) != {"value", "unit"} or value.get("unit") != unit:
-        raise SimulationError(f"{label}_unit_invalid")
-    amount = finite(value.get("value"), label)
-    if amount <= 0:
-        raise SimulationError(f"{label}_must_be_positive")
-    if amount > maximum:
-        raise SimulationError(f"{label}_exceeds_contract_limit")
-    return amount
-
-
 def validate_command(command: Any) -> dict[str, Any]:
-    if not isinstance(command, dict):
-        raise SimulationError("command_must_be_object")
-    unknown, missing = set(command) - COMMAND_KEYS, COMMAND_KEYS - set(command)
-    if unknown:
-        raise SimulationError("command_unknown_fields:" + ",".join(sorted(unknown)))
-    if missing:
-        raise SimulationError("command_missing_fields:" + ",".join(sorted(missing)))
-    if command["schema_version"] != CONTRACT_SCHEMA:
-        raise SimulationError("command_schema_version_invalid")
-    if not isinstance(command["command_id"], str) or not re.fullmatch(r"[A-Za-z0-9_.-]{1,96}", command["command_id"]):
-        raise SimulationError("command_id_invalid")
-    if isinstance(command["sequence"], bool) or not isinstance(command["sequence"], int) or command["sequence"] < 0:
-        raise SimulationError("command_sequence_invalid")
-    validate_utc(command["created_at"])
-    if command["source"] not in {"offline_vision", "offline_demo", "simulation_review"}:
-        raise SimulationError("command_source_invalid")
-    if not isinstance(command["idempotency_key"], str) or not re.fullmatch(r"[A-Za-z0-9_.:-]{8,128}", command["idempotency_key"]):
-        raise SimulationError("idempotency_key_invalid")
-    if command["coordinate_frame"] not in {"robot_base", "robot_base_candidate"}:
-        raise SimulationError("coordinate_frame_invalid")
-    target = vector(command["position_m"], "position_m")
-    if not within(target, WORKSPACE):
-        raise SimulationError("target_out_of_workspace")
-    if command["orientation_policy"] not in {"keep_current", "tool_z_toward_target", "fixed_identity"}:
-        raise SimulationError("orientation_policy_invalid")
-    if command["target_kind"] not in {"offline_simulation_only", "non_contact_preview"}:
-        raise SimulationError("target_kind_invalid")
-    if command["executable"] is not False:
-        raise SimulationError("command_executable_must_be_false")
-    speed = validate_measure(command["max_speed"], "maximum_speed", "m/s", MAX_SPEED_M_S)
-    acceleration = validate_measure(command["max_acceleration"], "maximum_acceleration", "m/s^2", MAX_ACCELERATION_M_S2)
-    if command["max_jerk"] != {"supported": False, "value": None, "unit": "unsupported"}:
-        raise SimulationError("maximum_jerk_must_be_unsupported")
-    timeout = command["timeout_ms"]
-    if isinstance(timeout, bool) or not isinstance(timeout, int) or not 1 <= timeout <= 300_000:
-        raise SimulationError("timeout_ms_invalid")
-    approach = validate_offset(command["approach_offset_m"], "approach_offset_m", target)
-    retract = validate_offset(command["retract_offset_m"], "retract_offset_m", target)
-    for field, expected in LOCKS.items():
-        if command[field] is not expected:
-            raise SimulationError(f"command_{field}_must_be_{str(expected).lower()}")
-    if command["status"] not in {"APPROACH", "HOLD", "RETRACT", "RETURN_HIGH", "STOPPED", "BLOCKED", "COMPLETE"}:
-        raise SimulationError("command_status_invalid")
-    declared = command["contract_sha256"]
-    if not isinstance(declared, str) or not re.fullmatch(r"[0-9a-f]{64}", declared):
-        raise SimulationError("contract_sha256_format_invalid")
-    if declared != content_hash(command, "contract_sha256"):
-        raise SimulationError("contract_sha256_mismatch")
-    return {"document": command, "target": target, "approach": approach, "retract": retract, "speed": speed, "acceleration": acceleration}
+    contract = load_contract_module()
+    try:
+        contract.validate(command)
+    except contract.ContractError as exc:
+        raise SimulationError(str(exc)) from exc
+    return {
+        "document": command,
+        "target": vector(command["position_m"], "position_m"),
+        "approach": vector(command["approach_offset_m"], "approach_offset_m"),
+        "retract": vector(command["retract_offset_m"], "retract_offset_m"),
+        "speed": float(command["max_speed"]["value"]),
+        "acceleration": float(command["max_acceleration"]["value"]),
+    }
 
 
 def validate_input(document: Any) -> dict[str, Any]:
