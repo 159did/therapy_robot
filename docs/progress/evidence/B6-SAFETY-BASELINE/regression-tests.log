@@ -1,3 +1,27 @@
+test_emergency_watchdog_and_feedback_loss_stop_safely (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_emergency_watchdog_and_feedback_loss_stop_safely) ... ok
+test_hash_nan_unknown_and_unit_tampering_fail_closed (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_hash_nan_unknown_and_unit_tampering_fail_closed) ... ok
+test_nominal_left_right_route_finishes_stowed_and_locked (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_nominal_left_right_route_finishes_stowed_and_locked) ... ok
+test_simulation_id_is_deterministic_and_input_sensitive (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_simulation_id_is_deterministic_and_input_sensitive) ... ok
+test_source_has_no_runtime_or_hardware_imports (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_source_has_no_runtime_or_hardware_imports) ... ok
+test_threshold_route_and_stop_distance_fail_closed (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_threshold_route_and_stop_distance_fail_closed) ... ok
+test_emergency_watchdog_and_feedback_loss_fail_closed_on_both_sides (tests.b5.test_m1_m2_route_sim.SimplifiedRouteTests.test_emergency_watchdog_and_feedback_loss_fail_closed_on_both_sides) ... ok
+test_left_and_right_nominal_routes_use_three_states (tests.b5.test_m1_m2_route_sim.SimplifiedRouteTests.test_left_and_right_nominal_routes_use_three_states) ... ok
+test_low_speed_and_displacement_are_blocked (tests.b5.test_m1_m2_route_sim.SimplifiedRouteTests.test_low_speed_and_displacement_are_blocked) ... ok
+test_payload_tampering_is_blocked (tests.b5.test_m1_m2_route_sim.SimplifiedRouteTests.test_payload_tampering_is_blocked) ... ok
+test_same_conditions_are_stable_for_each_side (tests.b5.test_m1_m2_route_sim.SimplifiedRouteTests.test_same_conditions_are_stable_for_each_side) ... ok
+test_schema_and_source_remain_offline_only (tests.b5.test_m1_m2_route_sim.SimplifiedRouteTests.test_schema_and_source_remain_offline_only) ... ok
+test_preflight_is_read_only_and_permissions_are_false (tests.test_b5_h1_preflight.H1PreflightTests.test_preflight_is_read_only_and_permissions_are_false) ... ok
+test_hash_mismatch_blocks (tests.test_b5_offline_demo.OfflineDemoTests.test_hash_mismatch_blocks) ... ok
+test_left_and_right_use_integrated_outputs (tests.test_b5_offline_demo.OfflineDemoTests.test_left_and_right_use_integrated_outputs) ... ok
+test_missing_input_blocks_without_hardware (tests.test_b5_offline_demo.OfflineDemoTests.test_missing_input_blocks_without_hardware) ... ok
+test_source_has_no_runtime_dependencies (tests.test_b5_offline_demo.OfflineDemoTests.test_source_has_no_runtime_dependencies) ... ok
+test_hash_change_and_permission_unlock_block (tests.test_b5_demo_adapter.DemoAdapterTests.test_hash_change_and_permission_unlock_block) ... ok
+test_invalid_json_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_invalid_json_blocks) ... ok
+test_left_and_right_nominal_outputs (tests.test_b5_demo_adapter.DemoAdapterTests.test_left_and_right_nominal_outputs) ... ok
+test_missing_permission_or_hardware_field_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_missing_permission_or_hardware_field_blocks) ... ok
+test_route_failure_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_route_failure_blocks) ... ok
+test_source_has_no_hardware_or_control_dependencies (tests.test_b5_demo_adapter.DemoAdapterTests.test_source_has_no_hardware_or_control_dependencies) ... ok
+test_vision_failure_and_low_confidence_block (tests.test_b5_demo_adapter.DemoAdapterTests.test_vision_failure_and_low_confidence_block) ... ok
 test_declared_input_hash_change_blocks (tests.test_b5_demo_flow.DemoFlowTests.test_declared_input_hash_change_blocks) ... ok
 test_deterministic_identity (tests.test_b5_demo_flow.DemoFlowTests.test_deterministic_identity) ... ok
 test_low_confidence_blocks (tests.test_b5_demo_flow.DemoFlowTests.test_low_confidence_blocks) ... ok
@@ -6,15 +30,8 @@ test_nominal_flow_reaches_complete_with_locked_permissions (tests.test_b5_demo_f
 test_route_failure_and_permission_unlock_block (tests.test_b5_demo_flow.DemoFlowTests.test_route_failure_and_permission_unlock_block) ... ok
 test_source_has_no_hardware_or_control_dependencies (tests.test_b5_demo_flow.DemoFlowTests.test_source_has_no_hardware_or_control_dependencies) ... ok
 test_stop_path_reaches_stopped (tests.test_b5_demo_flow.DemoFlowTests.test_stop_path_reaches_stopped) ... ok
-test_hash_change_and_permission_unlock_block (tests.test_b5_demo_adapter.DemoAdapterTests.test_hash_change_and_permission_unlock_block) ... ok
-test_invalid_json_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_invalid_json_blocks) ... ok
-test_left_and_right_nominal_outputs (tests.test_b5_demo_adapter.DemoAdapterTests.test_left_and_right_nominal_outputs) ... ok
-test_missing_permission_or_hardware_field_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_missing_permission_or_hardware_field_blocks) ... ok
-test_route_failure_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_route_failure_blocks) ... ok
-test_source_has_no_hardware_or_control_dependencies (tests.test_b5_demo_adapter.DemoAdapterTests.test_source_has_no_hardware_or_control_dependencies) ... ok
-test_vision_failure_and_low_confidence_block (tests.test_b5_demo_adapter.DemoAdapterTests.test_vision_failure_and_low_confidence_block) ... ok
 
 ----------------------------------------------------------------------
-Ran 15 tests in 0.391s
+Ran 32 tests in 22.103s
 
 OK

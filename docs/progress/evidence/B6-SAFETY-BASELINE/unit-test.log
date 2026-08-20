@@ -15,6 +15,6 @@ test_state_mapping_rejects_unknown_fields (tests.b6.test_safety_baseline.SafetyB
 test_watchdog_timeout_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_watchdog_timeout_rejects_control) ... ok
 
 ----------------------------------------------------------------------
-Ran 15 tests in 0.063s
+Ran 15 tests in 0.065s
 
 OK
