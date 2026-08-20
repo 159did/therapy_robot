@@ -1,0 +1,20 @@
+test_declared_input_hash_change_blocks (tests.test_b5_demo_flow.DemoFlowTests.test_declared_input_hash_change_blocks) ... ok
+test_deterministic_identity (tests.test_b5_demo_flow.DemoFlowTests.test_deterministic_identity) ... ok
+test_low_confidence_blocks (tests.test_b5_demo_flow.DemoFlowTests.test_low_confidence_blocks) ... ok
+test_missing_image_blocks (tests.test_b5_demo_flow.DemoFlowTests.test_missing_image_blocks) ... ok
+test_nominal_flow_reaches_complete_with_locked_permissions (tests.test_b5_demo_flow.DemoFlowTests.test_nominal_flow_reaches_complete_with_locked_permissions) ... ok
+test_route_failure_and_permission_unlock_block (tests.test_b5_demo_flow.DemoFlowTests.test_route_failure_and_permission_unlock_block) ... ok
+test_source_has_no_hardware_or_control_dependencies (tests.test_b5_demo_flow.DemoFlowTests.test_source_has_no_hardware_or_control_dependencies) ... ok
+test_stop_path_reaches_stopped (tests.test_b5_demo_flow.DemoFlowTests.test_stop_path_reaches_stopped) ... ok
+test_hash_change_and_permission_unlock_block (tests.test_b5_demo_adapter.DemoAdapterTests.test_hash_change_and_permission_unlock_block) ... ok
+test_invalid_json_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_invalid_json_blocks) ... ok
+test_left_and_right_nominal_outputs (tests.test_b5_demo_adapter.DemoAdapterTests.test_left_and_right_nominal_outputs) ... ok
+test_missing_permission_or_hardware_field_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_missing_permission_or_hardware_field_blocks) ... ok
+test_route_failure_blocks (tests.test_b5_demo_adapter.DemoAdapterTests.test_route_failure_blocks) ... ok
+test_source_has_no_hardware_or_control_dependencies (tests.test_b5_demo_adapter.DemoAdapterTests.test_source_has_no_hardware_or_control_dependencies) ... ok
+test_vision_failure_and_low_confidence_block (tests.test_b5_demo_adapter.DemoAdapterTests.test_vision_failure_and_low_confidence_block) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.354s
+
+OK

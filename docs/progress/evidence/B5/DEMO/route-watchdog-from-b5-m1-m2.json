@@ -1,0 +1,54 @@
+{
+  "blocking_reasons": [
+    "watchdog_timeout_safe_stop"
+  ],
+  "checks": {
+    "fault_fail_closed": true,
+    "minimum_displacement": true,
+    "minimum_speed": true,
+    "recovery_requires_new_authorization": true,
+    "route_returns_safe_high": false,
+    "stop_distance": true
+  },
+  "entity_action_authorized": false,
+  "events": [
+    {
+      "event": "stop_requested",
+      "reason_code": "watchdog_timeout"
+    },
+    {
+      "event": "stopping",
+      "reason_code": "watchdog_timeout"
+    },
+    {
+      "event": "stopped",
+      "reason_code": "safe_stop"
+    }
+  ],
+  "execution_allowed": false,
+  "final_pose": "STOPPED",
+  "formal_use_allowed": false,
+  "metrics": {
+    "action_count": 3,
+    "max_stop_distance_norm": 0.010000000000000002,
+    "minimum_displacement_norm": 0.1,
+    "minimum_speed_norm_s": 0.1,
+    "watchdog_timeout_ms": 200
+  },
+  "nano_deployment_authorized": false,
+  "promotion_locked": true,
+  "route_side": "left",
+  "route_states": [
+    "SAFE_HIGH"
+  ],
+  "scenario": "watchdog_timeout",
+  "schema_version": "b5.m1-m2-sim.v1",
+  "simulation_id": "b5-sim-a8027ff3fccdb9a005486045",
+  "simulation_valid": true,
+  "source": {
+    "fixture_id": "b5-left-watchdog",
+    "payload_sha256": "e008f53827f91bce36dce6cd7cfdc271f328887fa22340f98709ee04088143f0"
+  },
+  "status": "FAIL_CLOSED",
+  "synthetic": true
+}

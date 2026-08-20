@@ -1,0 +1,37 @@
+{
+  "blocking_reasons": [
+    "route_input_hash_changed"
+  ],
+  "candidate_end_effector_position_m": null,
+  "current_stage": "BLOCKED",
+  "demo_id": "b5-demo-adapter-7b70e82077b0c26c",
+  "entity_action_authorized": false,
+  "entity_d405_accessed": false,
+  "entity_serial_accessed": false,
+  "execution_allowed": false,
+  "final_state": "BLOCKED",
+  "motor_command_generated": false,
+  "motor_enabled": false,
+  "motor_moved": false,
+  "motor_zeroed": false,
+  "nano_deployment_authorized": false,
+  "route": {
+    "passed": false,
+    "route_states": [],
+    "simulation_id": null
+  },
+  "schema_version": "b5.demo-adapter.v1",
+  "side": "left",
+  "simulation_only": true,
+  "states": [
+    "IDLE",
+    "BLOCKED"
+  ],
+  "valid": false,
+  "vision": {
+    "acupoints": [],
+    "passed": false,
+    "pipeline_id": null,
+    "selected_acupoint": null
+  }
+}
