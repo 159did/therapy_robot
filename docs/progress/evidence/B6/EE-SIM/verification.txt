@@ -1,0 +1,28 @@
+test_all_permission_outputs_remain_false (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_all_permission_outputs_remain_false) ... ok
+test_b4_emergency_watchdog_and_feedback_loss_stop_flows (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_b4_emergency_watchdog_and_feedback_loss_stop_flows) ... ok
+test_cli_invalid_json_is_fail_closed (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_cli_invalid_json_is_fail_closed) ... ok
+test_collision_boundary_stops (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_collision_boundary_stops) ... ok
+test_contract_and_envelope_hash_changes_block (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_contract_and_envelope_hash_changes_block) ... ok
+test_explicit_target_out_of_workspace_scenario_blocks (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_explicit_target_out_of_workspace_scenario_blocks) ... ok
+test_insufficient_stopping_distance_blocks (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_insufficient_stopping_distance_blocks) ... ok
+test_left_and_right_targets_complete_and_return_high (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_left_and_right_targets_complete_and_return_high) ... ok
+test_maximum_acceleration_violation_blocks (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_maximum_acceleration_violation_blocks) ... ok
+test_maximum_speed_violation_blocks (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_maximum_speed_violation_blocks) ... ok
+test_non_contact_offset_missing_blocks (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_non_contact_offset_missing_blocks) ... ok
+test_operator_and_feedback_stop_flows (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_operator_and_feedback_stop_flows) ... ok
+test_simulation_id_is_deterministic_and_input_sensitive (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_simulation_id_is_deterministic_and_input_sensitive) ... ok
+test_soft_limit_violation_stops (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_soft_limit_violation_stops) ... ok
+test_source_has_no_hardware_control_or_motor_target_output (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_source_has_no_hardware_control_or_motor_target_output) ... ok
+test_target_out_of_workspace_blocks (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_target_out_of_workspace_blocks) ... ok
+test_trajectory_respects_reported_speed_and_non_contact_offset (tests.test_b6_ee_sim.EndEffectorSimulationTests.test_trajectory_respects_reported_speed_and_non_contact_offset) ... ok
+test_emergency_watchdog_and_feedback_loss_stop_safely (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_emergency_watchdog_and_feedback_loss_stop_safely) ... ok
+test_hash_nan_unknown_and_unit_tampering_fail_closed (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_hash_nan_unknown_and_unit_tampering_fail_closed) ... ok
+test_nominal_left_right_route_finishes_stowed_and_locked (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_nominal_left_right_route_finishes_stowed_and_locked) ... ok
+test_simulation_id_is_deterministic_and_input_sensitive (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_simulation_id_is_deterministic_and_input_sensitive) ... ok
+test_source_has_no_runtime_or_hardware_imports (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_source_has_no_runtime_or_hardware_imports) ... ok
+test_threshold_route_and_stop_distance_fail_closed (tests.b4_prep.test_m1_m2_motion_sim.MotionPreparationSimulationTest.test_threshold_route_and_stop_distance_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 11.780s
+
+OK

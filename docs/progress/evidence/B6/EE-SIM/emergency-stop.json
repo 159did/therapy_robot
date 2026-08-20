@@ -1,0 +1,104 @@
+{
+  "blocking_reasons": [
+    "emergency_stop"
+  ],
+  "command_id": "ee-left-0001",
+  "entity_action_authorized": false,
+  "executable": false,
+  "execution_allowed": false,
+  "final_state": "STOPPED",
+  "formal_use_allowed": false,
+  "metrics": {
+    "available_non_contact_stop_distance_m": 0.05,
+    "maximum_acceleration_m_s2": 0.1,
+    "maximum_speed_m_s": 0.02,
+    "maximum_stopping_distance_m": 0.002,
+    "minimum_clearance_m": 0.6010298622319197,
+    "trajectory_point_count": 3
+  },
+  "motor_command_generated": false,
+  "motor_target_generated": false,
+  "nano_deployment_authorized": false,
+  "promotion_locked": true,
+  "safety_model": {
+    "fault_events": [
+      {
+        "event": "stop_requested",
+        "reason_code": "emergency_stop_requested"
+      },
+      {
+        "event": "stopping",
+        "reason_code": "emergency_stop_requested"
+      },
+      {
+        "event": "stopped",
+        "reason_code": "safe_stop"
+      }
+    ],
+    "source": "scripts/b4_prep/m1_m2_motion_sim.py",
+    "tool_version": "b4-prep-c.1"
+  },
+  "schema_version": "b6.ee-sim.v1",
+  "serial_payload_generated": false,
+  "side": "left",
+  "simulation_id": "b6-ee-sim-0d90c49ac226ff1def0708db",
+  "simulation_only": true,
+  "simulation_valid": true,
+  "states": [
+    {
+      "distance_to_target_m": 0.38691990687755434,
+      "minimum_clearance_m": 0.8515,
+      "simulated_position_m": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "state": "IDLE",
+      "step": 0,
+      "stopping_distance_m": 0.0,
+      "timestamp_ms": 0
+    },
+    {
+      "distance_to_target_m": 0.38691990687755434,
+      "minimum_clearance_m": 0.8515,
+      "simulated_position_m": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "state": "SAFE_HIGH",
+      "step": 1,
+      "stopping_distance_m": 0.0,
+      "timestamp_ms": 0
+    },
+    {
+      "distance_to_target_m": 0.38691990687755434,
+      "minimum_clearance_m": 0.6010298622319197,
+      "simulated_position_m": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "simulated_velocity_m_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "state": "STOPPED",
+      "step": 2,
+      "stopping_distance_m": 0.002,
+      "timestamp_ms": 50
+    }
+  ],
+  "tool_version": "b6-ee-sim.1"
+}
