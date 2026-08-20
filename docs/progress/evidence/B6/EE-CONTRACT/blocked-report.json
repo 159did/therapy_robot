@@ -1,0 +1,15 @@
+{
+  "blocking_reason": "execution_allowed_must_be_false",
+  "entity_action_authorized": false,
+  "executable": false,
+  "execution_allowed": false,
+  "formal_use_allowed": false,
+  "motor_target_generated": false,
+  "nano_deployment_authorized": false,
+  "promotion_locked": true,
+  "result_schema_version": "b6.end-effector-validation-result.v1",
+  "schema_version": "b6.end-effector-command.v1",
+  "serial_payload_generated": false,
+  "simulation_only": true,
+  "valid": false
+}

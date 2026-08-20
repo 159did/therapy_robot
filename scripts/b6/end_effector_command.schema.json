@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "b6.end-effector-command.v1",
+  "title": "B6 offline end-effector command input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "command_id", "sequence", "created_at", "source",
+    "idempotency_key", "coordinate_frame", "position_m", "orientation_policy",
+    "target_kind", "executable", "max_speed", "max_acceleration", "max_jerk",
+    "timeout_ms", "approach_offset_m", "retract_offset_m", "simulation_only",
+    "formal_use_allowed", "promotion_locked", "execution_allowed", "entity_action_authorized",
+    "nano_deployment_authorized",
+    "h1_required", "feedback_required", "emergency_stop_required_clear",
+    "collision_check_required", "status", "contract_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "b6.end-effector-command.v1"},
+    "command_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{1,96}$"},
+    "sequence": {"type": "integer", "minimum": 0},
+    "created_at": {"type": "string", "format": "date-time"},
+    "source": {"type": "string", "enum": ["offline_vision", "offline_demo", "simulation_review"]},
+    "idempotency_key": {"type": "string", "pattern": "^[A-Za-z0-9_.:-]{8,128}$"},
+    "coordinate_frame": {"type": "string", "enum": ["robot_base", "robot_base_candidate"]},
+    "position_m": {
+      "type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}],
+      "items": false, "minItems": 3, "maxItems": 3
+    },
+    "orientation_policy": {"type": "string", "enum": ["keep_current", "tool_z_toward_target", "fixed_identity"]},
+    "target_kind": {"type": "string", "enum": ["offline_simulation_only", "non_contact_preview"]},
+    "executable": {"const": false},
+    "max_speed": {"$ref": "#/$defs/speed"},
+    "max_acceleration": {"$ref": "#/$defs/acceleration"},
+    "max_jerk": {"$ref": "#/$defs/jerk"},
+    "timeout_ms": {"type": "integer", "minimum": 1, "maximum": 300000},
+    "approach_offset_m": {"$ref": "#/$defs/offset"},
+    "retract_offset_m": {"$ref": "#/$defs/offset"},
+    "simulation_only": {"const": true},
+    "formal_use_allowed": {"const": false},
+    "promotion_locked": {"const": true},
+    "execution_allowed": {"const": false},
+    "entity_action_authorized": {"const": false},
+    "nano_deployment_authorized": {"const": false},
+    "h1_required": {"const": true},
+    "feedback_required": {"const": true},
+    "emergency_stop_required_clear": {"const": true},
+    "collision_check_required": {"const": true},
+    "status": {"type": "string", "enum": ["APPROACH", "HOLD", "RETRACT", "RETURN_HIGH", "STOPPED", "BLOCKED", "COMPLETE"]},
+    "contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "speed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {"value": {"type": "number", "exclusiveMinimum": 0, "maximum": 0.05}, "unit": {"const": "m/s"}}
+    },
+    "acceleration": {
+      "type": "object", "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {"value": {"type": "number", "exclusiveMinimum": 0, "maximum": 0.20}, "unit": {"const": "m/s^2"}}
+    },
+    "jerk": {
+      "type": "object", "additionalProperties": false,
+      "required": ["supported", "value", "unit"],
+      "properties": {"supported": {"const": false}, "value": {"type": "null"}, "unit": {"const": "unsupported"}}
+    },
+    "offset": {
+      "type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}],
+      "items": false, "minItems": 3, "maxItems": 3
+    }
+  }
+}

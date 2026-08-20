@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "b6.end-effector-validation-result.v1",
+  "title": "B6 offline end-effector command validation result",
+  "oneOf": [
+    {"$ref": "#/$defs/accepted"},
+    {"$ref": "#/$defs/blocked"}
+  ],
+  "$defs": {
+    "locks": {
+      "type": "object",
+      "properties": {
+        "result_schema_version": {"const": "b6.end-effector-validation-result.v1"},
+        "schema_version": {"const": "b6.end-effector-command.v1"},
+        "simulation_only": {"const": true},
+        "formal_use_allowed": {"const": false},
+        "promotion_locked": {"const": true},
+        "executable": {"const": false},
+        "execution_allowed": {"const": false},
+        "entity_action_authorized": {"const": false},
+        "nano_deployment_authorized": {"const": false},
+        "motor_target_generated": {"const": false},
+        "serial_payload_generated": {"const": false}
+      }
+    },
+    "accepted": {
+      "allOf": [
+        {"$ref": "#/$defs/locks"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result_schema_version", "schema_version", "valid", "command_id", "sequence",
+            "status", "coordinate_frame", "position_m", "simulation_only", "formal_use_allowed",
+            "promotion_locked", "executable", "execution_allowed", "entity_action_authorized",
+            "nano_deployment_authorized",
+            "feedback_required", "emergency_stop_required_clear", "collision_check_required",
+            "h1_required", "contract_sha256", "motor_target_generated", "serial_payload_generated"
+          ],
+          "properties": {
+            "result_schema_version": {}, "schema_version": {}, "simulation_only": {},
+            "formal_use_allowed": {}, "promotion_locked": {}, "executable": {},
+            "execution_allowed": {}, "entity_action_authorized": {}, "nano_deployment_authorized": {},
+            "motor_target_generated": {}, "serial_payload_generated": {},
+            "valid": {"const": true},
+            "command_id": {"type": "string"},
+            "sequence": {"type": "integer", "minimum": 0},
+            "status": {"enum": ["APPROACH", "HOLD", "RETRACT", "RETURN_HIGH", "STOPPED", "BLOCKED", "COMPLETE"]},
+            "coordinate_frame": {"enum": ["robot_base", "robot_base_candidate"]},
+            "position_m": {
+              "type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}],
+              "items": false, "minItems": 3, "maxItems": 3
+            },
+            "feedback_required": {"const": true},
+            "emergency_stop_required_clear": {"const": true},
+            "collision_check_required": {"const": true},
+            "h1_required": {"const": true},
+            "contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ]
+    },
+    "blocked": {
+      "allOf": [
+        {"$ref": "#/$defs/locks"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result_schema_version", "schema_version", "valid", "blocking_reason",
+            "simulation_only", "formal_use_allowed", "promotion_locked", "executable",
+            "execution_allowed", "entity_action_authorized", "nano_deployment_authorized", "motor_target_generated",
+            "serial_payload_generated"
+          ],
+          "properties": {
+            "result_schema_version": {}, "schema_version": {}, "simulation_only": {},
+            "formal_use_allowed": {}, "promotion_locked": {}, "executable": {},
+            "execution_allowed": {}, "entity_action_authorized": {}, "nano_deployment_authorized": {},
+            "motor_target_generated": {}, "serial_payload_generated": {},
+            "valid": {"const": false},
+            "blocking_reason": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    }
+  }
+}
