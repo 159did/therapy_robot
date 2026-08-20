@@ -1,0 +1,28 @@
+{
+  "collision_check_required": true,
+  "command_id": "ee-demo-dazhui-0001",
+  "contract_sha256": "dc8ba9ceecbbb55a0330be3e805b970800d54f3f0faa0d74912de60dcf39fe4d",
+  "coordinate_frame": "robot_base_candidate",
+  "emergency_stop_required_clear": true,
+  "entity_action_authorized": false,
+  "executable": false,
+  "execution_allowed": false,
+  "feedback_required": true,
+  "formal_use_allowed": false,
+  "h1_required": true,
+  "motor_target_generated": false,
+  "nano_deployment_authorized": false,
+  "position_m": [
+    0.1609163181992805,
+    0.1728330895391088,
+    1.2935009362530452
+  ],
+  "promotion_locked": true,
+  "result_schema_version": "b6.end-effector-validation-result.v1",
+  "schema_version": "b6.end-effector-command.v1",
+  "sequence": 1,
+  "serial_payload_generated": false,
+  "simulation_only": true,
+  "status": "APPROACH",
+  "valid": true
+}

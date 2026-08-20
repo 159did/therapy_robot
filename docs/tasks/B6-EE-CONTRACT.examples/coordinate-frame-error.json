@@ -1,0 +1,53 @@
+{
+  "approach_offset_m": [
+    0.0,
+    0.0,
+    0.05
+  ],
+  "collision_check_required": true,
+  "command_id": "ee-demo-dazhui-0001",
+  "contract_sha256": "6242a00fb3b494fde175dcef3a58923f08338842dff8286906645855b4ab0521",
+  "coordinate_frame": "d405_camera",
+  "created_at": "2026-08-20T04:00:00Z",
+  "emergency_stop_required_clear": true,
+  "entity_action_authorized": false,
+  "executable": false,
+  "execution_allowed": false,
+  "feedback_required": true,
+  "formal_use_allowed": false,
+  "h1_required": true,
+  "idempotency_key": "ee-demo-dazhui-0001-v1",
+  "max_acceleration": {
+    "unit": "m/s^2",
+    "value": 0.1
+  },
+  "max_jerk": {
+    "supported": false,
+    "unit": "unsupported",
+    "value": null
+  },
+  "max_speed": {
+    "unit": "m/s",
+    "value": 0.02
+  },
+  "nano_deployment_authorized": false,
+  "orientation_policy": "keep_current",
+  "position_m": [
+    0.1609163181992805,
+    0.1728330895391088,
+    1.2935009362530452
+  ],
+  "promotion_locked": true,
+  "retract_offset_m": [
+    0.0,
+    0.0,
+    0.08
+  ],
+  "schema_version": "b6.end-effector-command.v1",
+  "sequence": 1,
+  "simulation_only": true,
+  "source": "offline_vision",
+  "status": "APPROACH",
+  "target_kind": "offline_simulation_only",
+  "timeout_ms": 120000
+}
