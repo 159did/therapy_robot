@@ -93,6 +93,16 @@ class SafetyBaselineTests(unittest.TestCase):
         self.assertIn("entity_action_not_authorized", entity.reasons)
         self.assertIn("execution_not_allowed", execution.reasons)
 
+    def test_permission_unlock_alone_does_not_authorize_control(self):
+        state = MODULE.SafetyState(
+            execution_allowed=True,
+            entity_action_authorized=True,
+        )
+        result = MODULE.evaluate_control_request(state, ENTITY_REQUEST)
+        self.assertFalse(result.allowed)
+        self.assertIn("hardware_control_mode_not_explicit", result.reasons)
+        self.assertIn("h1_status_not_pass", result.reasons)
+
     def test_normal_simulation_allows_offline_simulation(self):
         result = MODULE.evaluate_control_request(MODULE.SafetyState.default(), SIM_REQUEST)
         self.assertTrue(result.allowed)
