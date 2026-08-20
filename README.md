@@ -4,18 +4,22 @@
 
 ## 当前状态
 
-- B4-PREP 软件准备已完成。
-- B5-H1-PREP 正在准备第一次 K0 **只读**实体窗口。
-- 默认不允许 Nano 部署、实体串口/D405 访问、电机使能/运动或真人接触。
+- B5 离线路线、视觉和演示闭环已集成。
+- B6 软件安全基线、末端命令契约和末端离线仿真已集成。
+- H1 软件预检已完成；实体 H1 只读检查等待连接 Nano 后单独执行。
+- 默认不允许 Nano 部署、实体串口/D405 访问、电机使能、回零、置零或运动。
 
 ## 本地验证
 
 ```bash
 python3 -m unittest discover -s tests/b4_prep -p 'test_*.py'
-python3 -m unittest discover -s tests -p 'test_b5_h1_preflight.py'
+python3 -m unittest discover -s tests/b6 -p 'test_*.py'
+python3 -m unittest discover -s tests -p 'test_*.py'
 cmake -S . -B build -DBUILD_TESTING=ON
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
+python3 scripts/github_private_preflight.py --root .
 ```
 
-协作规则见 [CONTRIBUTING.md](CONTRIBUTING.md)，敏感信息规则见 [SECURITY.md](SECURITY.md)。
+首次私有上传见 [PUBLISHING.md](PUBLISHING.md)，协作规则见
+[CONTRIBUTING.md](CONTRIBUTING.md)，敏感信息规则见 [SECURITY.md](SECURITY.md)。

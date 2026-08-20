@@ -22,7 +22,11 @@ PATTERNS = {
         "calibration/k0_",
         "calibration/camera_to_base_samples",
     ),
-    "captured_back_sample": ("data/d405_samples/", "back/back.png"),
+    "captured_back_sample": (
+        "data/d405_samples/",
+        "docs/tasks/B5-VISION-PAPER-RESULTS/",
+        "back/back.png",
+    ),
 }
 
 

@@ -16,14 +16,17 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check numpy opencv-python-headless pillow
       - name: Python syntax
         run: python3 -m py_compile $(find scripts tests -name '*.py' -type f)
-      - name: Offline B4/B5 tests
+      - name: Offline B4/B5/B6 tests
         run: |
           python3 -m unittest discover -s tests/b4_prep -p 'test_*.py'
-          python3 -m unittest discover -s tests -p 'test_b5_h1_preflight.py'
+          python3 -m unittest discover -s tests/b6 -p 'test_*.py'
+          python3 -m unittest discover -s tests -p 'test_*.py'
       - name: Diff whitespace
         run: git diff --check HEAD^ HEAD
       - name: Publication safety scan
         run: python3 scripts/repository_safety_scan.py --root .
+      - name: Private GitHub preflight
+        run: python3 scripts/github_private_preflight.py --root .
       - name: CMake and CTest
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=ON
