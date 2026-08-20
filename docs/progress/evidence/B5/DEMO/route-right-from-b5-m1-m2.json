@@ -1,0 +1,46 @@
+{
+  "blocking_reasons": [],
+  "checks": {
+    "fault_fail_closed": true,
+    "minimum_displacement": true,
+    "minimum_speed": true,
+    "recovery_requires_new_authorization": true,
+    "route_returns_safe_high": true,
+    "stop_distance": true
+  },
+  "entity_action_authorized": false,
+  "events": [
+    {
+      "event": "completed",
+      "reason_code": "route_complete"
+    }
+  ],
+  "execution_allowed": false,
+  "final_pose": "STOWED",
+  "formal_use_allowed": false,
+  "metrics": {
+    "action_count": 5,
+    "max_stop_distance_norm": 0.010000000000000002,
+    "minimum_displacement_norm": 0.05,
+    "minimum_speed_norm_s": 0.1,
+    "watchdog_timeout_ms": 200
+  },
+  "nano_deployment_authorized": false,
+  "promotion_locked": true,
+  "route_side": "right",
+  "route_states": [
+    "SAFE_HIGH",
+    "RIGHT_CAMERA_POSITION",
+    "SAFE_HIGH"
+  ],
+  "scenario": "nominal",
+  "schema_version": "b5.m1-m2-sim.v1",
+  "simulation_id": "b5-sim-420b59294c1d2cdb36ea5514",
+  "simulation_valid": true,
+  "source": {
+    "fixture_id": "b5-right-nominal",
+    "payload_sha256": "b9ccca5d993d45d9776199f603b93ffdb69033dcd50f1969a3a815ada25df8c3"
+  },
+  "status": "PASS",
+  "synthetic": true
+}

@@ -1,0 +1,253 @@
+{
+  "blocking_reasons": [],
+  "candidate_end_effector_position_m": [
+    0.1609163181992805,
+    0.1728330895391088,
+    1.2935009362530452
+  ],
+  "current_stage": "COMPLETE",
+  "demo_id": "b5-demo-adapter-5e26f1fe0d1138d9",
+  "entity_action_authorized": false,
+  "entity_d405_accessed": false,
+  "entity_serial_accessed": false,
+  "execution_allowed": false,
+  "final_state": "COMPLETE",
+  "motor_command_generated": false,
+  "motor_enabled": false,
+  "motor_moved": false,
+  "motor_zeroed": false,
+  "nano_deployment_authorized": false,
+  "route": {
+    "final_pose": "STOWED",
+    "input_sha256": "a99feb5da0591246b8d6a69934ec5f594d016c486a13a81923a73d1f95ed9323",
+    "metrics": {
+      "action_count": 5,
+      "max_stop_distance_norm": 0.010000000000000002,
+      "minimum_displacement_norm": 0.05,
+      "minimum_speed_norm_s": 0.1,
+      "watchdog_timeout_ms": 200
+    },
+    "passed": true,
+    "route_states": [
+      "SAFE_HIGH",
+      "LEFT_CAMERA_POSITION",
+      "SAFE_HIGH"
+    ],
+    "simulation_id": "b5-sim-23cc9d8b2767af0e82a154d5",
+    "source_payload_sha256": "da2916c6f27f14229158387430ea87a8271f63a95c1fb876d06156d6eff15399"
+  },
+  "schema_version": "b5.demo-adapter.v1",
+  "side": "left",
+  "simulation_only": true,
+  "states": [
+    "IDLE",
+    "SAFE_HIGH",
+    "CAMERA_READY",
+    "ACUPOINT_FOUND",
+    "APPROACH_SIMULATED",
+    "HOLD",
+    "RETRACT",
+    "RETURN_HIGH",
+    "COMPLETE"
+  ],
+  "valid": true,
+  "vision": {
+    "acupoints": [
+      {
+        "coordinate_confidence": 0.6544796007503485,
+        "name": "大椎",
+        "pixel": [
+          320,
+          38
+        ],
+        "point_robot_candidate_m": [
+          0.1609163181992805,
+          0.1728330895391088,
+          1.2935009362530452
+        ],
+        "simulation_endpoint_target": {
+          "coordinate_frame": "robot_base_candidate",
+          "executable": false,
+          "position_m": [
+            0.1609163181992805,
+            0.1728330895391088,
+            1.2935009362530452
+          ],
+          "source_acupoint": "大椎",
+          "target_kind": "offline_simulation_only"
+        }
+      },
+      {
+        "coordinate_confidence": 0.9013020293848181,
+        "name": "肺俞-L",
+        "pixel": [
+          271,
+          120
+        ],
+        "point_robot_candidate_m": [
+          0.09072339341493893,
+          0.28087673234156785,
+          1.2190013503756703
+        ],
+        "simulation_endpoint_target": {
+          "coordinate_frame": "robot_base_candidate",
+          "executable": false,
+          "position_m": [
+            0.09072339341493893,
+            0.28087673234156785,
+            1.2190013503756703
+          ],
+          "source_acupoint": "肺俞-L",
+          "target_kind": "offline_simulation_only"
+        }
+      },
+      {
+        "coordinate_confidence": 0.8968067667595815,
+        "name": "肺俞-R",
+        "pixel": [
+          368,
+          120
+        ],
+        "point_robot_candidate_m": [
+          0.18717220231524825,
+          0.29577482852081916,
+          1.2337004973672787
+        ],
+        "simulation_endpoint_target": {
+          "coordinate_frame": "robot_base_candidate",
+          "executable": false,
+          "position_m": [
+            0.18717220231524825,
+            0.29577482852081916,
+            1.2337004973672787
+          ],
+          "source_acupoint": "肺俞-R",
+          "target_kind": "offline_simulation_only"
+        }
+      },
+      {
+        "coordinate_confidence": 0.9013020293848155,
+        "name": "心俞-L",
+        "pixel": [
+          271,
+          201
+        ],
+        "point_robot_candidate_m": [
+          0.07509465088007189,
+          0.3597946390658636,
+          1.2164013472107205
+        ],
+        "simulation_endpoint_target": {
+          "coordinate_frame": "robot_base_candidate",
+          "executable": false,
+          "position_m": [
+            0.07509465088007189,
+            0.3597946390658636,
+            1.2164013472107205
+          ],
+          "source_acupoint": "心俞-L",
+          "target_kind": "offline_simulation_only"
+        }
+      },
+      {
+        "coordinate_confidence": 0.8968067667595815,
+        "name": "心俞-R",
+        "pixel": [
+          368,
+          201
+        ],
+        "point_robot_candidate_m": [
+          0.16983630119660706,
+          0.3778423905477576,
+          1.2273005033667808
+        ],
+        "simulation_endpoint_target": {
+          "coordinate_frame": "robot_base_candidate",
+          "executable": false,
+          "position_m": [
+            0.16983630119660706,
+            0.3778423905477576,
+            1.2273005033667808
+          ],
+          "source_acupoint": "心俞-R",
+          "target_kind": "offline_simulation_only"
+        }
+      },
+      {
+        "coordinate_confidence": 0.8033901144281459,
+        "name": "肾俞-L",
+        "pixel": [
+          263,
+          345
+        ],
+        "point_robot_candidate_m": [
+          0.036253523663957135,
+          0.5002398864190575,
+          1.2308014361479849
+        ],
+        "simulation_endpoint_target": {
+          "coordinate_frame": "robot_base_candidate",
+          "executable": false,
+          "position_m": [
+            0.036253523663957135,
+            0.5002398864190575,
+            1.2308014361479849
+          ],
+          "source_acupoint": "肾俞-L",
+          "target_kind": "offline_simulation_only"
+        }
+      },
+      {
+        "coordinate_confidence": 0.9287507626410911,
+        "name": "肾俞-R",
+        "pixel": [
+          376,
+          345
+        ],
+        "point_robot_candidate_m": [
+          0.14877799771260372,
+          0.521928765143977,
+          1.2266004334746619
+        ],
+        "simulation_endpoint_target": {
+          "coordinate_frame": "robot_base_candidate",
+          "executable": false,
+          "position_m": [
+            0.14877799771260372,
+            0.521928765143977,
+            1.2266004334746619
+          ],
+          "source_acupoint": "肾俞-R",
+          "target_kind": "offline_simulation_only"
+        }
+      }
+    ],
+    "input_sha256": "be04071f94aab72d91ea69294bf28bfc6f1f95d511b802f2da99402f31991c64",
+    "passed": true,
+    "pipeline_id": "vision-9e2633f99c52a19fc0401a0e",
+    "selected_acupoint": {
+      "coordinate_confidence": 0.6544796007503485,
+      "name": "大椎",
+      "pixel": [
+        320,
+        38
+      ],
+      "point_robot_candidate_m": [
+        0.1609163181992805,
+        0.1728330895391088,
+        1.2935009362530452
+      ],
+      "simulation_endpoint_target": {
+        "coordinate_frame": "robot_base_candidate",
+        "executable": false,
+        "position_m": [
+          0.1609163181992805,
+          0.1728330895391088,
+          1.2935009362530452
+        ],
+        "source_acupoint": "大椎",
+        "target_kind": "offline_simulation_only"
+      }
+    }
+  }
+}
