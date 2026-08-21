@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install offline-test dependencies
-        run: python3 -m pip install --disable-pip-version-check numpy opencv-python-headless pillow
+        run: python3 -m pip install --disable-pip-version-check numpy opencv-python-headless pillow jsonschema
       - name: Python syntax
         run: python3 -m py_compile $(find scripts tests -name '*.py' -type f)
       - name: Offline B4/B5/B6 tests
