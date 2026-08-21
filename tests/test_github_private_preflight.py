@@ -41,6 +41,11 @@ class GitHubPrivatePreflightTests(unittest.TestCase):
             findings["captured_back_sample"],
         )
 
+    def test_unicode_tracked_paths_are_readable(self):
+        report = MODULE.run(ROOT, allow_dirty=True)
+        unreadable = [reason for reason in report["blocking_reasons"] if reason.startswith("tracked_file_unreadable:")]
+        self.assertEqual(unreadable, [])
+
 
 if __name__ == "__main__":
     unittest.main()

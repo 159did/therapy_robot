@@ -49,7 +49,9 @@ def run(root: Path, *, allow_dirty: bool = False) -> dict[str, Any]:
         commit = git(root, "rev-parse", "HEAD")
         branch = git(root, "branch", "--show-current") or "detached"
         dirty = bool(git(root, "status", "--porcelain"))
-        tracked = git(root, "ls-files").splitlines()
+        # Git may C-quote non-ASCII paths under a runner locale. Disable that
+        # representation so Path() receives the actual checked-out filename.
+        tracked = git(root, "-c", "core.quotePath=false", "ls-files").splitlines()
     except (OSError, subprocess.CalledProcessError) as exc:
         return {
             "schema_version": "github.private-preflight.v1",
