@@ -35,9 +35,9 @@ jobs:
         run: python3 scripts/github_private_preflight.py --root .
       - name: CMake and CTest
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=ON
-          cmake --build build --target \
+          cmake -S . -B build/github-preflight -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=ON
+          cmake --build build/github-preflight --target \
             main_core main_control main_motor main_sim main_web_control main_web_sim \
             test_collision test_kinematics test_motion_plan test_workflow \
             test_k0_prepare_sim test_readiness --parallel 2
-          ctest --test-dir build --output-on-failure
+          ctest --test-dir build/github-preflight --output-on-failure
