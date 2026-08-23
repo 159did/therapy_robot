@@ -1,0 +1,21 @@
+test_all_gates_pass_only_for_explicit_hardware_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_all_gates_pass_only_for_explicit_hardware_control) ... ok
+test_collision_abnormal_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_collision_abnormal_rejects_control) ... ok
+test_default_mode_rejects_entity_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_default_mode_rejects_entity_control) ... ok
+test_emergency_stop_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_emergency_stop_rejects_control) ... ok
+test_false_permission_fields_reject_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_false_permission_fields_reject_control) ... ok
+test_feedback_expiry_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_feedback_expiry_rejects_control) ... ok
+test_feedback_loss_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_feedback_loss_rejects_control) ... ok
+test_h1_not_pass_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_h1_not_pass_rejects_control) ... ok
+test_hardware_readonly_rejects_entity_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_hardware_readonly_rejects_entity_control) ... ok
+test_invalid_inputs_fail_closed (tests.b6.test_safety_baseline.SafetyBaselineTests.test_invalid_inputs_fail_closed) ... ok
+test_normal_simulation_allows_offline_simulation (tests.b6.test_safety_baseline.SafetyBaselineTests.test_normal_simulation_allows_offline_simulation) ... ok
+test_permission_unlock_alone_does_not_authorize_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_permission_unlock_alone_does_not_authorize_control) ... ok
+test_soft_limit_abnormal_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_soft_limit_abnormal_rejects_control) ... ok
+test_source_has_no_hardware_or_transport_dependencies (tests.b6.test_safety_baseline.SafetyBaselineTests.test_source_has_no_hardware_or_transport_dependencies) ... ok
+test_state_mapping_rejects_unknown_fields (tests.b6.test_safety_baseline.SafetyBaselineTests.test_state_mapping_rejects_unknown_fields) ... ok
+test_watchdog_timeout_rejects_control (tests.b6.test_safety_baseline.SafetyBaselineTests.test_watchdog_timeout_rejects_control) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.060s
+
+OK

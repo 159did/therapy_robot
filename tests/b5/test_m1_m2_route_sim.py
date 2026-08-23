@@ -71,6 +71,31 @@ class SimplifiedRouteTests(unittest.TestCase):
                 self.assertFalse(result["execution_allowed"])
                 self.assertFalse(result["entity_action_authorized"])
                 self.assertFalse(result["nano_deployment_authorized"])
+                self.assertTrue(result["safety_decision"]["allowed"])
+                self.assertEqual(result["safety_decision"]["action"], "offline_simulation")
+                self.assertFalse(result["safety_decision"]["execution_allowed"])
+                self.assertEqual(result["safety_decision"]["hardware_mode"], "SIMULATION")
+
+    def test_fault_injection_passes_simulation_gate_then_fails_closed(self) -> None:
+        for side in ("left", "right"):
+            for scenario in ("emergency_stop", "watchdog_timeout", "feedback_loss"):
+                with self.subTest(side=side, scenario=scenario):
+                    completed, result = self.run_document(self.document(side, scenario))
+                    self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+                    self.assertTrue(result["safety_decision"]["allowed"])
+                    self.assertFalse(result["safety_decision"]["execution_allowed"])
+                    self.assertEqual(result["status"], "FAIL_CLOSED")
+
+    def test_entity_control_is_rejected_by_same_b6_gate(self) -> None:
+        safety = SIM.load_safety_module()
+        decision = safety.evaluate_control_request(
+            safety.SafetyState.default(),
+            {"action": safety.ACTION_ENTITY_CONTROL, "units": safety.NORMALIZED_UNITS},
+        )
+        self.assertFalse(decision.allowed)
+        self.assertFalse(decision.execution_allowed)
+        self.assertIn("hardware_control_mode_not_explicit", decision.reasons)
+        self.assertIn("h1_status_not_pass", decision.reasons)
 
     def test_same_conditions_are_stable_for_each_side(self) -> None:
         for side in ("left", "right"):
