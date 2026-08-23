@@ -46,6 +46,17 @@ def load_b4_module():
     return module
 
 
+def load_safety_module():
+    path = Path(__file__).resolve().parents[1] / "b6" / "safety_baseline.py"
+    spec = importlib.util.spec_from_file_location("b5_route_safety_baseline", path)
+    if spec is None or spec.loader is None:
+        raise ValueError("safety_baseline_unavailable")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def finite(value: Any, name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
         raise ValueError(f"non_finite_{name}")
@@ -81,6 +92,13 @@ def validate_input(document: Any) -> dict[str, Any]:
 
 
 def run(document: dict[str, Any]) -> dict[str, Any]:
+    safety = load_safety_module()
+    safety_decision = safety.evaluate_control_request(
+        safety.SafetyState.default(),
+        {"action": safety.ACTION_OFFLINE_SIMULATION, "units": safety.NORMALIZED_UNITS},
+    )
+    if not safety_decision.allowed or safety_decision.execution_allowed:
+        raise ValueError("safety_gate_rejected:" + ",".join(safety_decision.reasons))
     b4 = load_b4_module()
     nested = copy.deepcopy(document["b4_input"])
     nested["scenario"] = document["scenario"]
@@ -115,6 +133,7 @@ def run(document: dict[str, Any]) -> dict[str, Any]:
         "route_states": route_states,
         "final_pose": final_pose,
         "scenario": document["scenario"],
+        "safety_decision": safety_decision.as_dict(),
         "simulation_id": simulation_id(document, side, simulation),
         "metrics": {
             "minimum_speed_norm_s": min(item["speed_norm_s"] for item in side_trace),
@@ -156,6 +175,7 @@ def blocked(error: Exception) -> dict[str, Any]:
         "route_states": [],
         "final_pose": "UNKNOWN",
         "simulation_id": None,
+        "safety_decision": None,
         "blocking_reasons": [str(error)],
         "promotion_locked": True,
         "formal_use_allowed": False,
