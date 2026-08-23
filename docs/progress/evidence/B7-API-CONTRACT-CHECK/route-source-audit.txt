@@ -1,0 +1,5 @@
+source route audit
+895:    server.Get("/api/readiness/attestation", [state, collision_config](const httplib::Request&, httplib::Response& res) {
+903:    server.Get("/api/workflow/state", [state, collision_config](const httplib::Request&, httplib::Response& res) {
+909:    server.Get("/api/workflow/self_check", [state, collision_config](const httplib::Request&, httplib::Response& res) {
+915:    server.Get("/api/motion_plan/preview", [state, collision_config](const httplib::Request& req, httplib::Response& res) {
