@@ -1,0 +1,5 @@
+src/web/main_web.cpp: writes command/endpoint target fields only after Web safety-gate decision; rejected requests set rejection audit fields and no motor output.
+src/control/main_control.cpp: converts accepted endpoint data and performs a downstream safety check before target publication; rejected requests increment rejected_motor_commands.
+src/motor/main_motor.cpp: checks safety before hardware initialization and again before consuming command/target sequences; denied requests hold safe targets and do not emit hardware output.
+include/therapy_robot/shared_memory.hpp: ABI version is 3 and carries safety state/audit fields.
+SIMULATION: no serial payload, motor command, or entity target is generated.

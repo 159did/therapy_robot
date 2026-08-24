@@ -1,0 +1,10 @@
+baseline_main=9e0c4b925062b0a7c8fd2fa25fd985fe9798402b
+agent_2_branch=batch/b8-control-safety-gate-x86
+agent_2_commit=846264d3a83c4f51faad319dc078df051fdfeadc
+agent_3_branch=batch/b8-vm-software-acceptance
+agent_3_commit=06e6f7ad3c1a6007202e4bcb404c7040ac931e3b
+agent_4_branch=batch/b8-low-speed-noncontact-prep
+agent_4_commit=5045b5b537c8a7a10e64b3cded38ecfe59d0bd7a
+agent_4_base_commit=cb2abffa67e86187c580674ceb5a292365e7fdce
+integration_branch=integration/b8-agents-2-3-4
+integration_head=74a186a9627e1443258eb364748b8d0ad8a7a9d9

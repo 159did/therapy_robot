@@ -1,0 +1,9 @@
+cmake_build=PASS
+ctest=20/20
+python_py_compile=PASS
+agent_4_b8_protocol_test=9/9
+python_unittest=96/96
+git_diff_check=PASS
+repository_safety_scan=PASS(read-only)
+repository_safety_scan_publication_blocking=true_due_to_historical_baseline_findings
+historical_findings=captured_back_sample,entity_calibration_or_observation,machine_local_hardware_config

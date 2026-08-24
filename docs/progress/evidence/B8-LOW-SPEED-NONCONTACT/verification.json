@@ -1,0 +1,51 @@
+{
+  "schema_version": "b8.low-speed-noncontact-verification.v1",
+  "platform": "x86_64_vm",
+  "simulation_only": true,
+  "nano_tested": false,
+  "arm64_tested": false,
+  "entity_experiment": "not_run",
+  "hardware_authorized": false,
+  "entity_motion_authorized": false,
+  "h1_status": "H1_EVIDENCE_INCOMPLETE",
+  "software_commit": "9e0c4b925062b0a7c8fd2fa25fd985fe9798402b",
+  "data_kind": [
+    "normalized_fixture",
+    "placeholder"
+  ],
+  "tests": {
+    "b8": {
+      "count": 9,
+      "status": "PASS",
+      "log": "docs/progress/evidence/B8-LOW-SPEED-NONCONTACT/b8-tests.log"
+    },
+    "b4_b5_b6_regression": {
+      "count": 33,
+      "status": "PASS",
+      "log": "docs/progress/evidence/B8-LOW-SPEED-NONCONTACT/b4-b5-b6-tests.log"
+    },
+    "total": 42,
+    "pycompile": "PASS"
+  },
+  "rehearsals": [
+    "emergency_stop",
+    "feedback_loss",
+    "feedback_expired",
+    "watchdog_timeout",
+    "soft_limit_abnormal",
+    "collision_abnormal",
+    "brake_unknown",
+    "authorization_expired"
+  ],
+  "nominal_status": "PREPARED_OFFLINE_NO_GO",
+  "fault_status": "NO_GO",
+  "automatic_recovery": false,
+  "recovery_requires_new_request_id": true,
+  "recovery_requires_new_authorization": true,
+  "motor_command_generated": false,
+  "native_setpoint_generated": false,
+  "serial_payload_generated": false,
+  "nano_accessed": false,
+  "serial_accessed": false,
+  "d405_accessed": false
+}

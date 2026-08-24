@@ -1,0 +1,45 @@
+{
+  "findings": {
+    "captured_back_sample": [
+      "back/back.png",
+      "data/d405_samples/back_20260617_212933_470/analysis_back_contour.png",
+      "data/d405_samples/back_20260617_212933_470/analysis_result.json",
+      "data/d405_samples/back_20260617_212933_470/analysis_rgb_shadow_debug.png",
+      "data/d405_samples/back_20260617_212933_470/analysis_spine_arc_segments.png",
+      "data/d405_samples/back_20260617_212933_470/analysis_template_fit.png",
+      "data/d405_samples/back_20260617_212933_470/depth_vis.png",
+      "data/d405_samples/back_20260617_212933_470/depth_z16.npy",
+      "data/d405_samples/back_20260617_212933_470/meta.json",
+      "data/d405_samples/back_20260617_212933_470/rgb.png",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/01_input_overview.png",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/01_input_rgb.png",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/02_target_region.png",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/03_acupoints_annotated.png",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/04_normal_vs_blocked.png",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/acupoint_results.csv",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/acupoint_results.md",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/low_confidence_result.json",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/normal_result.json",
+      "docs/tasks/B5-VISION-PAPER-RESULTS/paper_results_summary.json"
+    ],
+    "entity_calibration_or_observation": [
+      "calibration/K0最高机械位置记录_2026-07-24.md",
+      "calibration/K0最高点记录_20260809.md",
+      "calibration/axis-offsets-native_20260724_214813.txt",
+      "calibration/axis-offsets-native_20260726.txt",
+      "calibration/camera_to_base_samples.json",
+      "calibration/five_axis_absolute_zero_20260726.json",
+      "calibration/five_axis_software_zero_20260724_214813.json",
+      "calibration/k0-upper-limit-20260809.json",
+      "calibration/k0_upper_mechanical_limit_observation_20260724_203420.json"
+    ],
+    "machine_local_hardware_config": [
+      "config/jetson-hardware.env"
+    ]
+  },
+  "publication_blocking": true,
+  "read_only": true,
+  "recommendation": "Keep the repository private. Before any public release, move or replace each finding with a synthetic/example artifact and remove it from Git history if it was sensitive.",
+  "schema_version": "repository.safety-scan.v1",
+  "tracked_file_count": 440
+}
