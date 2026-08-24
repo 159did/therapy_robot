@@ -1,0 +1,13 @@
+controller_time_utc=2026-08-24T12:52:08.080Z
+time_authority=controller_network_clock
+sampling_start_nano_wall_clock=2026-08-24T20:53:34+08:00
+serial_occupancy_before
+DEVICE=/dev/ttyUSB0
+DEVICE=/dev/ttyUSB1
+DEVICE=/dev/ttyUSB2
+robot_processes
+collector_exit=0
+sampling_end_nano_wall_clock=2026-08-24T20:53:36+08:00
+DEVICE_AFTER=/dev/ttyUSB0
+DEVICE_AFTER=/dev/ttyUSB1
+DEVICE_AFTER=/dev/ttyUSB2

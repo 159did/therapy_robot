@@ -1,0 +1,11 @@
+controller_time_utc=2026-08-24T12:52:08.080Z
+controller_timezone=Asia/Shanghai
+time_authority=controller_network_clock
+nano_ip=192.168.2.100
+nano_user=jetsonorin
+nano_hostname=ubuntu
+nano_architecture=aarch64
+l4t=R35.6.3
+project_path=/home/jetsonorin/Documents/therapy_robot
+operator_id=159did
+e_stop_owner_id=159did

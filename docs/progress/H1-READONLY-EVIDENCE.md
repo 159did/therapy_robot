@@ -60,3 +60,25 @@ hardware_control_authorized=false
 静态审核发现当前 `main_motor`/`run-jetson-hardware.sh` 没有可证明的只读守卫，包含 enable、stop、zero、恢复、目标和退出时停止/松闸/电机关闭路径；`scripts/b5_h1_preflight.py` 只做软件检查，不能采集实体反馈。因此，在专用只读采样程序或经源码证明的只读分支确认前，今晚不得运行当前实体控制程序补证。
 
 本追加仍未访问实体 Nano、实体串口或 D405，也未生成任何实体动作。
+
+
+## 2026-08-24 实体只读窗口追加
+
+本窗口使用真实 Jetson Nano `jetsonorin@192.168.2.100`（hostname `ubuntu`，`aarch64`，L4T `R35.6.3`），操作者和急停负责人均为 `159did`。证据时间以控制端联网时钟 `2026-08-24T12:52:08.080Z` UTC 为准；Nano 本地时钟只作诊断信息。
+
+独立只读采集器在 Nano 上单独编译并运行，未启动 `main_motor`、`main_control`、`main_core` 或硬件启动脚本。采集使用三个稳定路径：`/dev/serial/by-path/platform-3610000.xhci-usb-0:2.1:1.0-port0`、`...2.2...`、`...2.3...`（VID `1a86`、PID `7523`）。采集结束后进程退出，三条串口均无占用者。
+
+窗口共保存 50 条原始 JSONL 记录，每个 K0-K4 各 10 条。动作审计确认未发送 enable、disable、stop、松闸、回零、置零、jog、move、target 或 setpoint；未生成电机命令或目标；未发生运动；未访问 D405；未修改配置。
+
+K0 原始位置 `16057` native，经 `k0-last-logical-native.txt` 和 offset 得到逻辑位置 `43206` native、逻辑高度 `3.00041666667 mm`；软限位为 `0..4523124 native`（`0..314.1058333333333 mm`），当前在范围内。K1-K4 的 online、fault、enabled、velocity 和逻辑位置均已记录；K1-K4 抱闸状态无法由只读接口独立确认，记录为 `unknown`。
+
+正式结论仍为：
+
+```text
+H1_CURRENT_STATUS=H1_EVIDENCE_INCOMPLETE
+```
+
+原因是 Nano 工程没有 Git 元数据、采集二进制与源码提交无法进行 Git 可核验匹配，且急停、看门狗、限位、碰撞、独立 homed/zeroed 状态缺少独立原始证据。不得据此升级为 `H1_ENTITY_READONLY_PASS`。
+
+新窗口证据目录：`docs/progress/evidence/H1-READONLY-EVIDENCE/entity-raw/20260824T125208Z/`。
+
