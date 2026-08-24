@@ -49,6 +49,9 @@ add_executable(main_web_sim src/web/main_web.cpp)
 target_compile_definitions(main_web_sim PRIVATE THERAPY_ROBOT_WEB_SIM=1)
 target_link_libraries(main_web_sim PRIVATE therapy_robot_common)
 
+add_executable(h1_readonly_collector tools/h1_readonly_collector.cpp)
+target_link_libraries(h1_readonly_collector PRIVATE therapy_robot_motor_driver)
+
 # Linaro GCC 7.5, used by the Jetson Nano toolchain, exposes C++17
 # filesystem through libstdc++fs and <experimental/filesystem>.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
@@ -56,7 +59,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
   target_link_libraries(main_web_sim PRIVATE stdc++fs)
 endif()
 
-install(TARGETS main_core main_control main_motor main_sim main_web_control main_web_sim RUNTIME DESTINATION bin)
+install(TARGETS main_core main_control main_motor main_sim main_web_control main_web_sim h1_readonly_collector RUNTIME DESTINATION bin)
 install(DIRECTORY web/ DESTINATION web)
 
 include(CTest)
@@ -163,5 +166,10 @@ if(BUILD_TESTING)
   add_test(
     NAME experiment_workflow_contract
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_experiment_workflow.py
+  )
+  add_test(
+    NAME h1_readonly_collector_source_contract
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_h1_readonly_collector.py
+            --root ${CMAKE_SOURCE_DIR}
   )
 endif()
