@@ -1,0 +1,40 @@
+Internal ctest changing into directory: /home/zzq/PTR/worktrees/b8-vm-software-acceptance/build/b8-vm-acceptance
+Test project /home/zzq/PTR/worktrees/b8-vm-software-acceptance/build/b8-vm-acceptance
+      Start  1: collision_geometry
+ 1/17 Test  #1: collision_geometry ...............   Passed    0.09 sec
+      Start  2: kinematics_roundtrip
+ 2/17 Test  #2: kinematics_roundtrip .............   Passed    0.08 sec
+      Start  3: motion_plan
+ 3/17 Test  #3: motion_plan ......................   Passed    0.07 sec
+      Start  4: workflow_model
+ 4/17 Test  #4: workflow_model ...................   Passed    0.05 sec
+      Start  5: k0_prepare_sim
+ 5/17 Test  #5: k0_prepare_sim ...................   Passed    0.07 sec
+      Start  6: readiness_attestation
+ 6/17 Test  #6: readiness_attestation ............   Passed    0.09 sec
+      Start  7: shared_memory_isolation
+ 7/17 Test  #7: shared_memory_isolation ..........   Passed    1.86 sec
+      Start  8: runtime_isolation
+ 8/17 Test  #8: runtime_isolation ................   Passed    3.61 sec
+      Start  9: interface_contract
+ 9/17 Test  #9: interface_contract ...............   Passed    0.64 sec
+      Start 10: workflow_api
+10/17 Test #10: workflow_api .....................   Passed    2.27 sec
+      Start 11: motion_plan_api
+11/17 Test #11: motion_plan_api ..................   Passed    2.21 sec
+      Start 12: readiness_api
+12/17 Test #12: readiness_api ....................   Passed    1.96 sec
+      Start 13: b3_audit_report
+13/17 Test #13: b3_audit_report ..................   Passed    6.15 sec
+      Start 14: readiness_frontend
+14/17 Test #14: readiness_frontend ...............   Passed    0.77 sec
+      Start 15: d405_quality_gate
+15/17 Test #15: d405_quality_gate ................   Passed   16.02 sec
+      Start 16: camera_extrinsics_candidate
+16/17 Test #16: camera_extrinsics_candidate ......   Passed   33.58 sec
+      Start 17: workflow_frontend
+17/17 Test #17: workflow_frontend ................   Passed    0.67 sec
+
+100% tests passed, 0 tests failed out of 17
+
+Total Test time (real) =  70.43 sec

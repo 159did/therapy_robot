@@ -1,0 +1,13 @@
+{
+  "agent_number": 3,
+  "task_name": "B8-VM-SOFTWARE-ACCEPTANCE",
+  "delivery_id": "agent-3/b8-vm-software-acceptance",
+  "identity_is_placeholder": false,
+  "platform": "x86_64_vm",
+  "host": "zzqVM",
+  "architecture": "x86_64",
+  "nano_tested": false,
+  "arm64_tested": false,
+  "entity_hardware_tested": false,
+  "h1_status": "H1_EVIDENCE_INCOMPLETE"
+}
