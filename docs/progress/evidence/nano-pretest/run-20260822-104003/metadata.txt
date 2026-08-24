@@ -1,0 +1,4 @@
+software_commit=88e7cae85977eab33d427f20dc828c856b1a80b8
+branch=main
+hardware_env=<unset>
+mode_env=<unset>

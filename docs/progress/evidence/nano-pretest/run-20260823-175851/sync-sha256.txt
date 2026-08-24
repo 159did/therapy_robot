@@ -1,0 +1,5 @@
+21787e44823fe07bd5fea86cf1be62286e3568a0fd0da6f1c38a5abfe92ce1b2  scripts/b6/safety_baseline.py
+ab1880f02c68f40110102c774f28a65162210989e5bf255b1f25931377fbad4d  tests/b6/test_safety_baseline.py
+1164265a8321c661f511ceabf8b6b83a687313f41c4515b0005a475e6d8c9a88  docs/progress/B6-SAFETY-BASELINE.md
+9ca5186051269125364ba33941cca1065775d44b98dc04d4395d6816cf2408b8  docs/progress/evidence/B6-SAFETY-BASELINE/source-audit.md
+6783fd94ebc382a9934b3f44658a612f9c8ae3475c01f44e4ed25e88b3af937c  docs/progress/evidence/B6-SAFETY-BASELINE/device-access-check.md

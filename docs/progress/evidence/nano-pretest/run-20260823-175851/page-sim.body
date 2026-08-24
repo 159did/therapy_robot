@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <title>理疗机器人仿真界面</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Therapy Robot Simulation</p>
+        <h1>理疗机器人仿真界面</h1>
+        <p class="subtitle">Three.js 离线三维视图；控制命令请打开 <a href="/control">/control</a>。</p>
+      </div>
+      <div class="status-card">
+        <span id="connectionState" class="pill warn">连接中</span>
+        <span id="modeState" class="pill warn">mode: --</span>
+        <span id="systemState">system_state: --</span>
+      </div>
+    </header>
+
+    <section class="panel robot-panel">
+      <div class="panel-title compact-title">
+        <div>
+          <h2>三维机构视图</h2>
+          <p>收纳位置预览：机箱 765.5×361×760mm，活动空槽 750×150×760mm；大臂外壳 720×120×75mm，零位小臂向机箱后侧反折。粉色限位块只位于 K4～K3 小臂投影下方。</p>
+        </div>
+        <a class="button-link" href="/control">返回控制界面</a>
+      </div>
+      <div class="view3d-wrap">
+        <div id="threeView" class="three-view"></div>
+        <div>
+          <div class="legend3d">
+            <span><i style="background:#94a3b8"></i>K1 base lift column</span>
+            <span><i style="background:#ffffff;border:1px solid #cbd5e1"></i>K2-K5 moving parts</span>
+            <span><i style="background:#38bdf8"></i>蓝色线框：750×150×760mm 活动空槽</span>
+            <span><i style="background:#ec4899"></i>粉色块：229mm 小臂底面限位，宽 85mm、厚 20mm 暂定</span>
+            <span>当前仅为位置关系预览；真实碰撞配置仍关闭</span>
+            <span>坐标轴：X=红，Y=绿，Z=蓝；地面网格为 XY 平面，抬升沿 +Z 方向</span>
+            <span>鼠标旋转视角，滚轮缩放，右键平移</span>
+          </div>
+          <div class="sim-values">
+            <span id="eeX">x: --</span>
+            <span id="eeY">y: --</span>
+            <span id="eeZ">z: --</span>
+            <span id="mujocoState">mujoco: --</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">
+        <h2>共享内存状态 JSON</h2>
+        <p>恢复显示 `/api/state` 的完整共享内存快照，便于像之前一样直接在仿真页联调状态。</p>
+      </div>
+      <pre id="rawState">等待数据...</pre>
+    </section>
+  </main>
+  <script type="module" src="/sim.js?rev=20260726-1945"></script>
+</body>
+</html>

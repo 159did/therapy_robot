@@ -1,0 +1,34 @@
+=== hostname ===
+zzqVM
+=== pwd ===
+/home/zzq/PTR/therapy_robot
+=== branch ===
+main
+=== status ===
+## main...origin/main
+?? docs/progress/evidence/nano-pretest/
+=== log ===
+88e7cae document repository structure and collaboration
+0909bdf use nested CI build directory for API tests
+93c57c4 fetch history for CI whitespace check
+7a44d07 handle unicode paths in GitHub preflight
+0e24e07 install jsonschema for offline validation
+=== head ===
+88e7cae85977eab33d427f20dc828c856b1a80b8
+=== disk ===
+文件系统        大小  已用  可用 已用% 挂载点
+/dev/sda2        98G   76G   18G   82% /
+/dev/sda2        98G   76G   18G   82% /
+/dev/sda2        98G   76G   18G   82% /
+=== processes ===
+ 476210 main_control    build/host/main_control
+ 476212 main_motor      build/host/main_motor
+ 476214 main_sim        build/host/main_sim
+ 476216 main_web_contro build/host/main_web_control
+ 476218 main_web_sim    build/host/main_web_sim
+=== ports ===
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                     
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:(("main_web_contro",pid=476216,fd=3))
+LISTEN 0      5            0.0.0.0:8081      0.0.0.0:*    users:(("main_web_sim",pid=476218,fd=3))   
+=== shm ===
+therapy_robot_shared_state 4368 bytes

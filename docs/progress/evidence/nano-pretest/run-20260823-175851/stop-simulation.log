@@ -1,0 +1,7 @@
+=== stop simulation ===
+=== after stop ===
+State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+=== shared memory before release ===
+/dev/shm/therapy_robot_shared_state 4368 bytes 2026-08-22 10:38:38.801754430 +0800
+released /dev/shm/therapy_robot_shared_state
+SHM_RELEASE_OK

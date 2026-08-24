@@ -1,0 +1,11 @@
+Internal ctest changing into directory: /home/zzq/PTR/therapy_robot/build/nano-pretest
+Test project /home/zzq/PTR/therapy_robot/build/nano-pretest
+    Start 7: shared_memory_isolation
+1/2 Test #7: shared_memory_isolation ..........   Passed    1.72 sec
+    Start 8: runtime_isolation
+2/2 Test #8: runtime_isolation ................   Passed    3.53 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   5.29 sec
+ISOLATION_RETEST_EXIT=0

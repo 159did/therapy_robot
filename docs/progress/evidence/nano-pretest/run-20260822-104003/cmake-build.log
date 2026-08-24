@@ -1,0 +1,90 @@
+[  2%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/collision.cpp.o
+[  5%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/kinematics.cpp.o
+[  8%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/motion_plan.cpp.o
+[ 11%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/readiness.cpp.o
+[ 13%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/shared_memory.cpp.o
+[ 16%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/shared_memory_defaults.cpp.o
+[ 19%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/time_utils.cpp.o
+[ 22%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/workflow.cpp.o
+[ 25%] Building CXX object CMakeFiles/therapy_robot_common.dir/src/common/k0_prepare_sim.cpp.o
+[ 27%] Linking CXX static library libtherapy_robot_common.a
+[ 27%] Built target therapy_robot_common
+[ 30%] Building CXX object CMakeFiles/therapy_robot_motor_driver.dir/src/motor/mf9025v2_driver.cpp.o
+[ 33%] Building CXX object CMakeFiles/main_core.dir/src/core/main_core.cpp.o
+[ 36%] Linking CXX executable main_core
+[ 36%] Built target main_core
+[ 38%] Building CXX object CMakeFiles/main_control.dir/src/control/main_control.cpp.o
+[ 41%] Linking CXX static library libtherapy_robot_motor_driver.a
+[ 41%] Built target therapy_robot_motor_driver
+[ 44%] Building CXX object CMakeFiles/main_sim.dir/src/sim/main_sim.cpp.o
+[ 47%] Linking CXX executable main_control
+[ 47%] Built target main_control
+[ 50%] Building CXX object CMakeFiles/main_web_control.dir/src/web/main_web.cpp.o
+[ 52%] Linking CXX executable main_sim
+[ 52%] Built target main_sim
+[ 55%] Building CXX object CMakeFiles/main_web_sim.dir/src/web/main_web.cpp.o
+[ 63%] Linking CXX executable main_web_control
+[ 63%] Built target main_web_control
+[ 66%] Building CXX object CMakeFiles/test_collision.dir/tests/test_collision.cpp.o
+[ 69%] Linking CXX executable main_web_sim
+[ 69%] Built target main_web_sim
+[ 72%] Linking CXX executable test_collision
+[ 75%] Building CXX object CMakeFiles/test_kinematics.dir/tests/test_kinematics.cpp.o
+[ 75%] Built target test_collision
+[ 77%] Building CXX object CMakeFiles/test_motion_plan.dir/tests/test_motion_plan.cpp.o
+[ 80%] Linking CXX executable test_kinematics
+/home/zzq/PTR/therapy_robot/tests/test_motion_plan.cpp: In function ‘void {anonymous}::assert_rejected(const therapy_robot::MotionPlan&, const std::string&, bool)’:
+/home/zzq/PTR/therapy_robot/tests/test_motion_plan.cpp:36:20: warning: unused variable ‘segment’ [-Wunused-variable]
+   36 |   for (const auto& segment : plan.segments()) {
+      |                    ^~~~~~~
+/home/zzq/PTR/therapy_robot/tests/test_motion_plan.cpp:32:65: warning: unused parameter ‘reason’ [-Wunused-parameter]
+   32 | void assert_rejected(const MotionPlan& plan, const std::string& reason,
+      |                                              ~~~~~~~~~~~~~~~~~~~^~~~~~
+/home/zzq/PTR/therapy_robot/tests/test_motion_plan.cpp:33:27: warning: unused parameter ‘checked’ [-Wunused-parameter]
+   33 |                      bool checked) {
+      |                      ~~~~~^~~~~~~
+/home/zzq/PTR/therapy_robot/tests/test_motion_plan.cpp: In function ‘int main()’:
+/home/zzq/PTR/therapy_robot/tests/test_motion_plan.cpp:75:20: warning: unused variable ‘segment’ [-Wunused-variable]
+   75 |   for (const auto& segment : left.segments()) {
+      |                    ^~~~~~~
+/home/zzq/PTR/therapy_robot/tests/test_motion_plan.cpp:116:8: warning: variable ‘rejected_lower_lift’ set but not used [-Wunused-but-set-variable]
+  116 |   bool rejected_lower_lift = false;
+      |        ^~~~~~~~~~~~~~~~~~~
+[ 80%] Built target test_kinematics
+[ 83%] Building CXX object CMakeFiles/test_workflow.dir/tests/test_workflow.cpp.o
+[ 86%] Linking CXX executable test_motion_plan
+[ 86%] Built target test_motion_plan
+/home/zzq/PTR/therapy_robot/tests/test_workflow.cpp: In function ‘void {anonymous}::assert_actions_are_read_only(const therapy_robot::WorkflowAssessment&)’:
+/home/zzq/PTR/therapy_robot/tests/test_workflow.cpp:39:20: warning: unused variable ‘action’ [-Wunused-variable]
+   39 |   for (const auto& action : result.allowed_actions) {
+      |                    ^~~~~~
+[ 88%] Building CXX object CMakeFiles/test_k0_prepare_sim.dir/tests/test_k0_prepare_sim.cpp.o
+/home/zzq/PTR/therapy_robot/tests/test_workflow.cpp: At global scope:
+/home/zzq/PTR/therapy_robot/tests/test_workflow.cpp:28:6: warning: ‘bool {anonymous}::has_reason(const therapy_robot::WorkflowAssessment&, const std::string&)’ defined but not used [-Wunused-function]
+   28 | bool has_reason(const WorkflowAssessment& result, const std::string& code) {
+      |      ^~~~~~~~~~
+[ 91%] Linking CXX executable test_workflow
+[ 91%] Built target test_workflow
+/home/zzq/PTR/therapy_robot/tests/test_k0_prepare_sim.cpp: In function ‘void {anonymous}::expect_invalid_config()’:
+/home/zzq/PTR/therapy_robot/tests/test_k0_prepare_sim.cpp:31:8: warning: variable ‘rejected_nan’ set but not used [-Wunused-but-set-variable]
+   31 |   bool rejected_nan = false;
+      |        ^~~~~~~~~~~~
+/home/zzq/PTR/therapy_robot/tests/test_k0_prepare_sim.cpp:41:8: warning: variable ‘rejected_time’ set but not used [-Wunused-but-set-variable]
+   41 |   bool rejected_time = false;
+      |        ^~~~~~~~~~~~~
+[ 94%] Building CXX object CMakeFiles/test_readiness.dir/tests/test_readiness.cpp.o
+[ 97%] Linking CXX executable test_k0_prepare_sim
+[ 97%] Built target test_k0_prepare_sim
+[ 97%] Built target main_motor
+[100%] Linking CXX executable test_readiness
+[100%] Built target test_readiness
+Linking CXX executable main_web_control
+Built target main_web_control
+Built target test_collision
+Built target test_kinematics
+Built target test_motion_plan
+Built target test_workflow
+Built target test_k0_prepare_sim
+Built target test_readiness
+Linking CXX executable main_web_sim
+Built target main_web_sim

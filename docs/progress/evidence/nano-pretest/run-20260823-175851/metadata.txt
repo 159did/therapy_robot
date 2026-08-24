@@ -1,0 +1,5 @@
+software_commit=88e7cae85977eab33d427f20dc828c856b1a80b8
+branch=main
+existing_simulation_service=true
+THERAPY_ROBOT_HARDWARE=<unset>
+THERAPY_ROBOT_RUNTIME_DIR=/tmp/therapy_robot_codex_demo

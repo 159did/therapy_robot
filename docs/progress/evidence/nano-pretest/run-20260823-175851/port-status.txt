@@ -1,0 +1,4 @@
+=== port status ===
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                                     
+LISTEN 0      5            0.0.0.0:8080      0.0.0.0:*    users:(("main_web_contro",pid=476216,fd=3))
+LISTEN 0      5            0.0.0.0:8081      0.0.0.0:*    users:(("main_web_sim",pid=476218,fd=3))   
