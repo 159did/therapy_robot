@@ -1,0 +1,2 @@
+command=find_scripts_tests_py_compile
+py_compile=PASS

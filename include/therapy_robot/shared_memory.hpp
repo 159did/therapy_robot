@@ -111,9 +111,36 @@ struct SimulationState {
   double end_effector_z_m = 0.0;
 };
 
+// Central, fail-closed authorization context shared by every future entity
+// control producer and the hardware command consumer.  No component in B8
+// provisions a positive authorization; defaults therefore cannot unlock
+// entity control.
+struct EntityControlSafetyState {
+  int execution_allowed = 0;
+  int entity_action_authorized = 0;
+  char hardware_mode[32]{};
+  char h1_status[48]{};
+  int emergency_stop = 0;
+  int feedback_valid = 0;
+  uint64_t feedback_age_ms = UINT64_MAX;
+  char limit_state[32]{};
+  char collision_state[32]{};
+  char watchdog_state[32]{};
+  int brake_state_known = 0;
+  int brake_engaged = 1;
+  char request_id[64]{};
+  char authorization_id[64]{};
+  uint64_t authorization_expiry = 0;
+  char input_units[32]{};
+  int input_schema_valid = 0;
+  char last_rejection[256]{};
+  uint64_t rejected_web_requests = 0;
+  uint64_t rejected_motor_commands = 0;
+};
+
 struct SharedState {
   uint32_t magic = 0x54524f42;
-  uint32_t version = 2;
+  uint32_t version = 3;
   uint64_t core_heartbeat_ms = 0;
   uint64_t motor_heartbeat_ms = 0;
   uint64_t sim_heartbeat_ms = 0;
@@ -126,6 +153,7 @@ struct SharedState {
   SimulationState simulation{};
   std::array<MotorGroupState, kGroupCount> groups{};
   std::array<AxisMapEntry, kAxisCount> axis_map{};
+  EntityControlSafetyState control_safety{};
 };
 
 const char* shared_memory_name();

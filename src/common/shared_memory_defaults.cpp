@@ -23,7 +23,7 @@ void configure_axis(AxisMapEntry& entry, int group, int axis, int global_axis, i
 void initialize_defaults(SharedState& state) {
   state = SharedState{};
   state.magic = 0x54524f42;
-  state.version = 2;
+  state.version = 3;
   set_text(state.run_mode, sizeof(state.run_mode), "sim");
   set_text(state.system_state, sizeof(state.system_state), "idle");
   set_text(state.control.collision.status,
@@ -74,6 +74,32 @@ void initialize_defaults(SharedState& state) {
   state.simulation.enabled = 1;
   state.simulation.hardware_mode = 0;
   state.simulation.mujoco_available = 0;
+
+  // B8 entity-control gate defaults.  H1 evidence is currently incomplete;
+  // no default, fixture, or runtime inference may promote it to PASS.
+  state.control_safety.execution_allowed = 0;
+  state.control_safety.entity_action_authorized = 0;
+  set_text(state.control_safety.hardware_mode,
+           sizeof(state.control_safety.hardware_mode), "SIMULATION");
+  set_text(state.control_safety.h1_status,
+           sizeof(state.control_safety.h1_status), "H1_EVIDENCE_INCOMPLETE");
+  state.control_safety.emergency_stop = 0;
+  state.control_safety.feedback_valid = 0;
+  state.control_safety.feedback_age_ms = UINT64_MAX;
+  set_text(state.control_safety.limit_state,
+           sizeof(state.control_safety.limit_state), "UNKNOWN");
+  set_text(state.control_safety.collision_state,
+           sizeof(state.control_safety.collision_state), "UNKNOWN");
+  set_text(state.control_safety.watchdog_state,
+           sizeof(state.control_safety.watchdog_state), "UNKNOWN");
+  state.control_safety.brake_state_known = 0;
+  state.control_safety.brake_engaged = 1;
+  state.control_safety.authorization_expiry = 0;
+  set_text(state.control_safety.input_units,
+           sizeof(state.control_safety.input_units), "UNSPECIFIED");
+  state.control_safety.input_schema_valid = 0;
+  set_text(state.control_safety.last_rejection,
+           sizeof(state.control_safety.last_rejection), "default_deny");
 }
 
 }

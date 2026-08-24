@@ -1,0 +1,13 @@
+zzqVM
+x86_64
+platform=x86_64_vm
+host=zzqVM
+nano_tested=false
+arm64_tested=false
+entity_hardware_tested=false
+entity_serial_accessed=false
+d405_accessed=false
+hardware_mode_started=false
+motor_target_generated=false
+motor_command_sent=false
+9e0c4b925062b0a7c8fd2fa25fd985fe9798402b

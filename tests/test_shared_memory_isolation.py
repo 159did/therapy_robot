@@ -13,7 +13,7 @@ import uuid
 
 DEFAULT_SHM_PATH = Path("/dev/shm/therapy_robot_shared_state")
 MAGIC = 0x54524F42
-VERSION = 2
+VERSION = 3
 
 
 def wait_until(predicate, description: str, timeout: float = 3.0) -> None:

@@ -1,4 +1,5 @@
 #include "therapy_robot/collision.hpp"
+#include "therapy_robot/control_safety_gate.hpp"
 #include "therapy_robot/kinematics.hpp"
 #include "therapy_robot/shared_memory.hpp"
 
@@ -74,6 +75,25 @@ void publish_collision_result(SharedState& state,
            result.reason.c_str());
   if (rejected) collision.rejected_commands++;
 }
+
+ControlSafetyDecision evaluate_endpoint_consumption(const SharedState& state) {
+  ControlRequest request;
+  const bool simulation = std::string(state.control_safety.hardware_mode) ==
+                          "SIMULATION";
+  request.action = simulation ? ControlActionKind::OfflineSimulation
+                              : ControlActionKind::EntityControl;
+  request.evaluated_at_ms = now_ms();
+  request.request_id = state.control_safety.request_id;
+  request.authorization_id = state.control_safety.authorization_id;
+  request.input_units = simulation ? "SI" : state.control_safety.input_units;
+  request.expected_input_units = request.input_units;
+  request.input_schema_valid = simulation ||
+                               state.control_safety.input_schema_valid != 0;
+  request.input_finite = request.input_schema_valid;
+  request.has_unknown_fields = false;
+  request.has_missing_fields = false;
+  return evaluate_control_safety(control_safety_snapshot(state), request);
+}
 }
 
 int main() {
@@ -89,6 +109,20 @@ int main() {
       auto& ep = state->control.endpoint_target;
       if (ep.valid == 1 && ep.target_seq != last_endpoint_seq) {
         last_endpoint_seq = ep.target_seq;
+        const auto gate = evaluate_endpoint_consumption(*state);
+        if (!gate.allowed) {
+          ep.status = 3;
+          state->control_safety.rejected_motor_commands++;
+          const std::string reason = gate.reasons.empty()
+                                         ? "endpoint_control_gate_rejected"
+                                         : gate.reasons.front();
+          set_text(state->control_safety.last_rejection,
+                   sizeof(state->control_safety.last_rejection),
+                   reason.c_str());
+          set_text(ep.last_error, sizeof(ep.last_error), reason.c_str());
+          std::this_thread::sleep_for(std::chrono::milliseconds(20));
+          continue;
+        }
         if (std::string(state->run_mode) == "hardware_relative") {
           ep.status = 3;
           set_text(ep.last_error, sizeof(ep.last_error),
