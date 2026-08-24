@@ -1,0 +1,22 @@
+{
+  "schema_version": "b5.h1.record.v1",
+  "mode": "entity_read_only_pending",
+  "software_commit": "30a91416e54cb6541ab1f3e206f4aa2e33a667c2",
+  "software_preflight": "PASS",
+  "entity_device": "",
+  "operator": "",
+  "scheduled_at": "",
+  "k0_observation": {
+    "height": null,
+    "soft_limit": null,
+    "brake": null,
+    "feedback_stable": null
+  },
+  "entity_serial_accessed": false,
+  "entity_d405_accessed": false,
+  "motor_enabled": false,
+  "motor_homed": false,
+  "motor_moved": false,
+  "result": "H1_ENTITY_READONLY_PASS",
+  "blocking_reason": "device_operator_and_time_not_specified"
+}

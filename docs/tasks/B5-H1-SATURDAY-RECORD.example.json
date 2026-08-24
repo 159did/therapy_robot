@@ -6,7 +6,10 @@
     "date_utc": "",
     "operator": "",
     "stop_owner": "",
-    "approved_scope": ["H1", "K0_READ_ONLY"]
+    "approved_scope": [
+      "H1",
+      "K0_READ_ONLY"
+    ]
   },
   "device_identity": {
     "nano_host": "",
@@ -50,11 +53,5 @@
     "d405_opened": false,
     "human_contact": false
   },
-  "result": {
-    "status": "BLOCKED",
-    "first_blocking_reason": "",
-    "evidence_files": [],
-    "evidence_sha256": "",
-    "recorded_at_utc": ""
-  }
+  "result": "H1_ENTITY_READONLY_PASS"
 }

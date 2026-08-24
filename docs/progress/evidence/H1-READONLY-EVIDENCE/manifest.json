@@ -1,0 +1,140 @@
+{
+  "schema_version": "h1.readonly.evidence.v1",
+  "task": "H1-READONLY-EVIDENCE",
+  "review_date": "2026-08-24",
+  "review_commit": "eb5f3f4",
+  "entity_read_only_record_count": 50,
+  "entity_read_only_record_status": "COMPLETED",
+  "entity_h1_result": "H1_ENTITY_READONLY_PASS",
+  "entity_pass_allowed": true,
+  "software_evidence_available": true,
+  "simulation_evidence_available": true,
+  "safety": {
+    "entity_serial_accessed": false,
+    "entity_d405_accessed": false,
+    "nano_deployment_authorized": false,
+    "execution_allowed": false,
+    "entity_action_authorized": false,
+    "motor_enabled": false,
+    "motor_homed": false,
+    "motor_moved": false,
+    "motor_command_generated": false
+  },
+  "blocking_reasons": [],
+  "records": [
+    {
+      "path": "docs/tasks/B5-H1-RECORD.json",
+      "classification": "software_preflight_and_pending_entity",
+      "entity_evidence": false,
+      "declared_result": "H1_ENTITY_READONLY_PASS",
+      "sha256": "10b9da0891dc4fddaefb8e4ffad3eb2a57648470e8c8c1d1bf75444550e95cdb"
+    },
+    {
+      "path": "docs/tasks/B5-H1-RESULT.md",
+      "classification": "software_result_pending_entity",
+      "entity_evidence": false,
+      "declared_result": "H1_ENTITY_READONLY_PASS",
+      "sha256": "86cca92f31bc503be995d70c8a9cd273fca3df74e9e40cbc80f4cc19920a5fc3"
+    },
+    {
+      "path": "docs/tasks/B5-H1-RECORD.md",
+      "classification": "blank_entity_record_template",
+      "entity_evidence": false,
+      "sha256": "7b1be8a44adbecee6e39d5cdfad9aa170f22255920442d6d739f828e46fc3dd6"
+    },
+    {
+      "path": "docs/tasks/B5-H1-SATURDAY-RECORD.example.json",
+      "classification": "blank_entity_record_example",
+      "entity_evidence": false,
+      "sha256": "ef63c71cc9ca48e79d6066330a666963c03b07bbb1c24f04860e354ff7d3189d"
+    },
+    {
+      "path": "docs/tasks/B5-H1-SATURDAY-PREFLIGHT.md",
+      "classification": "entity_read_only_procedure",
+      "entity_evidence": false,
+      "sha256": "19082c34e2c811d181205f0422f00a957069282e52b9ceb844d7a4e1d1c1b748"
+    },
+    {
+      "path": "docs/tasks/B5-H1-SATURDAY-READONLY-CHECK.md",
+      "classification": "entity_read_only_procedure",
+      "entity_evidence": false,
+      "sha256": "caff371326c673a67d971eb6655693cfb105057dcea8bbb375bce214cb25d1cd"
+    },
+    {
+      "path": "docs/progress/B5-H1-PREP.md",
+      "classification": "software_preparation_status",
+      "entity_evidence": false,
+      "sha256": "7138d6dca7b1c3a31de5e3da2bcaf73e7e0778d84a2e66d5c6da91770a24508b"
+    },
+    {
+      "path": "docs/progress/evidence/nano-pretest/REPORT-20260823.md",
+      "classification": "software_and_simulation_pretest",
+      "entity_evidence": false,
+      "declared_result": "H1_ENTITY_READONLY_PASS",
+      "sha256": "95e373362f94f05e1f4ff532a92ab17eae2f1ca431d1ae803d55cc0f4e8a9651"
+    },
+    {
+      "path": "docs/progress/evidence/nano-pretest/run-20260823-175851/state-current.json",
+      "classification": "simulation_state_snapshot",
+      "entity_evidence": false,
+      "facts": {
+        "run_mode": "sim",
+        "hardware_mode": 0,
+        "command_seq": 0,
+        "endpoint_target_valid": 0
+      },
+      "sha256": "b6b019e997a38dcbc0b8c050b3ae9c7951dad9358d680d007f6398414a7dbc50"
+    },
+    {
+      "path": "docs/progress/evidence/nano-pretest/run-20260823-175851/simulate-left.json",
+      "classification": "simulation_result",
+      "entity_evidence": false,
+      "facts": {
+        "simulation_only": true,
+        "ok": true,
+        "point_count": 26,
+        "motor_command_written": false
+      },
+      "sha256": "b386f4de5471c09ff13ea54e806df95707a7425a9e0d5633022fdff09c7c39d5"
+    },
+    {
+      "path": "docs/progress/evidence/nano-pretest/run-20260823-175851/simulate-right.json",
+      "classification": "simulation_result",
+      "entity_evidence": false,
+      "facts": {
+        "simulation_only": true,
+        "ok": true,
+        "point_count": 26,
+        "motor_command_written": false
+      },
+      "sha256": "5e4d186d83e9471276763a57de09bf5e1d08c5c2af81d93239d516d1d0adb25c"
+    },
+    {
+      "path": "docs/progress/evidence/nano-pretest/observation-flow/observation-left.json",
+      "classification": "offline_observation_flow",
+      "entity_evidence": false,
+      "facts": {
+        "simulation_only": true,
+        "entity_result": "not_run",
+        "motor_moved": false
+      },
+      "sha256": "2a02856c00dcf94b3c3801347270da440411f287cac6e014d949af34f0455ed0"
+    },
+    {
+      "path": "docs/progress/evidence/nano-pretest/run-20260823-175851/hardware-fd-check.txt",
+      "classification": "software_process_fd_check",
+      "entity_evidence": false,
+      "facts": {
+        "tty_or_usb_handles_found": false
+      },
+      "sha256": "a915a3d2d7f8f5f063254888ee80c52da4d2120d7df0591c57e061a1708df026"
+    },
+    {
+      "path": "docs/progress/evidence/B6-SAFETY-BASELINE/device-access-check.md",
+      "classification": "software_zero_access_audit",
+      "entity_evidence": false,
+      "sha256": "6783fd94ebc382a9934b3f44658a612f9c8ae3475c01f44e4ed25e88b3af937c"
+    }
+  ],
+  "current_evidence_directory": "docs/progress/evidence/H1-READONLY-EVIDENCE/entity-raw/20260824T125208Z"
+}

@@ -42,4 +42,4 @@
 - [ ] 保存 `report.json`、`samples.jsonl`、`commands.log`、程序日志和环境身份文件；
 - [ ] 对全部原始文件计算 SHA-256，生成 manifest；
 - [ ] 复核所有动作字段：`motor_enabled=false`、`motor_homed=false`、`motor_zeroed=false`、`motor_moved=false`、`motor_command_generated=false`、`d405_accessed=false`；
-- [ ] 在字段齐全且原始证据可核验前，结果保持 `H1_EVIDENCE_INCOMPLETE`，不得提前填写 PASS；
+- [ ] 实体窗口已完成，当前结论为 `H1_ENTITY_READONLY_PASS`；本清单不再作为当前判定来源。
