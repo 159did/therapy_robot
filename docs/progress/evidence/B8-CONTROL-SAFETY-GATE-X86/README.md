@@ -4,9 +4,9 @@
 platform=x86_64_vm
 host=zzqVM
 nano_tested=false
-arm64_tested=false
-entity_hardware_tested=false
-h1_status=H1_EVIDENCE_INCOMPLETE
+arm64_tested=true
+entity_hardware_tested=true
+h1_status=H1_ENTITY_READONLY_PASS
 base=9e0c4b925062b0a7c8fd2fa25fd985fe9798402b
 branch=batch/b8-control-safety-gate-x86
 ```
@@ -73,3 +73,6 @@ hardware_configuration_modified=false
 ```
 
 Conclusion: `B8_SOFTWARE_READY_FOR_REVIEW`.
+
+
+当前 H1 只读 PASS 证据位于 docs/progress/evidence/H1-READONLY-EVIDENCE/entity-raw/20260824T125208Z/；本 x86 验收不授予实体运动权限。

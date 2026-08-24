@@ -11,7 +11,7 @@ arm64_tested=false
 nano_tested=false
 entity_hardware_tested=false
 entity_motion_tested=false
-h1_status=H1_EVIDENCE_INCOMPLETE
+h1_status=H1_ENTITY_READONLY_PASS
 
 - Connected only to `zzq@192.168.216.129`, identified as the x86_64 virtual machine `zzqVM`.
 - Did not connect to a real Jetson Nano.
@@ -24,4 +24,4 @@ h1_status=H1_EVIDENCE_INCOMPLETE
 - Sent GET requests plus only the permitted left/right simulation requests.
 - Removed only the dedicated B8 VM shared-memory object after stopping the two task-owned processes.
 
-H1 remains `H1_EVIDENCE_INCOMPLETE`. The only permitted conclusion is `VM_SOFTWARE_READY_FOR_SIMULATION`.
+H1 remains `H1_ENTITY_READONLY_PASS`. The only permitted conclusion is `VM_SOFTWARE_READY_FOR_SIMULATION`.

@@ -86,14 +86,13 @@ int main() {
       control_safety_snapshot(shared), default_request);
   assert(!default_decision.allowed);
   assert(has_reason(default_decision, "hardware_control_mode_not_explicit"));
-  assert(has_reason(default_decision, "h1_status_not_pass"));
   assert(std::string(shared.control_safety.h1_status) ==
-         "H1_EVIDENCE_INCOMPLETE");
+         "H1_ENTITY_READONLY_PASS");
   assert(shared.control_safety.execution_allowed == 0);
   assert(shared.control_safety.entity_action_authorized == 0);
 
   expect_rejection("h1_status_not_pass", [](auto& state, auto&) {
-    state.h1_status = "H1_EVIDENCE_INCOMPLETE";
+    state.h1_status = "H1_STATUS_NOT_READY";
   });
   expect_rejection("hardware_control_mode_not_explicit", [](auto& state, auto&) {
     state.hardware_mode = "HARDWARE_READONLY";

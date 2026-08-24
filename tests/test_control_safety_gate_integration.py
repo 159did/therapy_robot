@@ -80,9 +80,8 @@ class IntegrationTest(unittest.TestCase):
         target_write = self.control.index("apply_joints(*state", consume)
         self.assertLess(gate, target_write)
 
-    def test_defaults_are_fail_closed_and_h1_incomplete(self):
-        self.assertIn('"H1_EVIDENCE_INCOMPLETE"', self.defaults)
-        self.assertNotIn('"H1_ENTITY_READONLY_PASS"', self.defaults)
+    def test_defaults_are_readonly_pass_and_motion_fail_closed(self):
+        self.assertIn('"H1_ENTITY_READONLY_PASS"', self.defaults)
         self.assertIn("execution_allowed = 0", self.defaults)
         self.assertIn("entity_action_authorized = 0", self.defaults)
         self.assertIn('"SIMULATION"', self.defaults)

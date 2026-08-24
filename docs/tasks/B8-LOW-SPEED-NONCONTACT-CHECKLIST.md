@@ -73,7 +73,7 @@
 ## G. 当前本地结论
 
 ```text
-H1_EVIDENCE_INCOMPLETE
+H1_ENTITY_READONLY_PASS
 PREPARATION_ONLY
 NO-GO
 entity_motion_authorized=false

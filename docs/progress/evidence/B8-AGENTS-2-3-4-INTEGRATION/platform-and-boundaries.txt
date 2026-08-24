@@ -6,7 +6,7 @@ jetson_nano=false
 arm64_tested=false
 nano_tested=false
 entity_hardware_tested=false
-h1_status=H1_EVIDENCE_INCOMPLETE
+h1_status=H1_ENTITY_READONLY_PASS
 entity_serial_accessed=false
 d405_accessed=false
 hardware_mode_started=false
@@ -19,3 +19,7 @@ motor_zeroed=false
 motor_moved=false
 entity_motion_authorized=false
 hardware_control_authorized=false
+
+
+current_h1_status=H1_ENTITY_READONLY_PASS
+current_h1_evidence=docs/progress/evidence/H1-READONLY-EVIDENCE/entity-raw/20260824T125208Z/

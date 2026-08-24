@@ -1,0 +1,5 @@
+collector_exit=0
+collector_stopped=confirmed_by_process_exit
+serial_release=confirmed_no_fuser_holder_after_exit
+user_processes_stopped=false
+hardware_service_started=false

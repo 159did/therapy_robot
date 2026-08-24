@@ -11,9 +11,9 @@ arm64_tested=false
 nano_tested=false
 entity_hardware_tested=false
 entity_motion_tested=false
-h1_status=H1_EVIDENCE_INCOMPLETE
+h1_status=H1_ENTITY_READONLY_PASS
 
-H1：`H1_EVIDENCE_INCOMPLETE`
+H1：`H1_ENTITY_READONLY_PASS`
 
 本文只是在 zzqVM 上准备的晚间人工只读检查清单。本任务未连接真实 Nano，也未执行下列命令。执行人员应先进入经授权的真实 Nano 终端，逐项只读采集，并把原始输出保存到新建证据目录；任何身份不符、权限不足或文件缺失都应停止检查并记录事实。
 
@@ -98,3 +98,6 @@ find build -maxdepth 3 -type f -perm /111 -exec sha256sum {} + | sort
 ## 停止条件
 
 身份不是预期设备、架构不是 `aarch64`、Git 提交不符、磁盘空间不足、发现未知进程或端口、共享内存来源不明、串口被未知进程占用、配置或二进制哈希不符时，立即停止并保存只读事实。不得将任何部分结果写成 Nano、ARM64、硬件或 H1 通过。
+
+
+当前有效 H1 证据已记录在 docs/progress/evidence/H1-READONLY-EVIDENCE/entity-raw/20260824T125208Z/；本文件不授予运动权限。

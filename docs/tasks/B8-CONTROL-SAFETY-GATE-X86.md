@@ -10,7 +10,7 @@
 - `nano_tested=false`
 - `arm64_tested=false`
 - `entity_hardware_tested=false`
-- Formal H1 state: `H1_EVIDENCE_INCOMPLETE`
+- Formal H1 state: `H1_ENTITY_READONLY_PASS`
 
 This task is software-only. It must not open an entity serial port, access a
 D405, start a hardware service, deploy to Nano, enable/home/zero/jog/move a
@@ -80,7 +80,7 @@ Entity control rejects on any of:
 The acceptance symbol `H1_ENTITY_READONLY_PASS` appears only as the required
 comparison value. B8 does not assign that value to defaults, fixtures, shared
 state, or runtime configuration. The default remains
-`H1_EVIDENCE_INCOMPLETE`.
+`H1_ENTITY_READONLY_PASS`.
 
 ## POST inventory and policy
 

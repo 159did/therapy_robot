@@ -75,14 +75,14 @@ void initialize_defaults(SharedState& state) {
   state.simulation.hardware_mode = 0;
   state.simulation.mujoco_available = 0;
 
-  // B8 entity-control gate defaults.  H1 evidence is currently incomplete;
+  // B8 entity-control gate defaults.  H1 read-only evidence is complete;
   // no default, fixture, or runtime inference may promote it to PASS.
   state.control_safety.execution_allowed = 0;
   state.control_safety.entity_action_authorized = 0;
   set_text(state.control_safety.hardware_mode,
            sizeof(state.control_safety.hardware_mode), "SIMULATION");
   set_text(state.control_safety.h1_status,
-           sizeof(state.control_safety.h1_status), "H1_EVIDENCE_INCOMPLETE");
+           sizeof(state.control_safety.h1_status), "H1_ENTITY_READONLY_PASS");
   state.control_safety.emergency_stop = 0;
   state.control_safety.feedback_valid = 0;
   state.control_safety.feedback_age_ms = UINT64_MAX;

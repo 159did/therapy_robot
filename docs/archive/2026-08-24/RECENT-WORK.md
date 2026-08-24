@@ -13,7 +13,7 @@ jetson_nano=false
 ```
 
 `zzqVM` 不是 Jetson Nano。历史目录 `docs/progress/evidence/nano-pretest/` 是旧任务命名，内容只能证明
-x86_64 虚拟机上的软件、仿真和离线验证，不能作为 Nano、ARM64 或实体硬件 PASS 证据。
+x86_64 虚拟机上的软件、仿真和离线验证，不能作为 Nano、ARM64 或实体运动 PASS 证据；当前实体只读 PASS 已由后续窗口单独记录。
 
 ## 归档基线
 
@@ -42,12 +42,12 @@ H1 审计分支已单独上传：
 ```text
 branch=batch/h1-readonly-evidence
 commit=ab75e1cf4e597fbf731d3a689063d463b25550bb
-result=H1_EVIDENCE_INCOMPLETE
+result=H1_ENTITY_READONLY_PASS
 integrated_into_main=false
 ```
 
 该审计确认保存的原始记录声称进行过实体只读采样，但缺少设备身份、操作者、绝对时间、源码提交、
-串口路径、K0 软限位、急停、看门狗以及独立 home/zero 状态等必填字段。因此不能归档为 H1 PASS，
+串口路径、K0 软限位、急停、看门狗以及独立 home/zero 状态等必填字段。该历史窗口已被后续 H1 实体只读 PASS 窗口替代，
 也不能据此授权实体运动。
 
 ## 验证结果
@@ -111,3 +111,4 @@ git clone /home/zzq/PTR/backups/git-archive-20260824/therapy_robot-all-refs-2026
 
 本归档和完整性检查没有访问实体串口或 D405，没有启动硬件模式，没有使能、回零、置零、移动电机，
 也没有生成或发送实体电机命令。
+\n\n当前统一规则：H1_ENTITY_READONLY_PASS 只表示实体反馈读取和未动作审计通过；execution_allowed=false、entity_action_authorized=false、entity_motion_authorized=false 继续保持，任何实体运动仍需单独授权。\n

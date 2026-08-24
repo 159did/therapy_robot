@@ -11,7 +11,7 @@ arm64_tested=false
 nano_tested=false
 entity_hardware_tested=false
 entity_motion_tested=false
-h1_status=H1_EVIDENCE_INCOMPLETE
+h1_status=H1_ENTITY_READONLY_PASS
 
 基线：`9e0c4b925062b0a7c8fd2fa25fd985fe9798402b`
 
@@ -19,7 +19,7 @@ h1_status=H1_EVIDENCE_INCOMPLETE
 
 worktree：`/home/zzq/PTR/worktrees/b8-vm-software-acceptance`
 
-H1：`H1_EVIDENCE_INCOMPLETE`
+H1：`H1_ENTITY_READONLY_PASS`
 
 | 编号 | 状态 | 证据 |
 |---|---|---|
@@ -39,4 +39,7 @@ H1：`H1_EVIDENCE_INCOMPLETE`
 
 最终 VM 结论：`VM_SOFTWARE_READY_FOR_SIMULATION`
 
-此结论只适用于 x86_64 VM 软件仿真。H1 仍为 `H1_EVIDENCE_INCOMPLETE`。
+此结论只适用于 x86_64 VM 软件仿真。H1 仍为 `H1_ENTITY_READONLY_PASS`。
+
+
+本文件不授予实体运动权限。

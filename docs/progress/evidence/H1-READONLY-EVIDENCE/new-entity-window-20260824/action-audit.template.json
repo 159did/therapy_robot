@@ -1,0 +1,19 @@
+{
+  "status": "PREPARED_NOT_EXECUTED",
+  "entity_serial_accessed": null,
+  "entity_d405_accessed": null,
+  "enable_command_sent": null,
+  "disable_command_sent": null,
+  "home_command_sent": null,
+  "zero_command_sent": null,
+  "jog_command_sent": null,
+  "move_command_sent": null,
+  "target_command_sent": null,
+  "setpoint_command_sent": null,
+  "brake_release_command_sent": null,
+  "motor_command_generated": null,
+  "motor_target_generated": null,
+  "motor_moved": null,
+  "configuration_modified": null,
+  "note": "Template only; do not infer false from absence of a log line. Record explicit command audit evidence."
+}

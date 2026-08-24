@@ -1,0 +1,30 @@
+{
+  "schema_version": "h1.entity.readonly.audit.v3",
+  "result": "H1_ENTITY_READONLY_PASS",
+  "scope": "feedback_readout_and_no_motion_audit",
+  "reviewed_at": "2026-08-24",
+  "current_evidence_directory": "docs/progress/evidence/H1-READONLY-EVIDENCE/entity-raw/20260824T125208Z",
+  "sample_count": 50,
+  "samples_per_axis": {
+    "K0": 10,
+    "K1": 10,
+    "K2": 10,
+    "K3": 10,
+    "K4": 10
+  },
+  "motor_enabled": false,
+  "motor_moved": false,
+  "motor_command_generated": false,
+  "d405_accessed": false,
+  "out_of_scope": [
+    "physical emergency-stop readback",
+    "hardware watchdog",
+    "control panel",
+    "K1-K4 brake hardware",
+    "homed",
+    "zeroed",
+    "limit",
+    "collision"
+  ],
+  "raw_samples_unchanged": true
+}

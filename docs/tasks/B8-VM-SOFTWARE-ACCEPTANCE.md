@@ -11,7 +11,7 @@ arm64_tested=false
 nano_tested=false
 entity_hardware_tested=false
 entity_motion_tested=false
-h1_status=H1_EVIDENCE_INCOMPLETE
+h1_status=H1_ENTITY_READONLY_PASS
 
 基线：`9e0c4b925062b0a7c8fd2fa25fd985fe9798402b`
 
@@ -19,7 +19,7 @@ h1_status=H1_EVIDENCE_INCOMPLETE
 
 worktree：`/home/zzq/PTR/worktrees/b8-vm-software-acceptance`
 
-H1：`H1_EVIDENCE_INCOMPLETE`
+H1：`H1_ENTITY_READONLY_PASS`
 
 ## 范围与结论
 
@@ -71,3 +71,6 @@ GET 前后及仿真请求后，下列状态完全不变：
 未连接真实 Nano，未访问实体串口或 D405，未启动硬件模式，未使能、回零、置零或移动实体电机，未生成实体电机命令。VM 通过不得解释为 Nano、ARM64、硬件或 H1 通过。
 
 证据目录：`docs/progress/evidence/B8-VM-SOFTWARE-ACCEPTANCE/`。
+
+
+H1 只读 PASS 与实体运动授权分离；本 VM 验收不产生实体 GO。

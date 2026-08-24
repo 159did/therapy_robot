@@ -1,0 +1,638 @@
+{
+  "schema_version": "pose-readout.v1",
+  "status": "PASS",
+  "synthetic": false,
+  "nano": {
+    "host": "192.168.2.100",
+    "hostname": "ubuntu",
+    "user": "jetsonorin"
+  },
+  "software": {
+    "shared_memory_version": 4,
+    "main_motor_sha256": "1a00a967491633b957e900d81ee8d4d7221c9794af040daffa420e9f5d8cb176",
+    "probe_sha256": "e7159ea06f8ca3a9618607b149e7885c874f62f1932960efb07c03487b811912"
+  },
+  "hardware_access": {
+    "entity_serial_accessed": true,
+    "d405_accessed": false,
+    "motor_command_written": false,
+    "motion_started": false,
+    "motors_enabled": false,
+    "brake_release_requested": false,
+    "zero_requested": false,
+    "target_requested": false
+  },
+  "sampling": {
+    "sample_count": 10,
+    "axes": [
+      {
+        "axis": "K0",
+        "values": {
+          "feedback_position_native": [
+            16057
+          ],
+          "coordinate_offset_native": [
+            -27149
+          ],
+          "actual_motor_native": [
+            43206
+          ],
+          "actual_axis_si": [
+            0.00300042
+          ],
+          "coordinate_source": [
+            "k0_persisted_session"
+          ],
+          "coordinate_valid": [
+            1
+          ],
+          "feedback_sequence": [
+            42,
+            44,
+            45,
+            47,
+            48,
+            50,
+            51,
+            52,
+            53,
+            54
+          ],
+          "feedback_time_ms": [
+            9857081,
+            9857159,
+            9857261,
+            9857402,
+            9857473,
+            9857615,
+            9857686,
+            9857758,
+            9857900,
+            9857971
+          ],
+          "feedback_age_ms": [
+            7,
+            19,
+            23,
+            36,
+            40,
+            49,
+            52,
+            60,
+            62,
+            64
+          ],
+          "online": [
+            1
+          ],
+          "enabled": [
+            0
+          ],
+          "fault": [
+            0
+          ],
+          "feedback_error_state": [
+            0
+          ],
+          "brake_state_known": [
+            1
+          ],
+          "brake_engaged": [
+            1
+          ],
+          "actual_motor_native_velocity": [
+            0
+          ]
+        },
+        "first": {
+          "feedback_position_native": 16057,
+          "coordinate_offset_native": -27149,
+          "actual_motor_native": 43206,
+          "actual_axis_si": 0.00300042,
+          "coordinate_source": "k0_persisted_session",
+          "coordinate_valid": 1,
+          "feedback_sequence": 42,
+          "feedback_time_ms": 9857081,
+          "feedback_age_ms": 40,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 1,
+          "actual_motor_native_velocity": 0
+        },
+        "last": {
+          "feedback_position_native": 16057,
+          "coordinate_offset_native": -27149,
+          "actual_motor_native": 43206,
+          "actual_axis_si": 0.00300042,
+          "coordinate_source": "k0_persisted_session",
+          "coordinate_valid": 1,
+          "feedback_sequence": 54,
+          "feedback_time_ms": 9857971,
+          "feedback_age_ms": 52,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 1,
+          "actual_motor_native_velocity": 0
+        }
+      },
+      {
+        "axis": "K1",
+        "values": {
+          "feedback_position_native": [
+            -4197
+          ],
+          "coordinate_offset_native": [
+            -4619
+          ],
+          "actual_motor_native": [
+            422
+          ],
+          "actual_axis_si": [
+            0.00153444
+          ],
+          "coordinate_source": [
+            "fixed_offset_file"
+          ],
+          "coordinate_valid": [
+            1
+          ],
+          "feedback_sequence": [
+            43,
+            45,
+            46,
+            48,
+            49,
+            51,
+            52,
+            53,
+            55,
+            56
+          ],
+          "feedback_time_ms": [
+            9857085,
+            9857170,
+            9857265,
+            9857406,
+            9857477,
+            9857619,
+            9857690,
+            9857762,
+            9857904,
+            9857975
+          ],
+          "feedback_age_ms": [
+            3,
+            15,
+            19,
+            32,
+            36,
+            45,
+            48,
+            51,
+            56,
+            60
+          ],
+          "online": [
+            1
+          ],
+          "enabled": [
+            0
+          ],
+          "fault": [
+            0
+          ],
+          "feedback_error_state": [
+            0
+          ],
+          "brake_state_known": [
+            1
+          ],
+          "brake_engaged": [
+            0
+          ],
+          "actual_motor_native_velocity": [
+            0
+          ]
+        },
+        "first": {
+          "feedback_position_native": -4197,
+          "coordinate_offset_native": -4619,
+          "actual_motor_native": 422,
+          "actual_axis_si": 0.00153444,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 43,
+          "feedback_time_ms": 9857085,
+          "feedback_age_ms": 36,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        },
+        "last": {
+          "feedback_position_native": -4197,
+          "coordinate_offset_native": -4619,
+          "actual_motor_native": 422,
+          "actual_axis_si": 0.00153444,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 56,
+          "feedback_time_ms": 9857975,
+          "feedback_age_ms": 48,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        }
+      },
+      {
+        "axis": "K2",
+        "values": {
+          "feedback_position_native": [
+            -107083
+          ],
+          "coordinate_offset_native": [
+            -106834
+          ],
+          "actual_motor_native": [
+            -249
+          ],
+          "actual_axis_si": [
+            -0.00362156
+          ],
+          "coordinate_source": [
+            "fixed_offset_file"
+          ],
+          "coordinate_valid": [
+            1
+          ],
+          "feedback_sequence": [
+            43,
+            45,
+            46,
+            48,
+            49,
+            50,
+            52,
+            53,
+            55,
+            56
+          ],
+          "feedback_time_ms": [
+            9857089,
+            9857182,
+            9857269,
+            9857410,
+            9857481,
+            9857552,
+            9857695,
+            9857766,
+            9857908,
+            9857979
+          ],
+          "feedback_age_ms": [
+            11,
+            15,
+            27,
+            32,
+            39,
+            41,
+            44,
+            52,
+            56,
+            70
+          ],
+          "online": [
+            1
+          ],
+          "enabled": [
+            0
+          ],
+          "fault": [
+            0
+          ],
+          "feedback_error_state": [
+            0
+          ],
+          "brake_state_known": [
+            1
+          ],
+          "brake_engaged": [
+            0
+          ],
+          "actual_motor_native_velocity": [
+            0
+          ]
+        },
+        "first": {
+          "feedback_position_native": -107083,
+          "coordinate_offset_native": -106834,
+          "actual_motor_native": -249,
+          "actual_axis_si": -0.00362156,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 43,
+          "feedback_time_ms": 9857089,
+          "feedback_age_ms": 32,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        },
+        "last": {
+          "feedback_position_native": -107083,
+          "coordinate_offset_native": -106834,
+          "actual_motor_native": -249,
+          "actual_axis_si": -0.00362156,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 56,
+          "feedback_time_ms": 9857979,
+          "feedback_age_ms": 44,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        }
+      },
+      {
+        "axis": "K3",
+        "values": {
+          "feedback_position_native": [
+            4145
+          ],
+          "coordinate_offset_native": [
+            4151
+          ],
+          "actual_motor_native": [
+            -6
+          ],
+          "actual_axis_si": [
+            -0.00010472
+          ],
+          "coordinate_source": [
+            "fixed_offset_file"
+          ],
+          "coordinate_valid": [
+            1
+          ],
+          "feedback_sequence": [
+            43,
+            45,
+            46,
+            48,
+            49,
+            50,
+            52,
+            53,
+            55,
+            56
+          ],
+          "feedback_time_ms": [
+            9857093,
+            9857195,
+            9857273,
+            9857414,
+            9857486,
+            9857556,
+            9857699,
+            9857770,
+            9857912,
+            9857983
+          ],
+          "feedback_age_ms": [
+            7,
+            11,
+            23,
+            26,
+            28,
+            36,
+            40,
+            48,
+            52,
+            66
+          ],
+          "online": [
+            1
+          ],
+          "enabled": [
+            0
+          ],
+          "fault": [
+            0
+          ],
+          "feedback_error_state": [
+            0
+          ],
+          "brake_state_known": [
+            1
+          ],
+          "brake_engaged": [
+            0
+          ],
+          "actual_motor_native_velocity": [
+            0
+          ]
+        },
+        "first": {
+          "feedback_position_native": 4145,
+          "coordinate_offset_native": 4151,
+          "actual_motor_native": -6,
+          "actual_axis_si": -0.00010472,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 43,
+          "feedback_time_ms": 9857093,
+          "feedback_age_ms": 28,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        },
+        "last": {
+          "feedback_position_native": 4145,
+          "coordinate_offset_native": 4151,
+          "actual_motor_native": -6,
+          "actual_axis_si": -0.00010472,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 56,
+          "feedback_time_ms": 9857983,
+          "feedback_age_ms": 40,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        }
+      },
+      {
+        "axis": "K4",
+        "values": {
+          "feedback_position_native": [
+            1018
+          ],
+          "coordinate_offset_native": [
+            2276
+          ],
+          "actual_motor_native": [
+            -1258
+          ],
+          "actual_axis_si": [
+            -0.0219562
+          ],
+          "coordinate_source": [
+            "fixed_offset_file"
+          ],
+          "coordinate_valid": [
+            1
+          ],
+          "feedback_sequence": [
+            43,
+            45,
+            46,
+            48,
+            49,
+            50,
+            52,
+            53,
+            55,
+            56
+          ],
+          "feedback_time_ms": [
+            9857097,
+            9857207,
+            9857278,
+            9857419,
+            9857490,
+            9857560,
+            9857703,
+            9857774,
+            9857917,
+            9857988
+          ],
+          "feedback_age_ms": [
+            2,
+            6,
+            14,
+            19,
+            24,
+            32,
+            35,
+            43,
+            48,
+            62
+          ],
+          "online": [
+            1
+          ],
+          "enabled": [
+            0
+          ],
+          "fault": [
+            0
+          ],
+          "feedback_error_state": [
+            0
+          ],
+          "brake_state_known": [
+            1
+          ],
+          "brake_engaged": [
+            0
+          ],
+          "actual_motor_native_velocity": [
+            0
+          ]
+        },
+        "first": {
+          "feedback_position_native": 1018,
+          "coordinate_offset_native": 2276,
+          "actual_motor_native": -1258,
+          "actual_axis_si": -0.0219562,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 43,
+          "feedback_time_ms": 9857097,
+          "feedback_age_ms": 24,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        },
+        "last": {
+          "feedback_position_native": 1018,
+          "coordinate_offset_native": 2276,
+          "actual_motor_native": -1258,
+          "actual_axis_si": -0.0219562,
+          "coordinate_source": "fixed_offset_file",
+          "coordinate_valid": 1,
+          "feedback_sequence": 56,
+          "feedback_time_ms": 9857988,
+          "feedback_age_ms": 35,
+          "online": 1,
+          "enabled": 0,
+          "fault": 0,
+          "feedback_error_state": 0,
+          "brake_state_known": 1,
+          "brake_engaged": 0,
+          "actual_motor_native_velocity": 0
+        }
+      }
+    ],
+    "command_seq": [
+      0
+    ],
+    "command_id": [
+      0
+    ],
+    "target_command_seq": [
+      1
+    ],
+    "all_coordinate_valid": true,
+    "all_disabled": true,
+    "all_fault_free": true,
+    "all_error_state_zero": true
+  },
+  "k0_check": {
+    "logical_native": 43206,
+    "logical_height_mm": 3.0004166666666667,
+    "source": "k0_persisted_session",
+    "raw_must_not_be_used_as_height": true,
+    "passed": true
+  },
+  "serial_released_after_shutdown": true,
+  "evidence_files": [
+    "samples.jsonl",
+    "commands.log",
+    "main_motor.log",
+    "main_core.log",
+    "README.md"
+  ]
+}

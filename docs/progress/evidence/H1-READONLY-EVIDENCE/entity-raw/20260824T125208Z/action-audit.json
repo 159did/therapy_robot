@@ -1,0 +1,18 @@
+{
+  "entity_serial_accessed": true,
+  "entity_d405_accessed": false,
+  "enable_command_sent": false,
+  "disable_command_sent": false,
+  "stop_command_sent": false,
+  "home_command_sent": false,
+  "zero_command_sent": false,
+  "jog_command_sent": false,
+  "move_command_sent": false,
+  "target_command_sent": false,
+  "setpoint_command_sent": false,
+  "brake_release_command_sent": false,
+  "motor_command_generated": false,
+  "motor_target_generated": false,
+  "motor_moved": false,
+  "configuration_modified": false
+}

@@ -14,4 +14,7 @@ motor_jogged=false
 motor_moved=false
 brake_released=false
 configuration_modified=false
-H1_STATUS=H1_EVIDENCE_INCOMPLETE
+H1_STATUS=H1_ENTITY_READONLY_PASS
+
+
+H1 只读 PASS 不等于实体运动授权；本记录仍是零硬件访问的历史窗口。

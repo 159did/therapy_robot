@@ -9,5 +9,5 @@
   "nano_tested": false,
   "arm64_tested": false,
   "entity_hardware_tested": false,
-  "h1_status": "H1_EVIDENCE_INCOMPLETE"
+  "h1_status": "H1_ENTITY_READONLY_PASS"
 }

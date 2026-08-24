@@ -7,7 +7,7 @@
   "entity_experiment": "not_run",
   "hardware_authorized": false,
   "entity_motion_authorized": false,
-  "h1_status": "H1_EVIDENCE_INCOMPLETE",
+  "h1_status": "H1_ENTITY_READONLY_PASS",
   "software_commit": "9e0c4b925062b0a7c8fd2fa25fd985fe9798402b",
   "data_kind": [
     "normalized_fixture",

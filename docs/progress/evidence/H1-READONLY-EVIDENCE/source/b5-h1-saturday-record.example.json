@@ -1,0 +1,57 @@
+{
+  "schema_version": "b5.h1-saturday-record.v1",
+  "synthetic": false,
+  "software_commit": "",
+  "window": {
+    "date_utc": "",
+    "operator": "",
+    "stop_owner": "",
+    "approved_scope": [
+      "H1",
+      "K0_READ_ONLY"
+    ]
+  },
+  "device_identity": {
+    "nano_host": "",
+    "device_path": "",
+    "usb_vid": "",
+    "usb_pid": "",
+    "serial_number": "",
+    "firmware_version": "",
+    "expected_identity_match": null
+  },
+  "serial_occupancy": {
+    "status": "unknown",
+    "checked_at_utc": "",
+    "processes": [],
+    "evidence_sha256": ""
+  },
+  "k0_observations": [
+    {
+      "sequence": 1,
+      "monotonic_ms": null,
+      "height": null,
+      "height_unit": "",
+      "velocity": null,
+      "velocity_unit": "",
+      "soft_limit_lower": null,
+      "soft_limit_upper": null,
+      "brake_state": "unknown",
+      "feedback_quality": "lost",
+      "feedback_age_ms": null,
+      "fault_state": "",
+      "stop_state": "observing"
+    }
+  ],
+  "actions": {
+    "motor_enabled": false,
+    "home_or_zero_requested": false,
+    "motion_target_written": false,
+    "brake_written": false,
+    "parameter_changed": false,
+    "nano_deployed": false,
+    "d405_opened": false,
+    "human_contact": false
+  },
+  "result": "H1_ENTITY_READONLY_PASS"
+}

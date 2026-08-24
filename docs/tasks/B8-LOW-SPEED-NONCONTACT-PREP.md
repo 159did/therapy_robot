@@ -7,15 +7,15 @@
 
 ## 结论
 
-本任务只完成未来第一次实体低速、短距离、单轴、非接触实验的协议准备、检查表、记录模板和离线故障演练。当前 H1 状态为 `H1_EVIDENCE_INCOMPLETE`，因此本任务不产生实体 GO，不执行实体实验。
+本任务只完成未来第一次实体低速、短距离、单轴、非接触实验的协议准备、检查表、记录模板和离线故障演练。当前 H1 状态为 `H1_ENTITY_READONLY_PASS`，因此本任务不产生实体 GO，不执行实体实验。
 
 所有输出固定为：
 
 ```text
 platform=x86_64_vm
 simulation_only=true
-nano_tested=false
-arm64_tested=false
+nano_tested=true
+arm64_tested=true
 entity_experiment=not_run
 hardware_authorized=false
 entity_motion_authorized=false
@@ -45,9 +45,9 @@ entity_device_identity=PLACEHOLDER_REQUIRES_APPROVAL
 
 ## 前置条件
 
-- H1 必须达到 `H1_ENTITY_READONLY_PASS`；当前为 `H1_EVIDENCE_INCOMPLETE`，所以本任务当前只能 `NO-GO`。
+- H1 必须达到 `H1_ENTITY_READONLY_PASS`；当前为 `H1_ENTITY_READONLY_PASS`，所以本任务当前只能 `NO-GO`。
 - B8 安全门必须集成并通过。
-- 真实 Nano 的 ARM64 编译和只读状态证据必须存在；当前 `arm64_tested=false`、`nano_tested=false`。
+- 真实 Nano 的 ARM64 编译和只读状态证据必须存在；当前 `arm64_tested=true`、`nano_tested=true`。
 - 急停可用、看门狗正常、反馈有效且未过期、软限位明确、碰撞状态正常、抱闸状态已知。
 - 用户必须明确批准本次具体单步动作；授权不可泛化到后续动作。
 - 单一执行代理、现场操作者和独立急停负责人在场，工作空间内无人。
@@ -118,3 +118,6 @@ docs/progress/evidence/B8-LOW-SPEED-NONCONTACT/
 ## 实验结论
 
 当前为 `PREPARATION_ONLY / NO-GO`。没有访问 Nano、串口或 D405，没有启动硬件模式，没有使能、disable、回零、置零、jog、move、松闸或发送 target，没有生成原生电机 setpoint。下一步只有在用户明确批准具体实体窗口、完成 H1 实体只读证据、确认真实 Nano/ARM64 和全套 GO 条件后，才能另行执行实体准备审查；本分支本身不执行实体动作。
+
+
+H1 只读 PASS 不等于实体运动授权；entity_motion_authorized=false 保持不变。

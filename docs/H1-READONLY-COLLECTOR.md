@@ -6,8 +6,10 @@ C++ 程序。它不使用共享内存，只调用 MF9025V2 驱动的以下读取
 - `0x92` 多圈位置：`read_position`
 - `0x9c` 状态：`read_status`
 - `0x9a` 电机状态/故障：`read_state`
-- `0x90` 编码器：`read_encoder`
 - K0 `0x8c/0x10` 抱闸读取：`read_brake`
+
+编码器读取不作为 H1 必填项；部分控制器返回长度与旧驱动声明不一致，因此当前
+采集器将 `encoder` 标记为 `null`，避免把不兼容响应误判为位置反馈。
 
 源码中没有 enable、disable、stop、zero、jog、move、target、setpoint 或
 松闸调用。程序启动前强制要求三个 `/dev/serial/by-path/` 路径，避免

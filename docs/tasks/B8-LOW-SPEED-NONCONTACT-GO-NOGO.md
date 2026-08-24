@@ -38,7 +38,7 @@ arm64_tested=false
 entity_experiment=not_run
 hardware_authorized=false
 entity_motion_authorized=false
-H1_STATUS=H1_EVIDENCE_INCOMPLETE
+H1_STATUS=H1_ENTITY_READONLY_PASS
 B8_STATUS=PREPARATION_ONLY
 RESULT=NO-GO
 ```
@@ -82,3 +82,6 @@ stop_distance_limit=PLACEHOLDER_REQUIRES_APPROVAL
 ```
 
 任何将占位符替换为真实动作参数的变更都属于新的审批范围，不得在本准备分支中完成。
+
+
+当前仍为 NO-GO：H1 只读 PASS 不会自动打开实体运动授权。
