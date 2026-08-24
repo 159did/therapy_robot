@@ -156,4 +156,12 @@ if(BUILD_TESTING)
             ${CMAKE_SOURCE_DIR}/tests/test_workflow_frontend.py
             --root ${CMAKE_SOURCE_DIR}
   )
+  add_test(
+    NAME capture_d405_contract
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_capture_d405.py
+  )
+  add_test(
+    NAME experiment_workflow_contract
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_experiment_workflow.py
+  )
 endif()

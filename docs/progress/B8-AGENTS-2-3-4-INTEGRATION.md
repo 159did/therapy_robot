@@ -5,6 +5,12 @@ Status: SOFTWARE_INTEGRATION_VERIFIED (x86_64 VM only)
 This is the integration record for the first B8 deliveries. It is not an
 entity-hardware acceptance record. H1 remains `H1_EVIDENCE_INCOMPLETE`.
 
+The follow-up experiment entry points are documented in
+`docs/EXPERIMENT-WORKFLOW.md`: `scripts/capture_d405.py` provides explicit
+camera capture, and `scripts/experiment_workflow.py` produces the complete
+offline state report while keeping hardware mode blocked until H1 and the
+central gate are satisfied.
+
 ## Environment and boundaries
 
 - Host: `zzqVM` at `192.168.216.129`
