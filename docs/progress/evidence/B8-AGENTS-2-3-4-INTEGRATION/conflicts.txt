@@ -1,0 +1,5 @@
+agent_3=modify/delete; retained latest B8 VM acceptance files from 06e6f7a
+agent_3_files=docs/progress/B8-VM-SOFTWARE-ACCEPTANCE.md,docs/progress/evidence/B8-VM-SOFTWARE-ACCEPTANCE/hardware-zero-access.md,docs/progress/evidence/B8-VM-SOFTWARE-ACCEPTANCE/sha256.txt,docs/tasks/B8-NANO-READONLY-PREFLIGHT.md,docs/tasks/B8-VM-SOFTWARE-ACCEPTANCE.md
+agent_4=modify/delete; retained latest docs/tasks/B8-LOW-SPEED-NONCONTACT-PREP.md from 5045b5b
+agent_2=clean cherry-pick
+unresolved_conflicts=none

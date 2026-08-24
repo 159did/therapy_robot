@@ -11,6 +11,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
 
 add_library(therapy_robot_common STATIC
   src/common/collision.cpp
+  src/common/control_safety_gate.cpp
   src/common/kinematics.cpp
   src/common/motion_plan.cpp
   src/common/readiness.cpp
@@ -79,6 +80,22 @@ if(BUILD_TESTING)
   add_executable(test_readiness tests/test_readiness.cpp)
   target_link_libraries(test_readiness PRIVATE therapy_robot_common)
   add_test(NAME readiness_attestation COMMAND test_readiness)
+  add_executable(test_control_safety_gate tests/test_control_safety_gate.cpp)
+  target_link_libraries(test_control_safety_gate PRIVATE therapy_robot_common)
+  add_test(NAME control_safety_gate COMMAND test_control_safety_gate)
+  add_test(
+    NAME control_safety_gate_integration
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_control_safety_gate_integration.py
+            --root ${CMAKE_SOURCE_DIR}
+  )
+  add_test(
+    NAME control_safety_gate_api
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_control_safety_gate_api.py
+            --main-core $<TARGET_FILE:main_core>
+            --main-web-control $<TARGET_FILE:main_web_control>
+  )
   add_test(
     NAME shared_memory_isolation
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_shared_memory_isolation.py

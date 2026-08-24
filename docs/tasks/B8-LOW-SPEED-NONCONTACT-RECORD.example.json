@@ -1,0 +1,93 @@
+{
+  "arm64_tested": false,
+  "b8_safety_gate_status": "PREPARATION_ONLY",
+  "entity_device_identity": {
+    "device_model": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "firmware_version": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "nano_host": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "serial_number": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "serial_path": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "usb_pid": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "usb_vid": "PLACEHOLDER_REQUIRES_APPROVAL"
+  },
+  "entity_experiment": "not_run",
+  "entity_motion_authorized": false,
+  "evidence": {
+    "raw_log_location": "docs/progress/evidence/B8-LOW-SPEED-NONCONTACT/",
+    "raw_log_sha256": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "recorded_at_utc": "PLACEHOLDER_REQUIRES_APPROVAL"
+  },
+  "experiment_conclusion": "NO_GO_PREPARATION_ONLY",
+  "future_entity_parameters": {
+    "axis": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "direction": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "displacement": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "speed": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "stop_distance_limit": "PLACEHOLDER_REQUIRES_APPROVAL"
+  },
+  "h1_status": "H1_EVIDENCE_INCOMPLETE",
+  "hardware_authorized": false,
+  "nano_commit": "PLACEHOLDER_REQUIRES_APPROVAL",
+  "nano_tested": false,
+  "platform": "x86_64_vm",
+  "preconditions": {
+    "environment_identity_recorded": true,
+    "h1_incomplete_acknowledged": true,
+    "manual_step_confirmation_required": true,
+    "no_entity_execution_authorized": true,
+    "offline_fixture_only": true,
+    "operator_and_estop_roles_required": true,
+    "physical_workspace_clear_rule_defined": true,
+    "post_step_record_required": true
+  },
+  "recovery_policy": {
+    "no_automatic_recovery": true,
+    "reinspect_all_gates": true,
+    "requires_new_authorization": true,
+    "requires_new_request_id": true
+  },
+  "request_id": "b8-protocol-20260824-0001",
+  "roles": {
+    "emergency_stop_lead": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "independent_reviewer": "PLACEHOLDER_REQUIRES_APPROVAL",
+    "operator": "PLACEHOLDER_REQUIRES_APPROVAL"
+  },
+  "rollback": {
+    "evidence_location": "docs/progress/evidence/B8-LOW-SPEED-NONCONTACT/",
+    "on_anomaly": "stop immediately; preserve evidence; do not auto-recover",
+    "on_no_go": "keep all entity outputs disabled; do not start hardware"
+  },
+  "schema_version": "b8.low-speed-noncontact-prep.v1",
+  "simulation_only": true,
+  "single_step_policy": {
+    "acupoint_sequence_forbidden": true,
+    "automatic_recovery_forbidden": true,
+    "automatic_sequence_forbidden": true,
+    "complete_left_route_forbidden": true,
+    "complete_right_route_forbidden": true,
+    "continuous_jog_forbidden": true,
+    "dummy_contact_forbidden": true,
+    "emergency_stop_lead_present_required": true,
+    "human_contact_forbidden": true,
+    "manual_confirmation_before_each_step": true,
+    "new_request_id_for_recovery": true,
+    "operator_present_required": true,
+    "record_after_each_step": true,
+    "safety_state_reread_before_each_step": true,
+    "single_axis_only": true,
+    "single_discrete_action_only": true,
+    "workspace_clear_required": true
+  },
+  "software_commit": "9e0c4b925062b0a7c8fd2fa25fd985fe9798402b",
+  "source_sha256": "1f692999b8e94aa4f7a0e44649712f7b3124b13235971292787f0963f721eb82",
+  "stop_conditions": [
+    "any_anomaly",
+    "brake_unknown",
+    "collision_abnormal",
+    "emergency_stop_unavailable",
+    "feedback_expired",
+    "feedback_loss",
+    "soft_limit_abnormal",
+    "watchdog_timeout"
+  ]
+}

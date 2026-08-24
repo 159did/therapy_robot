@@ -1,4 +1,5 @@
 #include "therapy_robot/collision.hpp"
+#include "therapy_robot/control_safety_gate.hpp"
 #include "therapy_robot/kinematics.hpp"
 #include "therapy_robot/motion_plan.hpp"
 #include "therapy_robot/readiness.hpp"
@@ -232,7 +233,7 @@ ReadinessInput readiness_input_snapshot(const SharedState& state,
   input.source_state = {facts.source_state.command_seq,
                         facts.source_state.target_command_seq,
                         facts.source_state.endpoint_target_seq};
-  input.source_state_known = state.magic == 0x54524f42 && state.version == 2;
+  input.source_state_known = state.magic == 0x54524f42 && state.version == 3;
   input.safety_state_known = input.source_state_known;
   input.configuration_known = input.source_state_known;
   input.emergency_stop = facts.emergency_stop;
@@ -872,6 +873,83 @@ int main() {
     const int port = current_web_port();
     std::string web = root_dir() + "/web";
     httplib::Server server;
+    server.set_pre_request_handler(
+        [state](const httplib::Request& req, httplib::Response& res) {
+          if (req.method != "POST" || req.path.rfind("/api/", 0) != 0) {
+            return httplib::Server::HandlerResponse::Unhandled;
+          }
+
+          const auto policy = classify_control_post(req.path);
+          const auto body = validate_control_body(policy, req.body);
+          ControlRequest request;
+          request.action = policy.action;
+          request.evaluated_at_ms = now_ms();
+          request.input_schema_valid = body.schema_valid;
+          request.input_finite = body.finite;
+          request.has_unknown_fields = body.has_unknown_fields;
+          request.has_missing_fields = body.has_missing_fields;
+          request.expected_input_units = policy.expected_units;
+
+          if (policy.action == ControlActionKind::EntityControl) {
+            request.request_id = req.get_header_value("X-Request-ID");
+            request.authorization_id =
+                req.get_header_value("X-Authorization-ID");
+            request.input_units = req.get_header_value("X-Input-Units");
+          } else {
+            // Offline/read-only computations use their fixed route schema and
+            // never consume entity-authorization headers.
+            request.input_units = policy.expected_units;
+          }
+
+#ifdef THERAPY_ROBOT_WEB_SIM
+          ControlSafetyState safety_state = control_safety_snapshot(*state);
+#else
+          ControlSafetyState safety_state = control_safety_snapshot(*state);
+          // The control web binary can still serve an isolated, explicitly
+          // simulated shared state.  This inference can only constrain an
+          // offline action; it never promotes entity-control authorization.
+          if (std::string(state->run_mode) == "sim" &&
+              state->simulation.hardware_mode == 0) {
+            safety_state.hardware_mode = "SIMULATION";
+          }
+#endif
+
+          const auto decision = evaluate_control_safety(
+              safety_state, request);
+          if (!decision.allowed) {
+            state->control_safety.rejected_web_requests++;
+            const std::string reason = decision.reasons.empty()
+                                           ? "control_request_rejected"
+                                           : decision.reasons.front();
+            set_text(state->control_safety.last_rejection,
+                     sizeof(state->control_safety.last_rejection),
+                     reason.c_str());
+            res.status = policy.known ? 403 : 404;
+            std::ostringstream out;
+            out << "{\"ok\":false,\"error\":\"control_safety_gate_rejected\",";
+            out << "\"reasons\":" << control_safety_reasons_json(decision) << ',';
+            out << "\"execution_allowed\":false,";
+            out << "\"entity_action_authorized\":false,";
+            out << "\"motor_command_generated\":false,";
+            out << "\"motor_target_generated\":false,";
+            out << "\"serial_payload_generated\":false}";
+            res.set_content(out.str(), "application/json");
+            return httplib::Server::HandlerResponse::Handled;
+          }
+
+          if (policy.action == ControlActionKind::EntityControl) {
+            // Publish only metadata already accepted by the gate.  Trusted
+            // authorization id/expiry state is never provisioned from HTTP.
+            set_text(state->control_safety.request_id,
+                     sizeof(state->control_safety.request_id),
+                     request.request_id.c_str());
+            set_text(state->control_safety.input_units,
+                     sizeof(state->control_safety.input_units),
+                     request.input_units.c_str());
+            state->control_safety.input_schema_valid = 1;
+          }
+          return httplib::Server::HandlerResponse::Unhandled;
+        });
     server.Get("/api/acupoints/latest", [](const httplib::Request&, httplib::Response& res) {
       const auto result_path = latest_analysis_result();
       const auto content = result_path.empty() ? std::string{} : read_file(result_path);
@@ -1666,6 +1744,11 @@ int main() {
       }
       out << "],\"result\":\"" << (all_ok ? "all_points_passed" : "failed")
           << "\",\"path_order\":\"high_deploy_then_vertical_lower_then_y_scan_then_reverse_return\","
+          << "\"execution_allowed\":false,"
+          << "\"entity_action_authorized\":false,"
+          << "\"motor_command_generated\":false,"
+          << "\"motor_target_generated\":false,"
+          << "\"serial_payload_generated\":false,"
           << "\"motor_command_written\":false,\"ok\":"
           << (all_ok ? "true" : "false") << '}';
       res.set_content(out.str(), "application/json");
@@ -1799,7 +1882,12 @@ int main() {
       std::ostringstream out;
       out << "{\"ok\":true,\"multiplier\":" << multiplier
           << ",\"mode\":\"" << (std::string(state->run_mode) == "sim" ? "sim" : "hardware")
-          << "\"}";
+          << "\",\"offline_simulation\":true"
+          << ",\"execution_allowed\":false"
+          << ",\"entity_action_authorized\":false"
+          << ",\"motor_command_generated\":false"
+          << ",\"motor_target_generated\":false"
+          << ",\"serial_payload_generated\":false}";
       res.set_content(out.str(), "application/json");
     });
     server.Post("/api/acupoint_sequence/stop", [](const httplib::Request&, httplib::Response& res) {

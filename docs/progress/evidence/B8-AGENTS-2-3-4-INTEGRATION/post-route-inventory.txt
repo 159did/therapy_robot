@@ -1,0 +1,6 @@
+Entity-control POST routes (gate required): return_arm_zero, return_z_zero, targets, jog_axis, recovery_jog_axis, jog_axis_continuous, endpoint_jog, endpoint_target, mode/switch, motion_test/point, motion_test/sequence/start, acupoint_sequence/start, enable_all, recover_arm_zero, disable_all, set_zero, reset_emergency_stop, clear_faults, reconcile/apply, enable_limit_stop_recovery, disable_limit_stop_recovery.
+Fail-safe stop exceptions: command/stop_all, motion_test/sequence/stop, acupoint_sequence/stop, command/emergency_stop.
+Offline/read-only POST routes: ik/check, motion_test/simulate, speed (simulation state only).
+Unknown /api/* POST: rejected by the centralized gate.
+Audit result: scoped_control_entries_uncovered=none.
+No route was called during this integration audit.

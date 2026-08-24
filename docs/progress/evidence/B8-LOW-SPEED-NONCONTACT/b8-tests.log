@@ -1,0 +1,15 @@
+/home/zzq/PTR/worktrees/b8-low-speed-noncontact-prep/docs/tasks/B8-LOW-SPEED-NONCONTACT-RECORD.example.json
+test_all_required_single_step_rules_are_frozen (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_all_required_single_step_rules_are_frozen) ... ok
+test_cli_writes_locked_report (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_cli_writes_locked_report) ... ok
+test_fault_rehearsals_are_no_go_and_need_new_authorization (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_fault_rehearsals_are_no_go_and_need_new_authorization) ... ok
+test_left_right_input_stability_and_normalized_only (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_left_right_input_stability_and_normalized_only) ... ok
+test_nominal_simulation_remains_no_go_until_h1_and_arm64_evidence (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_nominal_simulation_remains_no_go_until_h1_and_arm64_evidence) ... ok
+test_non_finite_json_is_rejected (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_non_finite_json_is_rejected) ... ok
+test_protocol_fixture_is_locked_and_placeholder_only (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_protocol_fixture_is_locked_and_placeholder_only) ... ok
+test_protocol_tampering_and_real_values_block (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_protocol_tampering_and_real_values_block) ... ok
+test_source_has_no_hardware_or_transport_dependencies (tests.test_b8_low_speed_noncontact_prep.B8PreparationTests.test_source_has_no_hardware_or_transport_dependencies) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 2.319s
+
+OK

@@ -1,0 +1,15 @@
+[ 28%] Built target therapy_robot_common
+[ 33%] Built target main_core
+[ 38%] Built target therapy_robot_motor_driver
+[ 43%] Built target main_control
+[ 48%] Built target main_sim
+[ 58%] Built target main_web_control
+[ 58%] Built target main_web_sim
+[ 64%] Built target test_collision
+[ 69%] Built target test_kinematics
+[ 74%] Built target test_motion_plan
+[ 79%] Built target test_workflow
+[ 84%] Built target test_k0_prepare_sim
+[ 89%] Built target test_readiness
+[ 94%] Built target test_control_safety_gate
+[100%] Built target main_motor

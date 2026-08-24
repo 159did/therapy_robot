@@ -1,0 +1,17 @@
+This evidence was produced on zzqVM (x86_64) only.
+real_nano_connected=false
+entity_serial_accessed=false
+d405_accessed=false
+run_jetson_hardware=false
+hardware_mode_started=false
+motor_command_sent=false
+motor_target_generated=false
+motor_enabled=false
+motor_disabled=false
+motor_homed=false
+motor_zeroed=false
+motor_jogged=false
+motor_moved=false
+brake_released=false
+configuration_modified=false
+H1_STATUS=H1_EVIDENCE_INCOMPLETE

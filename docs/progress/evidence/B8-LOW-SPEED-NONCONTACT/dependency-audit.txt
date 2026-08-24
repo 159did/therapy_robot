@@ -1,0 +1,14 @@
+scripts/b8_low_speed_noncontact_prep.py
+imports=__future__,argparse,hashlib,json,math,pathlib,re,typing
+forbidden_imports_present=false
+forbidden_calls_present=false
+scripts/build_b8_protocol_fixture.py
+imports=__future__,importlib.util,json,pathlib
+forbidden_imports_present=false
+forbidden_calls_present=false
+platform=x86_64_vm
+simulation_only=true
+nano_accessed=false
+serial_accessed=false
+d405_accessed=false
+motor_command_generated=false
