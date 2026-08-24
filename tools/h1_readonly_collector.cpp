@@ -31,7 +31,7 @@ struct Options {
   std::string k0_file = "config/k0-last-logical-native.txt";
   int samples = 10, interval_ms = 100, timeout_ms = 200;
 };
-struct Reading { int64_t raw = 0; Mf9025v2Feedback status{}, state{}; uint32_t encoder = 0; bool brake_known = false, brake_engaged = false; };
+struct Reading { int64_t raw = 0; Mf9025v2Feedback status{}, state{}; bool brake_known = false, brake_engaged = false; };
 
 bool value(int& i, int argc, char** argv, std::string& out) { if (i + 1 >= argc) return false; out = argv[++i]; return true; }
 bool parse(int argc, char** argv, Options& o) {
@@ -65,7 +65,6 @@ bool read_axis(Mf9025v2Bus& bus, const Axis& axis, Reading& r, std::string& erro
   if (!bus.read_position(axis.motor_id, r.raw, error)) return false;
   if (!bus.read_status(axis.motor_id, r.status, error)) return false;
   if (!bus.read_state(axis.motor_id, r.state, error)) return false;
-  if (!bus.read_encoder(axis.motor_id, false, r.encoder, error)) return false;
   if (axis.brake && !bus.read_brake(axis.motor_id, r.brake_engaged, error)) return false;
   r.brake_known = axis.brake; return true;
 }
@@ -81,7 +80,7 @@ void write_sample(std::ostream& out, const Axis& a, const Reading& r, int64_t of
       << ",\"native_unit\":\"native\",\"si_unit\":\"" << (a.group == 0 ? "m" : "rad") << "\""
       << ",\"online\":true,\"fault\":" << int(r.state.error_state) << ",\"enabled\":" << (r.state.motor_state ? "true" : "false")
       << ",\"velocity_native\":" << r.status.speed_native << ",\"temperature_c\":" << int(r.status.temperature_c)
-      << ",\"current_native\":" << r.status.current_native << ",\"encoder\":" << r.encoder
+      << ",\"current_native\":" << r.status.current_native << ",\"encoder\":null,\"encoder_known\":false"
       << ",\"brake_state_known\":" << (r.brake_known ? "true" : "false") << ",\"brake_engaged\":";
   if (r.brake_known) out << (r.brake_engaged ? "true" : "false"); else out << "null";
   out << ",\"feedback_valid\":true,\"limit_state\":\"unknown\",\"collision_state\":\"unknown\",\"hardware_mode\":\"readonly_serial\"}\n";
