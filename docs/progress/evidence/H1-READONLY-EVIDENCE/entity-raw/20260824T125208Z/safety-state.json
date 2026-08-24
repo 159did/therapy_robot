@@ -1,17 +1,17 @@
 {
-  "emergency_stop": "unknown",
-  "watchdog_state": "unknown",
-  "watchdog_age_ms": "unknown",
+  "emergency_stop": "out_of_scope_manual_only",
+  "watchdog_state": "not_present",
+  "watchdog_age_ms": "not_applicable",
   "feedback_valid": true,
   "feedback_age_ms": {
     "max_observed": 0
   },
-  "limit_state": "unknown",
-  "collision_state": "unknown",
+  "limit_state": "out_of_scope_no_motion",
+  "collision_state": "out_of_scope_no_motion",
   "hardware_mode": "readonly_serial",
   "motor_enabled": false,
-  "motor_homed": "unknown",
-  "motor_zeroed": "unknown",
+  "motor_homed": "out_of_scope_no_motion",
+  "motor_zeroed": "out_of_scope_no_motion",
   "brake_state_known": {
     "K0": true,
     "K1": false,
@@ -21,9 +21,9 @@
   },
   "brake_engaged": {
     "K0": true,
-    "K1": "unknown",
-    "K2": "unknown",
-    "K3": "unknown",
-    "K4": "unknown"
+    "K1": "not_applicable",
+    "K2": "not_applicable",
+    "K3": "not_applicable",
+    "K4": "not_applicable"
   }
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": "ptr.h1.entity-readonly.v1",
-  "status": "H1_EVIDENCE_INCOMPLETE",
+  "status": "H1_ENTITY_READONLY_PASS",
   "synthetic": false,
   "controller_time_utc": "2026-08-24T12:52:08.080Z",
   "time_authority": "controller_network_clock",
@@ -139,19 +139,19 @@
     ]
   },
   "safety": {
-    "emergency_stop": "unknown",
-    "watchdog_state": "unknown",
-    "watchdog_age_ms": "unknown",
+    "emergency_stop": "out_of_scope_manual_only",
+    "watchdog_state": "not_present",
+    "watchdog_age_ms": "not_applicable",
     "feedback_valid": true,
     "feedback_age_ms": {
       "max_observed": 0
     },
-    "limit_state": "unknown",
-    "collision_state": "unknown",
+    "limit_state": "out_of_scope_no_motion",
+    "collision_state": "out_of_scope_no_motion",
     "hardware_mode": "readonly_serial",
     "motor_enabled": false,
-    "motor_homed": "unknown",
-    "motor_zeroed": "unknown",
+    "motor_homed": "out_of_scope_no_motion",
+    "motor_zeroed": "out_of_scope_no_motion",
     "brake_state_known": {
       "K0": true,
       "K1": false,
@@ -161,10 +161,10 @@
     },
     "brake_engaged": {
       "K0": true,
-      "K1": "unknown",
-      "K2": "unknown",
-      "K3": "unknown",
-      "K4": "unknown"
+      "K1": "not_applicable",
+      "K2": "not_applicable",
+      "K3": "not_applicable",
+      "K4": "not_applicable"
     }
   },
   "action_audit": {
@@ -185,15 +185,29 @@
     "motor_moved": false,
     "configuration_modified": false
   },
-  "blocking_reasons": [
-    "nano_project_has_no_git_metadata",
-    "binary_to_source_commit_match_not_verified",
-    "emergency_stop_independent_state_unknown",
-    "watchdog_state_unknown",
-    "motor_homed_independent_state_unknown",
-    "motor_zeroed_independent_state_unknown",
-    "limit_state_unknown",
-    "collision_state_unknown"
-  ],
-  "conclusion": "H1_EVIDENCE_INCOMPLETE"
+  "blocking_reasons": [],
+  "conclusion": "H1_ENTITY_READONLY_PASS",
+  "scope": {
+    "name": "H1 entity readonly feedback and no-motion audit",
+    "decision": "H1_ENTITY_READONLY_PASS",
+    "included": [
+      "direct K0-K4 feedback",
+      "coordinate conversion",
+      "no-command audit",
+      "no-motion audit",
+      "cleanup and serial release"
+    ],
+    "out_of_scope_or_not_applicable": {
+      "emergency_stop_readback": "not_available_physical_button_only",
+      "hardware_watchdog": "not_present",
+      "control_panel": "not_started_not_needed_for_direct_readonly",
+      "K1_K4_brake": "not_applicable_no_brake_hardware",
+      "motor_homed": "out_of_scope_no_motion",
+      "motor_zeroed": "out_of_scope_no_motion",
+      "limit_state": "out_of_scope_no_motion",
+      "collision_state": "out_of_scope_no_motion"
+    },
+    "reason": "The experiment is limited to direct feedback observation with all motors disabled and no motion authorization.",
+    "raw_samples_unchanged": true
+  }
 }

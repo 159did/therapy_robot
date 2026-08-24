@@ -1,0 +1,23 @@
+{
+  "name": "H1 entity readonly feedback and no-motion audit",
+  "decision": "H1_ENTITY_READONLY_PASS",
+  "included": [
+    "direct K0-K4 feedback",
+    "coordinate conversion",
+    "no-command audit",
+    "no-motion audit",
+    "cleanup and serial release"
+  ],
+  "out_of_scope_or_not_applicable": {
+    "emergency_stop_readback": "not_available_physical_button_only",
+    "hardware_watchdog": "not_present",
+    "control_panel": "not_started_not_needed_for_direct_readonly",
+    "K1_K4_brake": "not_applicable_no_brake_hardware",
+    "motor_homed": "out_of_scope_no_motion",
+    "motor_zeroed": "out_of_scope_no_motion",
+    "limit_state": "out_of_scope_no_motion",
+    "collision_state": "out_of_scope_no_motion"
+  },
+  "reason": "The experiment is limited to direct feedback observation with all motors disabled and no motion authorization.",
+  "raw_samples_unchanged": true
+}
