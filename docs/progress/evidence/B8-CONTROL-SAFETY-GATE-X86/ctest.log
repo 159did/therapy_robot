@@ -1,0 +1,46 @@
+Internal ctest changing into directory: /home/zzq/PTR/worktrees/b8-control-safety-gate-x86/build/b8-control-safety-gate
+Test project /home/zzq/PTR/worktrees/b8-control-safety-gate-x86/build/b8-control-safety-gate
+      Start  1: collision_geometry
+ 1/20 Test  #1: collision_geometry ................   Passed    0.07 sec
+      Start  2: kinematics_roundtrip
+ 2/20 Test  #2: kinematics_roundtrip ..............   Passed    0.05 sec
+      Start  3: motion_plan
+ 3/20 Test  #3: motion_plan .......................   Passed    0.05 sec
+      Start  4: workflow_model
+ 4/20 Test  #4: workflow_model ....................   Passed    0.05 sec
+      Start  5: k0_prepare_sim
+ 5/20 Test  #5: k0_prepare_sim ....................   Passed    0.05 sec
+      Start  6: readiness_attestation
+ 6/20 Test  #6: readiness_attestation .............   Passed    0.04 sec
+      Start  7: control_safety_gate
+ 7/20 Test  #7: control_safety_gate ...............   Passed    0.04 sec
+      Start  8: control_safety_gate_integration
+ 8/20 Test  #8: control_safety_gate_integration ...   Passed    0.96 sec
+      Start  9: control_safety_gate_api
+ 9/20 Test  #9: control_safety_gate_api ...........   Passed    1.66 sec
+      Start 10: shared_memory_isolation
+10/20 Test #10: shared_memory_isolation ...........   Passed    1.56 sec
+      Start 11: runtime_isolation
+11/20 Test #11: runtime_isolation .................   Passed    3.71 sec
+      Start 12: interface_contract
+12/20 Test #12: interface_contract ................   Passed    0.61 sec
+      Start 13: workflow_api
+13/20 Test #13: workflow_api ......................   Passed    2.22 sec
+      Start 14: motion_plan_api
+14/20 Test #14: motion_plan_api ...................   Passed    2.46 sec
+      Start 15: readiness_api
+15/20 Test #15: readiness_api .....................   Passed    2.15 sec
+      Start 16: b3_audit_report
+16/20 Test #16: b3_audit_report ...................   Passed    6.14 sec
+      Start 17: readiness_frontend
+17/20 Test #17: readiness_frontend ................   Passed    0.71 sec
+      Start 18: d405_quality_gate
+18/20 Test #18: d405_quality_gate .................   Passed   15.60 sec
+      Start 19: camera_extrinsics_candidate
+19/20 Test #19: camera_extrinsics_candidate .......   Passed   32.68 sec
+      Start 20: workflow_frontend
+20/20 Test #20: workflow_frontend .................   Passed    0.68 sec
+
+100% tests passed, 0 tests failed out of 20
+
+Total Test time (real) =  71.70 sec

@@ -1,4 +1,5 @@
 #include "therapy_robot/collision.hpp"
+#include "therapy_robot/control_safety_gate.hpp"
 #include "therapy_robot/mf9025v2_driver.hpp"
 #include "therapy_robot/shared_memory.hpp"
 
@@ -1730,7 +1731,43 @@ int simulate_motor(SharedState& state) {
   return 0;
 }
 
+ControlSafetyDecision evaluate_queued_entity_control(
+    const SharedState& state) {
+  ControlRequest request;
+  request.action = ControlActionKind::EntityControl;
+  request.evaluated_at_ms = now_ms();
+  request.request_id = state.control_safety.request_id;
+  request.authorization_id = state.control_safety.authorization_id;
+  request.input_units = state.control_safety.input_units;
+  request.expected_input_units = state.control_safety.input_units;
+  request.input_schema_valid = state.control_safety.input_schema_valid != 0;
+  request.input_finite = state.control_safety.input_schema_valid != 0;
+  request.has_unknown_fields = false;
+  request.has_missing_fields = false;
+  return evaluate_control_safety(control_safety_snapshot(state), request);
+}
+
+void publish_motor_gate_rejection(SharedState& state,
+                                  const ControlSafetyDecision& decision) {
+  state.control_safety.rejected_motor_commands++;
+  const std::string reason = decision.reasons.empty()
+                                 ? "motor_control_gate_rejected"
+                                 : decision.reasons.front();
+  set_text(state.control_safety.last_rejection,
+           sizeof(state.control_safety.last_rejection), reason.c_str());
+  set_text(state.system_state, sizeof(state.system_state),
+           "control_gate_rejected");
+}
+
 int run_hardware(SharedState& state) {
+  // This check happens before initialize_hardware, which is the first point
+  // that can open an entity serial bus.  With B8 defaults it returns without
+  // touching a device.
+  const auto startup_gate = evaluate_queued_entity_control(state);
+  if (!startup_gate.allowed) {
+    publish_motor_gate_rejection(state, startup_gate);
+    return 2;
+  }
   HardwareRuntime runtime;
   initialize_hardware(state, runtime);
   uint64_t last_command_seq = state.command.command_seq;
@@ -1762,38 +1799,59 @@ int run_hardware(SharedState& state) {
 
     if (state.command.command_seq != last_command_seq) {
       last_command_seq = state.command.command_seq;
-      switch (state.command.command_id) {
-        case 2:
-          enable_all(state, runtime);
-          last_target_seq = state.command.target_command_seq;
-          break;
-        case 3:
-          stop_all(state, runtime, true, "disabled");
-          break;
-        case 4:
-          stop_all(state, runtime, false, "stopped");
-          break;
-        case 5:
-          zero_all_ram(state, runtime);
-          last_target_seq = state.command.target_command_seq;
-          break;
-        case 6:
-          recover_arm_zero(state, runtime);
-          last_target_seq = state.command.target_command_seq;
-          break;
-        case 8:
-          reconcile_confirmed_pose(state, runtime);
-          last_target_seq = state.command.target_command_seq;
-          break;
-        default:
-          break;
+      const bool fail_safe_stop = state.command.command_id == 4;
+      ControlRequest stop_request;
+      stop_request.action = ControlActionKind::FailSafeStop;
+      const auto gate = fail_safe_stop
+                            ? evaluate_control_safety(
+                                  control_safety_snapshot(state),
+                                  stop_request)
+                            : evaluate_queued_entity_control(state);
+      if (!gate.allowed) {
+        publish_motor_gate_rejection(state, gate);
+      } else {
+        switch (state.command.command_id) {
+          case 2:
+            enable_all(state, runtime);
+            last_target_seq = state.command.target_command_seq;
+            break;
+          case 3:
+            stop_all(state, runtime, true, "disabled");
+            break;
+          case 4:
+            stop_all(state, runtime, false, "stopped");
+            break;
+          case 5:
+            zero_all_ram(state, runtime);
+            last_target_seq = state.command.target_command_seq;
+            break;
+          case 6:
+            recover_arm_zero(state, runtime);
+            last_target_seq = state.command.target_command_seq;
+            break;
+          case 8:
+            reconcile_confirmed_pose(state, runtime);
+            last_target_seq = state.command.target_command_seq;
+            break;
+          default:
+            state.control_safety.rejected_motor_commands++;
+            set_text(state.control_safety.last_rejection,
+                     sizeof(state.control_safety.last_rejection),
+                     "unknown_motor_command_id");
+            break;
+        }
       }
     }
 
     if (!state.emergency_stop &&
         state.command.target_command_seq != last_target_seq) {
       last_target_seq = state.command.target_command_seq;
-      send_targets(state, runtime);
+      const auto gate = evaluate_queued_entity_control(state);
+      if (gate.allowed) {
+        send_targets(state, runtime);
+      } else {
+        publish_motor_gate_rejection(state, gate);
+      }
     }
 
     poll_feedback(state, runtime, poll_count++);
