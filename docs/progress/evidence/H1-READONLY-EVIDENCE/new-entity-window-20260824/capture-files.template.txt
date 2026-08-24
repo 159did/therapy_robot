@@ -1,0 +1,13 @@
+New H1 entity read-only window files (generated only after the window):
+identity.txt
+software-state.txt
+serial-identity.txt
+serial-occupancy-before.txt
+samples.jsonl
+safety-state.json
+action-audit.json
+commands.log
+process-cleanup.txt
+raw-sha256.txt
+report.json
+README.md

@@ -1,0 +1,59 @@
+{
+  "schema_version": "h1.entity.readonly.record.v2",
+  "status": "PREPARED_NOT_EXECUTED",
+  "result": null,
+  "window": {
+    "operator": null,
+    "stop_owner": null,
+    "started_at": null,
+    "ended_at": null,
+    "timezone": null,
+    "software_git_commit": null,
+    "binary_sha256": null
+  },
+  "software_host": {
+    "hostname": null,
+    "address": null,
+    "architecture": null,
+    "is_vm": null
+  },
+  "entity_device": {
+    "hostname": null,
+    "address": null,
+    "architecture": null,
+    "usb_vid": null,
+    "usb_pid": null,
+    "serial_number": null,
+    "firmware_version": null,
+    "vm_usb_serial_passthrough": null
+  },
+  "serial_occupancy": {
+    "paths": [],
+    "checked_at": null,
+    "processes": [],
+    "released_after_exit": null
+  },
+  "k0_soft_limits": {
+    "lower": null,
+    "upper": null,
+    "unit": null
+  },
+  "samples_file": "samples.jsonl",
+  "sample_count": null,
+  "emergency_stop": null,
+  "watchdog": {
+    "state": null,
+    "timeout_ms": null,
+    "age_ms": null
+  },
+  "actions": {
+    "motor_enabled": null,
+    "motor_homed": null,
+    "motor_zeroed": null,
+    "motor_moved": null,
+    "motor_command_generated": null,
+    "d405_accessed": null
+  },
+  "evidence_sha256_manifest": "sha256-manifest.template.json",
+  "notes": "Prepared only. Do not infer or fill PASS before the same-window raw evidence is complete."
+}

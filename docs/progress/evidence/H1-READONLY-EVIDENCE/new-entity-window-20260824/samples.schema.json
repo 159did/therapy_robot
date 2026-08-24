@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ptr.h1.entity.readonly.sample.v2",
+  "type": "object",
+  "required": ["sample_index", "absolute_time", "timezone", "monotonic_time_ms", "feedback_time_ms", "feedback_age_ms", "feedback_sequence", "axes"],
+  "properties": {
+    "sample_index": {"type": "integer", "minimum": 1},
+    "absolute_time": {"type": "string", "minLength": 1},
+    "timezone": {"type": "string", "minLength": 1},
+    "monotonic_time_ms": {"type": "integer", "minimum": 0},
+    "feedback_time_ms": {"type": "integer", "minimum": 0},
+    "feedback_age_ms": {"type": "integer", "minimum": 0},
+    "feedback_sequence": {"type": "integer", "minimum": 0},
+    "axes": {
+      "type": "array",
+      "minItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["axis_name", "online", "fault", "enabled", "velocity", "feedback_position_native", "actual_motor_native", "actual_axis_si", "native_unit", "si_unit", "brake_state_known", "brake_engaged", "feedback_valid"],
+        "properties": {
+          "axis_name": {"enum": ["K0", "K1", "K2", "K3", "K4"]},
+          "online": {"type": ["boolean", "integer"]},
+          "fault": {"type": ["boolean", "integer"]},
+          "enabled": {"type": ["boolean", "integer"]},
+          "velocity": {},
+          "feedback_position_native": {"type": "integer"},
+          "actual_motor_native": {"type": "integer"},
+          "actual_axis_si": {"type": "number"},
+          "native_unit": {"type": "string", "minLength": 1},
+          "si_unit": {"type": "string", "minLength": 1},
+          "brake_state_known": {"type": ["boolean", "integer"]},
+          "brake_engaged": {"type": ["boolean", "integer", "null"]},
+          "feedback_valid": {"type": ["boolean", "integer"]}
+        }
+      }
+    }
+  }
+}

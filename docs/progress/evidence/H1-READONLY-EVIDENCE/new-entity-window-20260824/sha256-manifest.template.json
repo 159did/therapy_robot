@@ -1,0 +1,17 @@
+{
+  "schema_version": "h1.entity.readonly.sha256-manifest.v2",
+  "status": "PREPARED_NOT_EXECUTED",
+  "generated_at": null,
+  "files": [
+    {"path": "record.json", "sha256": null},
+    {"path": "samples.jsonl", "sha256": null},
+    {"path": "commands.log", "sha256": null},
+    {"path": "report.json", "sha256": null},
+    {"path": "README.md", "sha256": null},
+    {"path": "environment.txt", "sha256": null},
+    {"path": "serial-occupancy.txt", "sha256": null},
+    {"path": "device-identity.txt", "sha256": null}
+  ],
+  "result": null,
+  "note": "Template only. Generate after the read-only window; do not hash or claim files that were not produced."
+}

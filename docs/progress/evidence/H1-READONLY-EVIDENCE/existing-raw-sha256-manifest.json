@@ -1,0 +1,37 @@
+{
+  "schema_version": "h1.entity.readonly.sha256-manifest.v1",
+  "status": "REVIEW_ONLY_NOT_PASS",
+  "generated_from": "retained raw entity evidence; no raw file modified",
+  "files": [
+    {
+      "path": "entity-raw/pose-readout-19700101T023629Z-retry1/README.md",
+      "size_bytes": 1370,
+      "sha256": "04160235aaaa8ebbe4291c6b8df00a2d250c1f4e4ba65cf89f919a6fca9a0539"
+    },
+    {
+      "path": "entity-raw/pose-readout-19700101T023629Z-retry1/commands.log",
+      "size_bytes": 208,
+      "sha256": "5d56e047f6e46ea233c80ac9d3fa5d5a626e00f262da2ca0a8cd375d185f8843"
+    },
+    {
+      "path": "entity-raw/pose-readout-19700101T023629Z-retry1/main_core.log",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "entity-raw/pose-readout-19700101T023629Z-retry1/main_motor.log",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "entity-raw/pose-readout-19700101T023629Z-retry1/report.json",
+      "size_bytes": 15102,
+      "sha256": "22f4e69bc36903eff89d289923d01a556e75e20f33928984f7083f49e12a20c4"
+    },
+    {
+      "path": "entity-raw/pose-readout-19700101T023629Z-retry1/samples.jsonl",
+      "size_bytes": 21256,
+      "sha256": "8e34f4162f6f189ce9e1ff84252be311ded033593aadc948e8164c78ca4df984"
+    }
+  ]
+}

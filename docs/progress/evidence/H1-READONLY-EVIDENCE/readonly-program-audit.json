@@ -1,0 +1,26 @@
+{
+  "schema_version": "h1.readonly.program.audit.v1",
+  "status": "NOT_APPROVED_FOR_ENTITY_USE",
+  "reviewed_on": "2026-08-24",
+  "host": "zzqVM",
+  "architecture": "x86_64",
+  "branch": "batch/h1-readonly-evidence",
+  "entity_motion_authorized": false,
+  "hardware_control_authorized": false,
+  "serial_access_performed_during_review": false,
+  "d405_accessed_during_review": false,
+  "read_only_guard_found": false,
+  "approved_entity_sampling_entrypoint": false,
+  "blocking_findings": [
+    "main_motor_has_enable_stop_zero_recovery_and_target_paths",
+    "main_motor_exit_calls_stop_all",
+    "main_motor_has_no_therapy_robot_read_only_guard",
+    "run_jetson_hardware_starts_full_control_process_chain",
+    "b5_h1_preflight_does_not_open_serial_and_cannot_sample_entity"
+  ],
+  "required_before_entity_window": [
+    "dedicated_read_only_sampling_program_or_source-proven_read_only_branch",
+    "explicit_no-write startup and shutdown path",
+    "static and offline verification of command audit"
+  ]
+}

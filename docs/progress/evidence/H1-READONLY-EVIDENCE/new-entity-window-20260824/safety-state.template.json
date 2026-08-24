@@ -1,0 +1,17 @@
+{
+  "status": "PREPARED_NOT_EXECUTED",
+  "emergency_stop": null,
+  "watchdog_state": null,
+  "watchdog_age_ms": null,
+  "feedback_valid": null,
+  "feedback_age_ms": null,
+  "limit_state": null,
+  "collision_state": null,
+  "hardware_mode": null,
+  "motor_enabled": null,
+  "motor_homed": null,
+  "motor_zeroed": null,
+  "brake_state_known": null,
+  "brake_engaged": null,
+  "note": "Template only; use unknown when the device does not expose an independent state."
+}
