@@ -3,4 +3,5 @@ Fail-safe stop exceptions: command/stop_all, motion_test/sequence/stop, acupoint
 Offline/read-only POST routes: ik/check, motion_test/simulate, speed (simulation state only).
 Unknown /api/* POST: rejected by the centralized gate.
 Audit result: scoped_control_entries_uncovered=none.
-No route was called during this integration audit.
+Offline API routes were exercised by software tests; no entity/hardware route
+was invoked and no hardware command was generated.
