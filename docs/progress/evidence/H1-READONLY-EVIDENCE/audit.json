@@ -1,0 +1,83 @@
+{
+  "schema_version": "h1.entity.readonly.audit.v2",
+  "result": "H1_EVIDENCE_INCOMPLETE",
+  "reviewed_at": "2026-08-24",
+  "reviewed_at_timezone": "Asia/Shanghai",
+  "reviewer_role": "H1 实体只读证据负责人",
+  "software_host": {
+    "hostname": "zzqVM",
+    "address": "192.168.216.129",
+    "architecture": "x86_64",
+    "repository": "/home/zzq/PTR/therapy_robot",
+    "worktree": "/home/zzq/PTR/worktrees/h1-readonly-evidence",
+    "branch": "batch/h1-readonly-evidence",
+    "is_entity_controller": false
+  },
+  "claimed_entity_execution": {
+    "host": "192.168.2.100",
+    "hostname": "ubuntu",
+    "user": "jetsonorin",
+    "source_claim": "raw README/report.json",
+    "real_nano_participation": "claimed_by_raw_record_not_reverified",
+    "vm_usb_serial_passthrough": "unknown",
+    "serial_path": null,
+    "device_identity": {
+      "usb_vid": null,
+      "usb_pid": null,
+      "serial_number": null,
+      "firmware_version": null
+    },
+    "operator": null,
+    "check_time": null,
+    "software_git_commit": null,
+    "binary_sha256": {
+      "main_motor": "1a00a967491633b957e900d81ee8d4d7221c9794af040daffa420e9f5d8cb176",
+      "probe": "e7159ea06f8ca3a9618607b149e7885c874f62f1932960efb07c03487b811912"
+    }
+  },
+  "raw_entity_record": {
+    "synthetic": false,
+    "entity_serial_accessed": true,
+    "sample_count": 10,
+    "axes": ["K0", "K1", "K2", "K3", "K4"],
+    "k0_samples_at_least_three": true,
+    "k0_sample_time_fields": ["snapshot_time_ms", "feedback_time_ms", "feedback_age_ms"],
+    "k0_position_units": "native and SI value present; explicit raw-unit metadata absent",
+    "k0_brake_state_known": true,
+    "k0_brake_engaged": true,
+    "k0_soft_limit_lower": null,
+    "k0_soft_limit_upper": null,
+    "emergency_stop": null,
+    "watchdog": null,
+    "serial_occupancy": "only post-shutdown no-ttyUSB-process statement; actual path and preflight occupancy absent"
+  },
+  "actions": {
+    "motor_enabled": false,
+    "motor_homed": false,
+    "motor_zeroed": false,
+    "motor_moved": false,
+    "motor_command_generated": false,
+    "d405_accessed": false,
+    "basis": "raw process log and report declare read-only scope; home/zero are not independent sampled state fields"
+  },
+  "evidence_directory": "docs/progress/evidence/H1-READONLY-EVIDENCE/entity-raw/pose-readout-19700101T023629Z-retry1",
+  "missing_required_fields": [
+    "entity_device_identity",
+    "operator",
+    "absolute_check_time",
+    "software_git_commit",
+    "serial_path",
+    "serial_occupancy_at_start",
+    "k0_soft_limit_lower_and_upper_with_units",
+    "emergency_stop_state",
+    "watchdog_state",
+    "independent_motor_homed_state",
+    "independent_motor_zeroed_state"
+  ],
+  "promotion_allowed": false,
+  "notes": [
+    "zzqVM simulation/shared-memory/HTTP evidence is excluded from entity H1 promotion",
+    "historical PENDING records are not overwritten",
+    "no new hardware access was performed during this audit"
+  ]
+}
