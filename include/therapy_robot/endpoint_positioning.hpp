@@ -10,6 +10,15 @@
 
 namespace therapy_robot {
 
+struct EndpointPositioningTolerance {
+  double position_tolerance_m = 0.001;
+  double orientation_tolerance_rad = 0.017453292519943295;
+};
+
+EndpointPositioningTolerance default_endpoint_positioning_tolerance();
+bool validate_endpoint_positioning_tolerance(
+    const EndpointPositioningTolerance& tolerance, std::string& reason);
+
 struct EndpointPositioningPreflight {
   bool ok = false;
   std::string reason;
@@ -39,11 +48,18 @@ struct EndpointPositioningResult {
   EndpointPositioningPreflight preflight{};
   Pose actual_pose{};
   double target_error_m = 0.0;
+  double orientation_error_rad = 0.0;
+  double position_tolerance_m = 0.0;
+  double orientation_tolerance_rad = 0.0;
+  bool position_check_passed = false;
+  bool orientation_check_passed = false;
 };
 
 EndpointPositioningResult evaluate_endpoint_positioning_measurement(
     const EndpointPositioningMeasurement& measurement,
     const SharedState& limits, const CollisionConfig& collision_config,
-    const RobotGeometry& geometry = default_geometry());
+    const RobotGeometry& geometry = default_geometry(),
+    const EndpointPositioningTolerance& tolerance =
+        default_endpoint_positioning_tolerance());
 
 }  // namespace therapy_robot

@@ -16,7 +16,39 @@ double position_distance(const Pose& lhs, const Pose& rhs) {
                     lhs.z_m - rhs.z_m);
 }
 
+double angle_delta(double lhs, double rhs) {
+  return std::atan2(std::sin(lhs - rhs), std::cos(lhs - rhs));
+}
+
+double orientation_distance(const Pose& lhs, const Pose& rhs) {
+  // Pose orientation uses the three commanded Euler angles. Error is the
+  // Euclidean norm of wrapped per-axis deltas, in radians.
+  return std::sqrt(std::pow(angle_delta(lhs.rx_rad, rhs.rx_rad), 2) +
+                   std::pow(angle_delta(lhs.ry_rad, rhs.ry_rad), 2) +
+                   std::pow(angle_delta(lhs.rz_rad, rhs.rz_rad), 2));
+}
+
 }  // namespace
+
+EndpointPositioningTolerance default_endpoint_positioning_tolerance() {
+  return {};
+}
+
+bool validate_endpoint_positioning_tolerance(
+    const EndpointPositioningTolerance& tolerance, std::string& reason) {
+  if (!std::isfinite(tolerance.position_tolerance_m) ||
+      tolerance.position_tolerance_m <= 0.0) {
+    reason = "position_tolerance_m must be a finite positive number";
+    return false;
+  }
+  if (!std::isfinite(tolerance.orientation_tolerance_rad) ||
+      tolerance.orientation_tolerance_rad <= 0.0) {
+    reason = "orientation_tolerance_rad must be a finite positive number";
+    return false;
+  }
+  reason = "ok";
+  return true;
+}
 
 EndpointPositioningPreflight preflight_endpoint_positioning(
     const JointState& source, const Pose& target, const SharedState& limits,
@@ -69,8 +101,16 @@ EndpointPositioningPreflight preflight_endpoint_positioning(
 EndpointPositioningResult evaluate_endpoint_positioning_measurement(
     const EndpointPositioningMeasurement& measurement,
     const SharedState& limits, const CollisionConfig& collision_config,
-    const RobotGeometry& geometry) {
+    const RobotGeometry& geometry,
+    const EndpointPositioningTolerance& tolerance) {
   EndpointPositioningResult output{};
+  output.position_tolerance_m = tolerance.position_tolerance_m;
+  output.orientation_tolerance_rad = tolerance.orientation_tolerance_rad;
+  std::string tolerance_reason;
+  if (!validate_endpoint_positioning_tolerance(tolerance, tolerance_reason)) {
+    output.reason = "invalid tolerance: " + tolerance_reason;
+    return output;
+  }
   output.preflight = preflight_endpoint_positioning(
       measurement.source, measurement.target, limits, collision_config, geometry);
   if (!output.preflight.ok) {
@@ -92,6 +132,20 @@ EndpointPositioningResult evaluate_endpoint_positioning_measurement(
   }
   output.actual_pose = forward_kinematics(measurement.actual, geometry);
   output.target_error_m = position_distance(output.actual_pose, measurement.target);
+  output.orientation_error_rad = orientation_distance(output.actual_pose,
+                                                      measurement.target);
+  output.position_check_passed =
+      output.target_error_m <= tolerance.position_tolerance_m;
+  output.orientation_check_passed =
+      output.orientation_error_rad <= tolerance.orientation_tolerance_rad;
+  if (!output.position_check_passed) {
+    output.reason = "position_error_exceeds_tolerance";
+    return output;
+  }
+  if (!output.orientation_check_passed) {
+    output.reason = "orientation_error_exceeds_tolerance";
+    return output;
+  }
   output.accepted = true;
   output.reason = "ok";
   return output;

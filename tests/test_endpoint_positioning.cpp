@@ -30,6 +30,7 @@ int main() {
   therapy_robot::SharedState limits;
   therapy_robot::initialize_defaults(limits);
   const auto collision = test_collision_config();
+  const auto tolerance = therapy_robot::default_endpoint_positioning_tolerance();
   const therapy_robot::JointState source{0.050, 0.10, -0.20, 0.02, -0.03};
   const auto target = therapy_robot::forward_kinematics(source);
 
@@ -47,9 +48,10 @@ int main() {
   measurement.target = target;
   measurement.actual = {0.0502, 0.1001, -0.1999, 0.0200, -0.0300};
   const auto result = therapy_robot::evaluate_endpoint_positioning_measurement(
-      measurement, limits, collision);
+      measurement, limits, collision, therapy_robot::default_geometry(), tolerance);
   if (!require(result.accepted, "nominal feedback must be accepted") ||
-      !require(result.target_error_m > 0.0, "feedback perturbation must change endpoint")) {
+      !require(result.target_error_m > 0.0, "feedback perturbation must change endpoint") ||
+      !require(result.orientation_check_passed, "nominal orientation must pass")) {
     return 1;
   }
 
@@ -63,6 +65,37 @@ int main() {
   }
 
   measurement.actual = source;
+  measurement.actual.k1_rad += 0.1;
+  const auto position_rejected = therapy_robot::evaluate_endpoint_positioning_measurement(
+      measurement, limits, collision, therapy_robot::default_geometry(),
+      {1e-6, 0.5});
+  if (!require(!position_rejected.accepted, "position error above threshold must reject") ||
+      !require(position_rejected.reason == "position_error_exceeds_tolerance",
+               "position rejection reason must be explicit")) {
+    return 1;
+  }
+
+  measurement.actual = source;
+  measurement.target.rx_rad = 0.1;
+  const auto orientation_rejected = therapy_robot::evaluate_endpoint_positioning_measurement(
+      measurement, limits, collision, therapy_robot::default_geometry(),
+      {1.0, 0.01});
+  if (!require(!orientation_rejected.accepted, "orientation error above threshold must reject") ||
+      !require(orientation_rejected.reason == "orientation_error_exceeds_tolerance",
+               "orientation rejection reason must be explicit")) {
+    return 1;
+  }
+
+  const auto invalid_tolerance = therapy_robot::evaluate_endpoint_positioning_measurement(
+      measurement, limits, collision, therapy_robot::default_geometry(), {0.0, 0.01});
+  if (!require(!invalid_tolerance.accepted, "invalid tolerance must reject") ||
+      !require(invalid_tolerance.reason.find("invalid tolerance") != std::string::npos,
+               "invalid tolerance reason must be explicit")) {
+    return 1;
+  }
+
+  measurement.actual = source;
+  measurement.target = target;
   measurement.target.x_m = std::numeric_limits<double>::quiet_NaN();
   const auto non_finite = therapy_robot::evaluate_endpoint_positioning_measurement(
       measurement, limits, collision);

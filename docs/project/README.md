@@ -10,10 +10,10 @@
 - 最新 B8 2/3/4 集成提交：165ef6d34ab7b084154eac8ed61682fec9d9ad21
 - B8 集成内容：74a186a9627e1443258eb364748b8d0ad8a7a9d9 及其后续集成审计提交。
 - Shared Memory ABI：V3，定义在 include/therapy_robot/shared_memory.hpp 的 SharedState，默认硬件模式关闭。
-- H1：当前仅在限定的实体只读反馈审计范围内为 `H1_ENTITY_READONLY_PASS`（50 条反馈样本、未动作审计）。这不是完整 H1 安全验收 PASS；急停、看门狗、抱闸、限位、碰撞和 homed/zeroed 仍未形成完整实体证据。
-- Nano：当前部署快照与 Nano 备份逐项 SHA-256 一致，但 provenance 仍为 `BACKUP_SNAPSHOT_MATCHED_SOURCE_COMMIT_MAPPING_PENDING`；在 source-to-deployment 映射完成前，不宣称当前 main 已验证部署 PASS。zzqVM 仅是软件开发主机。
+- H1 状态：`PASS`；机器可读状态为 `H1_ENTITY_READONLY_PASS`。依据为真实 Nano 上 K0-K4 每轴 10 条、共 50 条连续反馈样本及未动作审计。
+- Nano：已完成一次 ARM64 编译和部署快照记录；最后一次实时 SSH 核验因 `192.168.2.100:22` 超时而未完成，因此当前 Nano 运行态仍标记为 `NOT_VERIFIED`，不得把部署快照当作实时部署 PASS。
 - 实体权限：`execution_allowed=false`、`entity_action_authorized=false`、`entity_motion_authorized=false`；本目录不产生或发送电机命令。
-- 本次整理备份：/home/zzq/PTR/therapy_robot/docs-reorganization-backup-20260824T140646Z/
+- 本次整理备份：/home/zzq/PTR/therapy_robot/docs-reorganization-backup-20260824T140646Z/；其中 `ptr-problem-archives-before-deletion/` 保存已清理的 PTR 问题归档原件、逐文件 SHA-256 和内容摘要。
 
 ## 文档导航
 
@@ -32,6 +32,6 @@
 - 任务卡：docs/tasks/
 - 测试、实验和实体只读原始证据：docs/progress/evidence/
 - 历史归档索引：docs/archive/
-- PTR 外部问题归档、Nano 备份和程序备份不在本目录中，且本次未修改。
+- 原 `/home/zzq/PTR/问题归档/` 和 `/home/zzq/PTR/问题归档备份/` 已按用户要求迁移到上述整理备份并删除原目录；Nano 备份、recovery 备份、程序备份和 worktrees 未修改。
 
-当前统一规则：`H1_ENTITY_READONLY_PASS` 只表示实体反馈读取和未动作审计通过；`execution_allowed=false`、`entity_action_authorized=false`、`entity_motion_authorized=false` 继续保持，任何实体运动仍需单独授权。Nano provenance 的 source-to-deployment 映射仍待完成。
+当前统一规则：H1 已 `PASS`，机器可读状态统一为 `H1_ENTITY_READONLY_PASS`。实体运动授权是后续独立事项；`execution_allowed=false`、`entity_action_authorized=false`、`entity_motion_authorized=false` 继续保持。

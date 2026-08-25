@@ -22,6 +22,10 @@ using therapy_robot::EndpointPositioningMeasurement;
 using therapy_robot::EndpointPositioningResult;
 using therapy_robot::JointState;
 using therapy_robot::Pose;
+using therapy_robot::EndpointPositioningTolerance;
+
+struct InputError : std::runtime_error { using std::runtime_error::runtime_error; };
+struct OutputError : std::runtime_error { using std::runtime_error::runtime_error; };
 
 constexpr const char* kRequiredHeader =
     "sample_id,side,source_k0_m,source_k1_rad,source_k2_rad,source_k3_rad,source_k4_rad,"
@@ -58,10 +62,10 @@ double parse_number(const std::string& text, const std::string& field,
   try {
     value = std::stod(text, &consumed);
   } catch (const std::exception&) {
-    throw std::runtime_error("row " + std::to_string(row) + ": invalid " + field);
+    throw InputError("row " + std::to_string(row) + ": invalid " + field);
   }
   if (consumed != text.size() || !std::isfinite(value)) {
-    throw std::runtime_error("row " + std::to_string(row) + ": invalid " + field);
+    throw InputError("row " + std::to_string(row) + ": invalid " + field);
   }
   return value;
 }
@@ -70,10 +74,10 @@ EndpointPositioningMeasurement parse_measurement(const std::string& line,
                                                   std::size_t row) {
   const auto fields = split_csv(line);
   if (fields.size() != 18) {
-    throw std::runtime_error("row " + std::to_string(row) + ": expected 18 CSV fields");
+    throw InputError("row " + std::to_string(row) + ": expected 18 CSV fields");
   }
   if (fields[0].empty() || (fields[1] != "left" && fields[1] != "right")) {
-    throw std::runtime_error("row " + std::to_string(row) + ": sample_id and side are required");
+    throw InputError("row " + std::to_string(row) + ": sample_id and side are required");
   }
   EndpointPositioningMeasurement measurement;
   measurement.sample_id = fields[0];
@@ -99,10 +103,10 @@ EndpointPositioningMeasurement parse_measurement(const std::string& line,
 
 std::vector<EndpointPositioningMeasurement> read_measurements(const std::string& path) {
   std::ifstream input(path);
-  if (!input) throw std::runtime_error("cannot open input CSV: " + path);
+  if (!input) throw InputError("cannot open input CSV: " + path);
   std::string line;
   if (!std::getline(input, line) || line != kRequiredHeader) {
-    throw std::runtime_error("input CSV header does not match required schema");
+    throw InputError("input CSV header does not match required schema");
   }
   std::vector<EndpointPositioningMeasurement> output;
   std::size_t row = 1;
@@ -111,13 +115,13 @@ std::vector<EndpointPositioningMeasurement> read_measurements(const std::string&
     if (line.empty()) continue;
     output.push_back(parse_measurement(line, row));
   }
-  if (output.empty()) throw std::runtime_error("input CSV contains no measurements");
+  if (output.empty()) throw InputError("input CSV contains no measurements");
   return output;
 }
 
 std::string file_contents(const std::string& path) {
   std::ifstream input(path, std::ios::binary);
-  if (!input) throw std::runtime_error("cannot open input CSV: " + path);
+  if (!input) throw InputError("cannot open input CSV: " + path);
   std::ostringstream output;
   output << input.rdbuf();
   return output.str();
@@ -139,7 +143,7 @@ void validate_repeatability_groups(
         std::abs(measurement.target.rx_rad - found->second.rx_rad) > kTargetToleranceM ||
         std::abs(measurement.target.ry_rad - found->second.ry_rad) > kTargetToleranceM ||
         std::abs(measurement.target.rz_rad - found->second.rz_rad) > kTargetToleranceM) {
-      throw std::runtime_error("side '" + measurement.side +
+      throw InputError("side '" + measurement.side +
                                "' has inconsistent target poses");
     }
   }
@@ -207,33 +211,63 @@ void write_summary_json(std::ostream& out, const Summary& summary) {
       << '}';
 }
 
+std::string json_string(const std::string& value) {
+  std::ostringstream escaped;
+  for (const char character : value) {
+    switch (character) {
+      case '\\': escaped << "\\\\"; break;
+      case '"': escaped << "\\\""; break;
+      case '\n': escaped << "\\n"; break;
+      case '\r': escaped << "\\r"; break;
+      case '\t': escaped << "\\t"; break;
+      default: escaped << character; break;
+    }
+  }
+  return escaped.str();
+}
+
 void write_usage(std::ostream& out) {
-  out << "usage: endpoint_positioning_report --input measurements.csv --collision-config enclosure.csv --json report.json --csv results.csv\n";
+  out << "usage: endpoint_positioning_report --input measurements.csv --collision-config enclosure.csv --json report.json --csv results.csv [--position-tolerance-m N] [--orientation-tolerance-rad N]\n";
 }
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  std::string input_path;
-  std::string collision_path;
-  std::string json_path;
-  std::string csv_path;
-  for (int index = 1; index < argc; index += 2) {
-    if (index + 1 >= argc) { write_usage(std::cerr); return 2; }
-    const std::string flag = argv[index];
-    const std::string value = argv[index + 1];
-    if (flag == "--input") input_path = value;
-    else if (flag == "--collision-config") collision_path = value;
-    else if (flag == "--json") json_path = value;
-    else if (flag == "--csv") csv_path = value;
-    else { write_usage(std::cerr); return 2; }
-  }
-  if (input_path.empty() || collision_path.empty() || json_path.empty() || csv_path.empty()) {
-    write_usage(std::cerr);
-    return 2;
-  }
-
   try {
+    std::string input_path;
+    std::string collision_path;
+    std::string json_path;
+    std::string csv_path;
+    auto tolerance = therapy_robot::default_endpoint_positioning_tolerance();
+    for (int index = 1; index < argc; index += 2) {
+      if (index + 1 >= argc) {
+        write_usage(std::cerr);
+        return 2;
+      }
+      const std::string flag = argv[index];
+      const std::string value = argv[index + 1];
+      if (flag == "--input") input_path = value;
+      else if (flag == "--collision-config") collision_path = value;
+      else if (flag == "--json") json_path = value;
+      else if (flag == "--csv") csv_path = value;
+      else if (flag == "--position-tolerance-m") {
+        tolerance.position_tolerance_m = parse_number(value, flag, 0);
+      } else if (flag == "--orientation-tolerance-rad") {
+        tolerance.orientation_tolerance_rad = parse_number(value, flag, 0);
+      } else {
+        write_usage(std::cerr);
+        return 2;
+      }
+    }
+    if (input_path.empty() || collision_path.empty() || json_path.empty() ||
+        csv_path.empty()) {
+      write_usage(std::cerr);
+      return 2;
+    }
+    std::string tolerance_reason;
+    if (!therapy_robot::validate_endpoint_positioning_tolerance(tolerance, tolerance_reason)) {
+      throw InputError(tolerance_reason);
+    }
     const auto measurements = read_measurements(input_path);
     validate_repeatability_groups(measurements);
     const std::string input_sha256 = therapy_robot::sha256_hex(file_contents(input_path));
@@ -244,7 +278,7 @@ int main(int argc, char** argv) {
     results.reserve(measurements.size());
     for (const auto& measurement : measurements) {
       results.push_back(therapy_robot::evaluate_endpoint_positioning_measurement(
-          measurement, limits, collision));
+          measurement, limits, collision, therapy_robot::default_geometry(), tolerance));
     }
 
     std::map<std::string, std::vector<const EndpointPositioningResult*>> groups;
@@ -253,8 +287,8 @@ int main(int argc, char** argv) {
     }
 
     std::ofstream csv(csv_path);
-    if (!csv) throw std::runtime_error("cannot write CSV: " + csv_path);
-    csv << "sample_id,side,accepted,reason,actual_x_m,actual_y_m,actual_z_m,target_error_m,collision_checked,collision_reason\n";
+    if (!csv) throw OutputError("cannot write CSV: " + csv_path);
+    csv << "sample_id,side,accepted,reason,actual_x_m,actual_y_m,actual_z_m,target_error_m,orientation_error_rad,position_tolerance_m,orientation_tolerance_rad,position_check_passed,orientation_check_passed,collision_checked,collision_reason\n";
     csv << std::setprecision(17);
     for (std::size_t index = 0; index < results.size(); ++index) {
       const auto& result = results[index];
@@ -262,17 +296,34 @@ int main(int argc, char** argv) {
           << (result.accepted ? "true" : "false") << ',' << result.reason << ','
           << result.actual_pose.x_m << ',' << result.actual_pose.y_m << ','
           << result.actual_pose.z_m << ',' << result.target_error_m << ','
+          << result.orientation_error_rad << ',' << result.position_tolerance_m << ','
+          << result.orientation_tolerance_rad << ','
+          << (result.position_check_passed ? "true" : "false") << ','
+          << (result.orientation_check_passed ? "true" : "false") << ','
           << (result.preflight.collision.checked ? "true" : "false") << ','
           << result.preflight.collision.reason << '\n';
     }
+    csv.flush();
+    if (!csv) throw OutputError("cannot finish CSV: " + csv_path);
 
     std::ofstream json(json_path);
-    if (!json) throw std::runtime_error("cannot write JSON: " + json_path);
+    if (!json) throw OutputError("cannot write JSON: " + json_path);
+    std::size_t accepted_samples = 0;
+    for (const auto& result : results) if (result.accepted) ++accepted_samples;
+    const std::size_t rejected_samples = results.size() - accepted_samples;
+    const bool all_samples_accepted = rejected_samples == 0;
     json << std::setprecision(17);
     json << "{\"schema_version\":\"s3.endpoint-positioning.offline.v1\""
          << ",\"platform\":\"x86_64_vm\""
          << ",\"host\":\"zzqVM\""
          << ",\"input_sha256\":\"" << input_sha256 << "\""
+         << ",\"status\":\"" << (all_samples_accepted ? "PASS" : "FAIL") << "\""
+         << ",\"all_samples_accepted\":" << (all_samples_accepted ? "true" : "false")
+         << ",\"position_tolerance_m\":" << tolerance.position_tolerance_m
+         << ",\"orientation_tolerance_rad\":" << tolerance.orientation_tolerance_rad
+         << ",\"total_samples\":" << results.size()
+         << ",\"accepted_samples\":" << accepted_samples
+         << ",\"rejected_samples\":" << rejected_samples
          << ",\"execution_allowed\":false"
          << ",\"entity_action_authorized\":false"
          << ",\"motor_command_generated\":false"
@@ -284,18 +335,45 @@ int main(int argc, char** argv) {
          << ",\"nano_tested\":false"
          << ",\"arm64_tested\":false"
          << ",\"entity_hardware_tested\":false"
-         << ",\"collision_config\":\"" << collision_path << "\""
+         << ",\"collision_config\":\"" << json_string(collision_path) << "\""
          << ",\"sides\":{";
     bool first = true;
     for (const auto& item : groups) {
       if (!first) json << ',';
       first = false;
-      json << '"' << item.first << "\":";
+      json << '"' << json_string(item.first) << "\":";
       write_summary_json(json, summarize(item.second));
     }
-    json << "}}\n";
+    json << "},\"samples\":[";
+    for (std::size_t index = 0; index < results.size(); ++index) {
+      if (index != 0) json << ',';
+      const auto& result = results[index];
+      json << "{\"sample_id\":\"" << json_string(measurements[index].sample_id)
+           << "\",\"side\":\"" << json_string(measurements[index].side)
+           << "\",\"accepted\":" << (result.accepted ? "true" : "false")
+           << ",\"reason\":\"" << json_string(result.reason) << "\""
+           << ",\"target_error_m\":" << result.target_error_m
+           << ",\"position_tolerance_m\":" << result.position_tolerance_m
+           << ",\"position_check_passed\":"
+           << (result.position_check_passed ? "true" : "false")
+           << ",\"orientation_error_rad\":" << result.orientation_error_rad
+           << ",\"orientation_tolerance_rad\":"
+           << result.orientation_tolerance_rad
+           << ",\"orientation_check_passed\":"
+           << (result.orientation_check_passed ? "true" : "false")
+           << "}";
+    }
+    json << "]}\n";
+    json.flush();
+    if (!json) throw OutputError("cannot finish JSON: " + json_path);
     std::cout << "offline endpoint positioning report created: " << json_path << '\n';
-    return 0;
+    return all_samples_accepted ? 0 : 1;
+  } catch (const InputError& error) {
+    std::cerr << "endpoint positioning input rejected: " << error.what() << '\n';
+    return 2;
+  } catch (const OutputError& error) {
+    std::cerr << "endpoint positioning output rejected: " << error.what() << '\n';
+    return 1;
   } catch (const std::exception& error) {
     std::cerr << "endpoint positioning report rejected: " << error.what() << '\n';
     return 1;
