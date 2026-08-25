@@ -12,6 +12,8 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/third_party)
 add_library(therapy_robot_common STATIC
   src/common/collision.cpp
   src/common/control_safety_gate.cpp
+  src/common/endpoint_positioning.cpp
+  src/common/joint_limits.cpp
   src/common/kinematics.cpp
   src/common/motion_plan.cpp
   src/common/readiness.cpp
@@ -52,6 +54,9 @@ target_link_libraries(main_web_sim PRIVATE therapy_robot_common)
 add_executable(h1_readonly_collector tools/h1_readonly_collector.cpp)
 target_link_libraries(h1_readonly_collector PRIVATE therapy_robot_motor_driver)
 
+add_executable(endpoint_positioning_report tools/endpoint_positioning_report.cpp)
+target_link_libraries(endpoint_positioning_report PRIVATE therapy_robot_common)
+
 # Linaro GCC 7.5, used by the Jetson Nano toolchain, exposes C++17
 # filesystem through libstdc++fs and <experimental/filesystem>.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
@@ -59,7 +64,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
   target_link_libraries(main_web_sim PRIVATE stdc++fs)
 endif()
 
-install(TARGETS main_core main_control main_motor main_sim main_web_control main_web_sim h1_readonly_collector RUNTIME DESTINATION bin)
+install(TARGETS main_core main_control main_motor main_sim main_web_control main_web_sim h1_readonly_collector endpoint_positioning_report RUNTIME DESTINATION bin)
 install(DIRECTORY web/ DESTINATION web)
 
 include(CTest)
@@ -86,6 +91,9 @@ if(BUILD_TESTING)
   add_executable(test_control_safety_gate tests/test_control_safety_gate.cpp)
   target_link_libraries(test_control_safety_gate PRIVATE therapy_robot_common)
   add_test(NAME control_safety_gate COMMAND test_control_safety_gate)
+  add_executable(test_endpoint_positioning tests/test_endpoint_positioning.cpp)
+  target_link_libraries(test_endpoint_positioning PRIVATE therapy_robot_common)
+  add_test(NAME endpoint_positioning COMMAND test_endpoint_positioning)
   add_test(
     NAME control_safety_gate_integration
     COMMAND ${Python3_EXECUTABLE}
