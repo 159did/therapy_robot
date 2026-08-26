@@ -57,6 +57,9 @@ target_link_libraries(h1_readonly_collector PRIVATE therapy_robot_motor_driver)
 add_executable(endpoint_positioning_report tools/endpoint_positioning_report.cpp)
 target_link_libraries(endpoint_positioning_report PRIVATE therapy_robot_common)
 
+add_executable(endpoint_repeatability_sim tools/endpoint_repeatability_sim.cpp)
+target_link_libraries(endpoint_repeatability_sim PRIVATE therapy_robot_common)
+
 # Linaro GCC 7.5, used by the Jetson Nano toolchain, exposes C++17
 # filesystem through libstdc++fs and <experimental/filesystem>.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
@@ -64,7 +67,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
   target_link_libraries(main_web_sim PRIVATE stdc++fs)
 endif()
 
-install(TARGETS main_core main_control main_motor main_sim main_web_control main_web_sim h1_readonly_collector endpoint_positioning_report RUNTIME DESTINATION bin)
+install(TARGETS main_core main_control main_motor main_sim main_web_control main_web_sim h1_readonly_collector endpoint_positioning_report endpoint_repeatability_sim RUNTIME DESTINATION bin)
 install(DIRECTORY web/ DESTINATION web)
 
 include(CTest)
@@ -108,6 +111,15 @@ if(BUILD_TESTING)
             --report $<TARGET_FILE:endpoint_positioning_report>
             --fixture ${CMAKE_SOURCE_DIR}/tests/fixtures/endpoint_positioning/offline_measurements.csv
             --collision-config ${CMAKE_SOURCE_DIR}/config/enclosure-collision.csv
+  )
+  add_test(
+    NAME endpoint_repeatability_sim
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_endpoint_repeatability_sim.py
+            --tool $<TARGET_FILE:endpoint_repeatability_sim>
+            --points ${CMAKE_SOURCE_DIR}/tests/fixtures/endpoint_positioning/repeatability_points.csv
+            --collision-config ${CMAKE_SOURCE_DIR}/config/enclosure-collision.csv
+            --source ${CMAKE_SOURCE_DIR}/tools/endpoint_repeatability_sim.cpp
   )
   add_test(
     NAME control_safety_gate_integration
