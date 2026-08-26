@@ -95,6 +95,14 @@ if(BUILD_TESTING)
   target_link_libraries(test_endpoint_positioning PRIVATE therapy_robot_common)
   add_test(NAME endpoint_positioning COMMAND test_endpoint_positioning)
   add_test(
+    NAME endpoint_positioning_cli
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_endpoint_positioning_cli.py
+            --report $<TARGET_FILE:endpoint_positioning_report>
+            --fixture ${CMAKE_SOURCE_DIR}/tests/fixtures/endpoint_positioning/offline_measurements.csv
+            --collision-config ${CMAKE_SOURCE_DIR}/config/enclosure-collision.csv
+  )
+  add_test(
     NAME control_safety_gate_integration
     COMMAND ${Python3_EXECUTABLE}
             ${CMAKE_SOURCE_DIR}/tests/test_control_safety_gate_integration.py
