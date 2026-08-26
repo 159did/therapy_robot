@@ -94,6 +94,13 @@ if(BUILD_TESTING)
   add_executable(test_endpoint_positioning tests/test_endpoint_positioning.cpp)
   target_link_libraries(test_endpoint_positioning PRIVATE therapy_robot_common)
   add_test(NAME endpoint_positioning COMMAND test_endpoint_positioning)
+  add_executable(test_endpoint_reachability_matrix
+                 tests/test_endpoint_reachability_matrix.cpp)
+  target_link_libraries(test_endpoint_reachability_matrix
+                        PRIVATE therapy_robot_common)
+  add_test(NAME endpoint_reachability_matrix
+           COMMAND test_endpoint_reachability_matrix
+                   ${CMAKE_SOURCE_DIR}/config/enclosure-collision.csv)
   add_test(
     NAME endpoint_positioning_cli
     COMMAND ${Python3_EXECUTABLE}
