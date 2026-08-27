@@ -2,7 +2,7 @@
 
 ## 用途与边界
 
-本工具验证完整自动循环：选择点位 -> 移动到点 -> 等待稳定 -> 读取模拟 K0-K4 反馈 -> 计算实际末端 Pose -> 在目标周围随机退开 15 mm -> 再次返回目标。每个点固定执行 3 次，结束后输出逐次 CSV 表格和 JSON 汇总。
+本工具验证完整自动循环：选择点位 -> 移动到点 -> 等待稳定 -> 读取模拟 K0-K4 反馈 -> 计算实际末端 Pose -> 在目标周围随机退开 15 mm -> 再次返回目标。每个点默认执行 3 次，可通过 `--repetitions` 选择 1 至 100 次，结束后输出逐次 CSV 表格和 JSON 汇总。
 
 这不是实体控制程序。它不访问 Nano、串口或 D405，不写共享内存，不生成电机 target、串口 payload 或电机命令。`SIMULATED_SAFE_START` 只用于整个实验开始和最终结束，不参与每次局部重复定位；它不是正式 K0-K1-K2-K3-K4 标定，也不是实体 SAFE_HIGH。
 
@@ -14,7 +14,7 @@
 cp tests/fixtures/endpoint_positioning/repeatability_points.csv /tmp/my-points.csv
 ```
 
-一行代表一个点，可以增加或删除行；程序会对每一行执行 3 次：
+一行代表一个点，可以增加或删除行；程序会对每一行执行指定次数：
 
 ```csv
 point_id,target_x_m,target_y_m,target_z_m,target_rx_rad,target_ry_rad,target_rz_rad
@@ -24,6 +24,7 @@ right_15,0.0600460185,0.224094792,0.79,0,0,0
 
 - XYZ 单位为 m；姿态单位为 rad。
 - `point_id` 必须非空且不能重复。
+- 支持 UTF-8、Windows CRLF 和文件开头的 UTF-8 BOM；表头与字段首尾的普通空格或制表符会被裁剪，字段名和字段数量仍必须严格符合上述 schema。
 - 每个点必须通过 IK、正式软限位、required collision config、起点检查和整段路径碰撞检查。
 - 不可达、越限、碰撞或格式错误的点不会被模拟执行。
 
@@ -38,22 +39,23 @@ right_15,0.0600460185,0.224094792,0.79,0,0,0
 ## 运行
 
 ```bash
-cmake -S . -B build/s3-offline \
+cmake -S . -B build/s3-review-fix \
   -DBUILD_TESTING=ON \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo
-cmake --build build/s3-offline --parallel 2
+cmake --build build/s3-review-fix --parallel 2
 
 mkdir -p /tmp/s3-repeatability-result
-build/s3-offline/endpoint_repeatability_sim \
+build/s3-review-fix/endpoint_repeatability_sim \
   --points /tmp/my-points.csv \
   --collision-config config/enclosure-collision.csv \
   --retreat-radius-m 0.015 \
+  --repetitions 3 \
   --random-seed 20260827 \
   --json /tmp/s3-repeatability-result/report.json \
   --csv /tmp/s3-repeatability-result/table.csv
 ```
 
-返回码：`0` 表示所有点各 3 次均完成；`1` 表示预检、超时、反馈或误差检查失败并停止；`2` 表示参数或点位 CSV 格式错误。
+`--repetitions` 默认值为 3，只接受 1 至 100 的十进制正整数。返回码：`0` 表示所有点均按指定次数完成；`1` 表示预检、超时、反馈或误差检查失败并停止；`2` 表示参数或点位 CSV 格式错误。
 
 ## 状态流程
 
@@ -66,7 +68,7 @@ READY
   -> RETREATING (目标周围 BASE_XY 圆周 15 mm 点)
   -> WAITING_RETREAT_SETTLE
   -> 下一次 MOVING_TO_TARGET（从随机退开点返回目标）
-  -> 每点完成 3 次
+  -> 每点完成指定次数（默认 3）
   -> RETURNING_SAFE
   -> COMPLETE
 ```
@@ -78,6 +80,8 @@ READY
 CSV 每次测试一行，包含点位、重复序号、首次到达/移开后返回、目标 Pose、模拟 K0-K4 反馈、FK 实际 Pose、位置/姿态误差、阈值判定、移动/稳定耗时、随机 seed、角度、15 mm 退开 Pose、双向安全预检、移开完成和硬件未访问字段。
 
 JSON 额外包含完整状态事件和每点汇总：平均实际 XYZ、平均/最大/RMS 位置误差、平均/最大/RMS 重复性误差及重复性标准差。
+
+本结论仅适用于 `platform=x86_64_vm`、`host=zzqVM` 的纯软件仿真。它不是实体机械臂运动，不是 Nano/ARM64 验证，也不是实体重复定位精度证据。
 
 纯仿真示例：
 

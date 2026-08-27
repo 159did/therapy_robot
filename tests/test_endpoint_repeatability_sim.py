@@ -43,6 +43,34 @@ def assert_no_entity_action(report: dict) -> None:
         require(report.get(key) is False, f"{key} must be false")
 
 
+def assert_repetition_result(report: dict, table: Path, repetitions: int) -> None:
+    expected_samples = 2 * repetitions
+    require(report["repetitions_per_point"] == repetitions,
+            "report repetition count is wrong")
+    require(report["planned_samples"] == expected_samples,
+            "planned sample count is wrong")
+    require(report["completed_samples"] == expected_samples,
+            "completed sample count is wrong")
+    require(all(item["completed_repetitions"] == repetitions
+                for item in report["point_summaries"]),
+            "point summary repetition count is wrong")
+    for point_id in ("left_15", "right_15"):
+        selected = [row for row in report["samples"] if row["point_id"] == point_id]
+        require([row["repetition"] for row in selected] ==
+                list(range(1, repetitions + 1)),
+                f"{point_id} repetition order is wrong")
+        require(selected[0]["arrival_type"] == "INITIAL_APPROACH",
+                "first arrival type is wrong")
+        require(all(row["arrival_type"] == "RETURN_AFTER_RETREAT"
+                    for row in selected[1:]),
+                "later arrivals must return after retreat")
+        require(all(row["retreat_completed"] is True for row in selected),
+                "every measurement must be followed by retreat")
+    with table.open(newline="", encoding="utf-8") as stream:
+        require(len(list(csv.DictReader(stream))) == expected_samples,
+                "CSV row count must match repetitions")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--tool", required=True, type=Path)
@@ -69,6 +97,7 @@ def main() -> int:
         require(report["planned_samples"] == 6, "two points must plan six samples")
         require(report["completed_samples"] == 6, "all six samples must complete")
         require(report["safe_start_returned"] is True, "run must return safe start")
+        assert_repetition_result(report, table_path, 3)
         require(report["test_mode"] == "randomized_radial_reacquisition",
                 "test mode must identify randomized radial reacquisition")
         require(report["retreat_plane"] == "BASE_XY",
@@ -153,28 +182,104 @@ def main() -> int:
         require(all(row["motor_command_generated"] == "false" for row in rows),
                 "CSV must not claim a motor command")
 
+        canonical = points.read_text(encoding="utf-8").replace("\r\n", "\n")
+        csv_variants = (
+            ("utf8-lf", canonical.encode("utf-8")),
+            ("windows-crlf", canonical.replace("\n", "\r\n").encode("utf-8")),
+            ("bom-crlf", b"\xef\xbb\xbf" +
+             canonical.replace("\n", "\r\n").encode("utf-8")),
+            ("trimmed-fields", (
+                " point_id , target_x_m , target_y_m , target_z_m , "
+                "target_rx_rad , target_ry_rad , target_rz_rad \r\n"
+                " left_15 , -0.0600460185 , 0.224094792 , 0.79 , 0 , 0 , 0 \r\n"
+                " right_15 , 0.0600460185 , 0.224094792 , 0.79 , 0 , 0 , 0 \r\n"
+            ).encode("utf-8")),
+        )
+        for variant_name, content in csv_variants:
+            variant_points = root / f"{variant_name}.csv"
+            variant_points.write_bytes(content)
+            variant_output = root / variant_name
+            variant_output.mkdir()
+            variant_run, variant_report_path, variant_table = run_tool(
+                tool, variant_points, collision, variant_output
+            )
+            require(variant_run.returncode == 0,
+                    f"valid CSV variant failed: {variant_name}: {variant_run.stderr}")
+            variant_report = load(variant_report_path)
+            require(variant_report["status"] == "PASS",
+                    f"valid CSV variant must pass: {variant_name}")
+            assert_repetition_result(variant_report, variant_table, 3)
+
+        invalid_csvs = (
+            ("wrong-field-count",
+             "point_id,target_x_m,target_y_m,target_z_m,target_rx_rad,target_ry_rad,target_rz_rad\n"
+             "bad,0,0.232,0.79,0,0\n"),
+            ("duplicate-id",
+             "point_id,target_x_m,target_y_m,target_z_m,target_rx_rad,target_ry_rad,target_rz_rad\n"
+             "same,-0.06,0.224,0.79,0,0,0\n"
+             " same ,0.06,0.224,0.79,0,0,0\n"),
+            ("empty-id",
+             "point_id,target_x_m,target_y_m,target_z_m,target_rx_rad,target_ry_rad,target_rz_rad\n"
+             "   ,0,0.232,0.79,0,0,0\n"),
+            ("non-finite-number",
+             "point_id,target_x_m,target_y_m,target_z_m,target_rx_rad,target_ry_rad,target_rz_rad\n"
+             "bad,nan,0.232,0.79,0,0,0\n"),
+        )
+        for invalid_name, content in invalid_csvs:
+            invalid_points = root / f"{invalid_name}.csv"
+            invalid_points.write_text(content, encoding="utf-8")
+            invalid_output = root / f"invalid-csv-{invalid_name}"
+            invalid_output.mkdir()
+            invalid_run, _, _ = run_tool(
+                tool, invalid_points, collision, invalid_output
+            )
+            require(invalid_run.returncode == 2,
+                    f"invalid CSV must return 2: {invalid_name}")
+
+        one_repetition = root / "one-repetition"
+        one_repetition.mkdir()
+        one_run, one_report_path, one_table = run_tool(
+            tool, points, collision, one_repetition, "--repetitions", "1"
+        )
+        require(one_run.returncode == 0, one_run.stderr)
+        assert_repetition_result(load(one_report_path), one_table, 1)
+
+        five_repetitions = root / "five-repetitions"
+        five_repetitions.mkdir()
+        five_run, five_report_path, five_table = run_tool(
+            tool, points, collision, five_repetitions,
+            "--repetitions", "5", "--random-seed", "20260827",
+        )
+        require(five_run.returncode == 0, five_run.stderr)
+        five_report = load(five_report_path)
+        assert_repetition_result(five_report, five_table, 5)
+        require(five_report["safe_start_returned"] is True,
+                "five-repetition run must return safe start")
+
         deterministic = root / "deterministic"
         deterministic.mkdir()
         repeated, repeated_report, repeated_table = run_tool(
-            tool, points, collision, deterministic
+            tool, points, collision, deterministic,
+            "--repetitions", "5", "--random-seed", "20260827",
         )
         require(repeated.returncode == 0, repeated.stderr)
-        require(report_path.read_bytes() == repeated_report.read_bytes(),
-                "same input must generate deterministic JSON")
-        require(table_path.read_bytes() == repeated_table.read_bytes(),
-                "same input must generate deterministic CSV")
+        require(five_report_path.read_bytes() == repeated_report.read_bytes(),
+                "same input, seed and repetitions must generate deterministic JSON")
+        require(five_table.read_bytes() == repeated_table.read_bytes(),
+                "same input, seed and repetitions must generate deterministic CSV")
 
         different_seed = root / "different-seed"
         different_seed.mkdir()
         changed, changed_report_path, _ = run_tool(
-            tool, points, collision, different_seed, "--random-seed", "7"
+            tool, points, collision, different_seed,
+            "--repetitions", "5", "--random-seed", "7",
         )
         require(changed.returncode == 0, changed.stderr)
         changed_report = load(changed_report_path)
         require(changed_report["random_seed"] == 7, "overridden seed must be recorded")
         require(
             [row["random_angle_rad"] for row in changed_report["samples"]]
-            != [row["random_angle_rad"] for row in report["samples"]],
+            != [row["random_angle_rad"] for row in five_report["samples"]],
             "different seed must change the retreat points",
         )
 
@@ -184,6 +289,11 @@ def main() -> int:
             ("--random-seed", "4294967296"),
             ("--random-seed", "-1"),
             ("--random-candidate-attempts", "0"),
+            ("--repetitions", "0"),
+            ("--repetitions", "-1"),
+            ("--repetitions", "1.5"),
+            ("--repetitions", "abc"),
+            ("--repetitions", "101"),
         )):
             invalid = root / f"invalid-{number}"
             invalid.mkdir()

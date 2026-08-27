@@ -25,10 +25,10 @@ using therapy_robot::EndpointPositioningResult;
 using therapy_robot::JointState;
 using therapy_robot::Pose;
 
-constexpr int kRepetitionsPerPoint = 3;
 constexpr double kPi = 3.14159265358979323846;
-constexpr const char* kPointHeader =
-    "point_id,target_x_m,target_y_m,target_z_m,target_rx_rad,target_ry_rad,target_rz_rad";
+constexpr std::array<const char*, 7> kPointHeaderFields{
+    "point_id", "target_x_m", "target_y_m", "target_z_m",
+    "target_rx_rad", "target_ry_rad", "target_rz_rad"};
 
 struct InputError : std::runtime_error {
   using std::runtime_error::runtime_error;
@@ -47,6 +47,7 @@ struct Options {
   double retreat_radius_m = 0.015;
   std::uint32_t random_seed = 20260827U;
   int random_candidate_attempts = 36;
+  int repetitions = 3;
   int move_timeout_ms = 2000;
   int settle_timeout_ms = 500;
   std::string feedback_loss_at;
@@ -115,11 +116,27 @@ class DeterministicRandom {
   std::uint32_t state_;
 };
 
+std::string trim_field(const std::string& value) {
+  const auto first = value.find_first_not_of(" \t");
+  if (first == std::string::npos) return {};
+  const auto last = value.find_last_not_of(" \t");
+  return value.substr(first, last - first + 1);
+}
+
+void remove_trailing_carriage_return(std::string& line) {
+  if (!line.empty() && line.back() == '\r') line.pop_back();
+}
+
+void remove_utf8_bom(std::string& line) {
+  constexpr char kUtf8Bom[] = "\xEF\xBB\xBF";
+  if (line.compare(0, 3, kUtf8Bom) == 0) line.erase(0, 3);
+}
+
 std::vector<std::string> split_csv(const std::string& line) {
   std::vector<std::string> fields;
   std::stringstream stream(line);
   std::string field;
-  while (std::getline(stream, field, ',')) fields.push_back(field);
+  while (std::getline(stream, field, ',')) fields.push_back(trim_field(field));
   return fields;
 }
 
@@ -152,6 +169,27 @@ int parse_positive_int(const std::string& text, const std::string& field) {
   return static_cast<int>(value);
 }
 
+int parse_repetitions(const std::string& text) {
+  if (text.empty() ||
+      !std::all_of(text.begin(), text.end(),
+                   [](unsigned char character) {
+                     return character >= '0' && character <= '9';
+                   })) {
+    throw InputError("repetitions must be a decimal integer from 1 to 100");
+  }
+  std::size_t consumed = 0;
+  unsigned long value = 0;
+  try {
+    value = std::stoul(text, &consumed, 10);
+  } catch (const std::exception&) {
+    throw InputError("repetitions must be a decimal integer from 1 to 100");
+  }
+  if (consumed != text.size() || value < 1UL || value > 100UL) {
+    throw InputError("repetitions must be a decimal integer from 1 to 100");
+  }
+  return static_cast<int>(value);
+}
+
 std::uint32_t parse_seed(const std::string& text) {
   std::size_t consumed = 0;
   unsigned long value = 0;
@@ -170,7 +208,15 @@ std::vector<Point> read_points(const std::string& path) {
   std::ifstream input(path);
   if (!input) throw InputError("cannot open points CSV: " + path);
   std::string line;
-  if (!std::getline(input, line) || line != kPointHeader) {
+  if (!std::getline(input, line)) {
+    throw InputError("points CSV header does not match required schema");
+  }
+  remove_trailing_carriage_return(line);
+  remove_utf8_bom(line);
+  const auto header_fields = split_csv(line);
+  if (header_fields.size() != kPointHeaderFields.size() ||
+      !std::equal(header_fields.begin(), header_fields.end(),
+                  kPointHeaderFields.begin())) {
     throw InputError("points CSV header does not match required schema");
   }
   std::vector<Point> points;
@@ -178,7 +224,8 @@ std::vector<Point> read_points(const std::string& path) {
   std::size_t row = 1;
   while (std::getline(input, line)) {
     ++row;
-    if (line.empty()) continue;
+    remove_trailing_carriage_return(line);
+    if (trim_field(line).empty()) continue;
     const auto fields = split_csv(line);
     if (fields.size() != 7 || fields[0].empty()) {
       throw InputError("row " + std::to_string(row) +
@@ -231,13 +278,15 @@ int simulated_move_duration_ms(const JointState& source,
 JointState simulated_feedback(const JointState& nominal, int repetition) {
   // Deterministic mock encoder offsets make repeatability measurable without
   // random data or any hardware access.
-  constexpr std::array<double, kRepetitionsPerPoint> kLiftOffsets{
+  constexpr std::array<double, 3> kLiftOffsets{
       0.00010, -0.00005, 0.00015};
-  constexpr std::array<double, kRepetitionsPerPoint> kJointOffsets{
+  constexpr std::array<double, 3> kJointOffsets{
       0.00002, -0.00001, 0.00003};
+  const std::size_t pattern_index =
+      static_cast<std::size_t>(repetition - 1) % kLiftOffsets.size();
   JointState feedback = nominal;
-  feedback.k0_m += kLiftOffsets[static_cast<std::size_t>(repetition - 1)];
-  feedback.k1_rad += kJointOffsets[static_cast<std::size_t>(repetition - 1)];
+  feedback.k0_m += kLiftOffsets[pattern_index];
+  feedback.k1_rad += kJointOffsets[pattern_index];
   return feedback;
 }
 
@@ -291,7 +340,7 @@ RunResult run_simulation(const std::vector<Point>& points,
   add_event(run, "READY", "", 0, "simulated_safe_start_ready");
 
   for (const auto& point : points) {
-    for (int repetition = 1; repetition <= kRepetitionsPerPoint; ++repetition) {
+    for (int repetition = 1; repetition <= options.repetitions; ++repetition) {
       const JointState approach_source = current;
       const auto preflight = therapy_robot::preflight_endpoint_positioning(
           approach_source, point.target, limits, collision);
@@ -506,9 +555,10 @@ void write_json(const std::string& path, const std::vector<Point>& points,
       << ",\"failure_reason\":\"" << json_string(run.failure_reason) << "\""
       << ",\"platform\":\"x86_64_vm\",\"host\":\"zzqVM\""
       << ",\"simulation_only\":true,\"mock_motor_used\":true"
-      << ",\"mock_feedback_used\":true,\"repetitions_per_point\":3"
+      << ",\"mock_feedback_used\":true,\"repetitions_per_point\":"
+      << options.repetitions
       << ",\"selected_points\":" << points.size()
-      << ",\"planned_samples\":" << points.size() * kRepetitionsPerPoint
+      << ",\"planned_samples\":" << points.size() * options.repetitions
       << ",\"completed_samples\":" << run.samples.size()
       << ",\"test_mode\":\"randomized_radial_reacquisition\""
       << ",\"retreat_plane\":\"BASE_XY\""
@@ -647,7 +697,8 @@ void usage(std::ostream& out) {
   out << "usage: endpoint_repeatability_sim --points points.csv "
          "--collision-config enclosure.csv --json report.json --csv table.csv "
          "[--retreat-radius-m N] [--random-seed N] "
-         "[--random-candidate-attempts N] [--move-timeout-ms N] "
+         "[--random-candidate-attempts N] [--repetitions N] "
+         "[--move-timeout-ms N] "
          "[--settle-timeout-ms N] [--simulate-feedback-loss-at point_id:repetition]\n";
 }
 
@@ -667,6 +718,8 @@ Options parse_options(int argc, char** argv) {
       options.random_seed = parse_seed(value);
     } else if (flag == "--random-candidate-attempts") {
       options.random_candidate_attempts = parse_positive_int(value, flag);
+    } else if (flag == "--repetitions") {
+      options.repetitions = parse_repetitions(value);
     } else if (flag == "--move-timeout-ms") {
       options.move_timeout_ms = parse_positive_int(value, flag);
     } else if (flag == "--settle-timeout-ms") {
