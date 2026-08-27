@@ -4,6 +4,7 @@
 import argparse
 import csv
 import json
+import math
 import subprocess
 import tempfile
 from pathlib import Path
@@ -68,6 +69,18 @@ def main() -> int:
         require(report["planned_samples"] == 6, "two points must plan six samples")
         require(report["completed_samples"] == 6, "all six samples must complete")
         require(report["safe_start_returned"] is True, "run must return safe start")
+        require(report["test_mode"] == "randomized_radial_reacquisition",
+                "test mode must identify randomized radial reacquisition")
+        require(report["retreat_plane"] == "BASE_XY",
+                "retreat plane must be BASE_XY")
+        require(math.isclose(report["retreat_radius_m"], 0.015, abs_tol=1e-12),
+                "default retreat radius must be 15 mm")
+        require(report["random_seed"] == 20260827,
+                "default random seed must be recorded")
+        require(report["random_candidate_attempts"] == 36,
+                "candidate attempt limit must be recorded")
+        require(report["retreat_destination"] == "RANDOM_CIRCLE_POINT",
+                "retreat destination must identify the random circle")
         require(all(item["completed_repetitions"] == 3
                     for item in report["point_summaries"]),
                 "each point summary must contain three repetitions")
@@ -92,6 +105,30 @@ def main() -> int:
                     "every measurement must be followed by retreat")
             require(all(row["feedback_valid"] is True for row in selected),
                     "normal feedback must be valid")
+            require(len({row["random_angle_rad"] for row in selected}) == 3,
+                    "three repetitions should use three deterministic random angles")
+            for row in selected:
+                target = row["target"]
+                retreat = row["retreat_pose"]
+                radius = math.hypot(
+                    retreat["x_m"] - target["x_m"],
+                    retreat["y_m"] - target["y_m"],
+                )
+                require(math.isclose(radius, 0.015, rel_tol=0.0, abs_tol=1e-12),
+                        "retreat point must lie on the 15 mm circle")
+                for axis in ("z_m", "rx_rad", "ry_rad", "rz_rad"):
+                    require(math.isclose(retreat[axis], target[axis], abs_tol=1e-12),
+                            f"retreat must preserve target {axis}")
+                require(0.0 <= row["random_angle_rad"] < 2.0 * math.pi,
+                        "random angle must be in [0, 2pi)")
+                require(1 <= row["random_candidate_attempt"] <= 36,
+                        "candidate attempt must be within the configured limit")
+                for field in (
+                    "retreat_ik_passed", "retreat_limit_passed",
+                    "retreat_collision_passed", "retreat_path_passed",
+                    "return_path_passed",
+                ):
+                    require(row[field] is True, f"safe retreat missing {field}")
         states = [event["state"] for event in report["events"]]
         for state in (
             "READY", "MOVING_TO_TARGET", "WAITING_TARGET_SETTLE",
@@ -107,6 +144,9 @@ def main() -> int:
         for field in (
             "target_x_m", "actual_k0_m", "actual_x_m", "position_error_m",
             "orientation_error_rad", "move_duration_ms", "retreat_completed",
+            "random_seed", "random_candidate_attempt", "random_angle_rad",
+            "retreat_radius_m", "retreat_x_m", "retreat_y_m",
+            "retreat_path_passed", "return_path_passed",
             "motor_command_generated",
         ):
             require(field in rows[0], f"CSV missing field: {field}")
@@ -123,6 +163,54 @@ def main() -> int:
                 "same input must generate deterministic JSON")
         require(table_path.read_bytes() == repeated_table.read_bytes(),
                 "same input must generate deterministic CSV")
+
+        different_seed = root / "different-seed"
+        different_seed.mkdir()
+        changed, changed_report_path, _ = run_tool(
+            tool, points, collision, different_seed, "--random-seed", "7"
+        )
+        require(changed.returncode == 0, changed.stderr)
+        changed_report = load(changed_report_path)
+        require(changed_report["random_seed"] == 7, "overridden seed must be recorded")
+        require(
+            [row["random_angle_rad"] for row in changed_report["samples"]]
+            != [row["random_angle_rad"] for row in report["samples"]],
+            "different seed must change the retreat points",
+        )
+
+        for number, arguments in enumerate((
+            ("--retreat-radius-m", "0"),
+            ("--retreat-radius-m", "nan"),
+            ("--random-seed", "4294967296"),
+            ("--random-seed", "-1"),
+            ("--random-candidate-attempts", "0"),
+        )):
+            invalid = root / f"invalid-{number}"
+            invalid.mkdir()
+            rejected_option, _, _ = run_tool(
+                tool, points, collision, invalid, *arguments
+            )
+            require(rejected_option.returncode == 2,
+                    f"invalid option must return 2: {arguments}")
+
+        no_candidate = root / "no-safe-candidate"
+        no_candidate.mkdir()
+        completed, no_candidate_report, _ = run_tool(
+            tool, points, collision, no_candidate,
+            "--retreat-radius-m", "10",
+            "--random-candidate-attempts", "3",
+        )
+        require(completed.returncode == 1,
+                "all unsafe retreat candidates must return 1")
+        candidate_failure = load(no_candidate_report)
+        require(candidate_failure["status"] == "FAIL",
+                "all unsafe candidates must fail")
+        require(candidate_failure["final_state"] == "STOPPED",
+                "all unsafe candidates must stop")
+        require(candidate_failure["failure_reason"] ==
+                "no_safe_random_retreat_point",
+                "candidate exhaustion reason must be explicit")
+        assert_no_entity_action(candidate_failure)
 
         timeout = root / "timeout"
         timeout.mkdir()

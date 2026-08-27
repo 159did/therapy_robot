@@ -7,6 +7,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -25,6 +26,7 @@ using therapy_robot::JointState;
 using therapy_robot::Pose;
 
 constexpr int kRepetitionsPerPoint = 3;
+constexpr double kPi = 3.14159265358979323846;
 constexpr const char* kPointHeader =
     "point_id,target_x_m,target_y_m,target_z_m,target_rx_rad,target_ry_rad,target_rz_rad";
 
@@ -42,7 +44,9 @@ struct Options {
   std::string collision_path;
   std::string json_path;
   std::string csv_path;
-  double retreat_distance_m = 0.010;
+  double retreat_radius_m = 0.015;
+  std::uint32_t random_seed = 20260827U;
+  int random_candidate_attempts = 36;
   int move_timeout_ms = 2000;
   int settle_timeout_ms = 500;
   std::string feedback_loss_at;
@@ -66,6 +70,17 @@ struct Sample {
   int settle_duration_ms = 0;
   bool feedback_valid = false;
   bool retreat_completed = false;
+  std::uint32_t random_seed = 0;
+  int random_candidate_attempt = 0;
+  double random_angle_rad = 0.0;
+  double retreat_radius_m = 0.0;
+  Pose retreat_pose{};
+  int retreat_move_duration_ms = 0;
+  bool retreat_ik_passed = false;
+  bool retreat_limit_passed = false;
+  bool retreat_collision_passed = false;
+  bool retreat_path_passed = false;
+  bool return_path_passed = false;
 };
 
 struct RunResult {
@@ -77,6 +92,27 @@ struct RunResult {
   int total_move_duration_ms = 0;
   std::vector<Event> events;
   std::vector<Sample> samples;
+};
+
+class DeterministicRandom {
+ public:
+  explicit DeterministicRandom(std::uint32_t seed)
+      : state_(seed == 0U ? 0x6d2b79f5U : seed) {}
+
+  double next_angle_rad() {
+    // Xorshift32 is used instead of a platform library distribution so a
+    // recorded seed reproduces exactly the same retreat points.
+    std::uint32_t value = state_;
+    value ^= value << 13U;
+    value ^= value >> 17U;
+    value ^= value << 5U;
+    state_ = value;
+    const double unit = static_cast<double>(value) / 4294967296.0;
+    return 2.0 * kPi * unit;
+  }
+
+ private:
+  std::uint32_t state_;
 };
 
 std::vector<std::string> split_csv(const std::string& line) {
@@ -114,6 +150,20 @@ int parse_positive_int(const std::string& text, const std::string& field) {
     throw InputError(field + " must be a positive integer");
   }
   return static_cast<int>(value);
+}
+
+std::uint32_t parse_seed(const std::string& text) {
+  std::size_t consumed = 0;
+  unsigned long value = 0;
+  try {
+    value = std::stoul(text, &consumed);
+  } catch (const std::exception&) {
+    throw InputError("random-seed must be an unsigned 32-bit integer");
+  }
+  if (consumed != text.size() || value > 0xffffffffUL) {
+    throw InputError("random-seed must be an unsigned 32-bit integer");
+  }
+  return static_cast<std::uint32_t>(value);
 }
 
 std::vector<Point> read_points(const std::string& path) {
@@ -237,6 +287,7 @@ RunResult run_simulation(const std::vector<Point>& points,
   const JointState simulated_safe_start{0.3131, 0.0, 0.0, 0.0, 0.0};
   const Pose simulated_safe_pose = therapy_robot::forward_kinematics(simulated_safe_start);
   JointState current = simulated_safe_start;
+  DeterministicRandom random(options.random_seed);
   add_event(run, "READY", "", 0, "simulated_safe_start_ready");
 
   for (const auto& point : points) {
@@ -298,26 +349,55 @@ RunResult run_simulation(const std::vector<Point>& points,
       add_event(run, "CAPTURING_FEEDBACK", point.id, repetition,
                 "mock_feedback_captured");
 
-      // Move back to the synthetic software start between measurements. A
-      // fixed Cartesian retreat direction is unsafe for arbitrary user points
-      // near an enclosure boundary, while this complete five-axis return path
-      // is checked by the same limits/collision preflight as every approach.
-      const Pose retreat_pose = simulated_safe_pose;
-      const double retreat_displacement_m = std::hypot(
-          std::hypot(point.target.x_m - retreat_pose.x_m,
-                     point.target.y_m - retreat_pose.y_m),
-          point.target.z_m - retreat_pose.z_m);
-      if (retreat_displacement_m < options.retreat_distance_m) {
-        fail(run, "retreat_distance_below_minimum", point.id, repetition);
+      // After every measurement choose a point on the BASE_XY circle around
+      // the target. Randomness selects only a candidate direction; both the
+      // target-to-retreat and retreat-to-target paths must pass the existing
+      // IK, formal soft-limit and required collision checks.
+      therapy_robot::EndpointPositioningPreflight retreat;
+      Pose retreat_pose{};
+      double retreat_angle_rad = 0.0;
+      int accepted_attempt = 0;
+      for (int attempt = 1; attempt <= options.random_candidate_attempts; ++attempt) {
+        const double angle = random.next_angle_rad();
+        Pose candidate = point.target;
+        candidate.x_m += options.retreat_radius_m * std::cos(angle);
+        candidate.y_m += options.retreat_radius_m * std::sin(angle);
+        const auto outward = therapy_robot::preflight_endpoint_positioning(
+            sample.actual_joints, candidate, limits, collision);
+        if (!outward.ok) {
+          add_event(run, "SELECTING_RANDOM_RETREAT", point.id, repetition,
+                    "candidate_rejected_outward:" + outward.reason);
+          continue;
+        }
+        const auto inward = therapy_robot::preflight_endpoint_positioning(
+            outward.target_joints, point.target, limits, collision);
+        if (!inward.ok) {
+          add_event(run, "SELECTING_RANDOM_RETREAT", point.id, repetition,
+                    "candidate_rejected_return:" + inward.reason);
+          continue;
+        }
+        retreat = outward;
+        retreat_pose = candidate;
+        retreat_angle_rad = angle;
+        accepted_attempt = attempt;
+        break;
+      }
+      if (accepted_attempt == 0) {
+        fail(run, "no_safe_random_retreat_point", point.id, repetition);
         return run;
       }
-      const auto retreat = therapy_robot::preflight_endpoint_positioning(
-          sample.actual_joints, retreat_pose, limits, collision);
-      if (!retreat.ok) {
-        fail(run, "retreat_preflight_rejected:" + retreat.reason,
-             point.id, repetition);
-        return run;
-      }
+      add_event(run, "SELECTING_RANDOM_RETREAT", point.id, repetition,
+                "safe_candidate_selected");
+      run.samples.back().random_seed = options.random_seed;
+      run.samples.back().random_candidate_attempt = accepted_attempt;
+      run.samples.back().random_angle_rad = retreat_angle_rad;
+      run.samples.back().retreat_radius_m = options.retreat_radius_m;
+      run.samples.back().retreat_pose = retreat_pose;
+      run.samples.back().retreat_ik_passed = true;
+      run.samples.back().retreat_limit_passed = true;
+      run.samples.back().retreat_collision_passed = true;
+      run.samples.back().retreat_path_passed = true;
+      run.samples.back().return_path_passed = true;
       int retreat_duration_ms = 0;
       if (!simulate_move(run, sample.actual_joints, retreat.target_joints,
                          options.move_timeout_ms, "RETREATING",
@@ -327,6 +407,7 @@ RunResult run_simulation(const std::vector<Point>& points,
       add_event(run, "WAITING_RETREAT_SETTLE", point.id, repetition,
                 "mock_retreat_settled");
       run.samples.back().retreat_completed = true;
+      run.samples.back().retreat_move_duration_ms = retreat_duration_ms;
       current = retreat.target_joints;
     }
   }
@@ -364,7 +445,12 @@ void write_csv(const std::string& path, const std::vector<Sample>& samples) {
          "actual_z_m,actual_rx_rad,actual_ry_rad,actual_rz_rad,position_error_m,"
          "orientation_error_rad,position_tolerance_m,orientation_tolerance_rad,"
          "position_check_passed,orientation_check_passed,accepted,reason,"
-         "feedback_valid,move_duration_ms,settle_duration_ms,retreat_completed,"
+         "feedback_valid,move_duration_ms,settle_duration_ms,random_seed,"
+         "random_candidate_attempt,random_angle_rad,random_angle_deg,"
+         "retreat_radius_m,retreat_x_m,retreat_y_m,retreat_z_m,"
+         "retreat_rx_rad,retreat_ry_rad,retreat_rz_rad,retreat_move_duration_ms,"
+         "retreat_ik_passed,retreat_limit_passed,retreat_collision_passed,"
+         "retreat_path_passed,return_path_passed,retreat_completed,"
          "simulation_only,motor_command_generated,serial_accessed,d405_accessed\n";
   out << std::setprecision(17);
   for (const auto& sample : samples) {
@@ -385,6 +471,17 @@ void write_csv(const std::string& path, const std::vector<Sample>& samples) {
         << (evaluation.accepted ? "true" : "false") << ',' << evaluation.reason << ','
         << (sample.feedback_valid ? "true" : "false") << ','
         << sample.move_duration_ms << ',' << sample.settle_duration_ms << ','
+        << sample.random_seed << ',' << sample.random_candidate_attempt << ','
+        << sample.random_angle_rad << ',' << sample.random_angle_rad * 180.0 / kPi << ','
+        << sample.retreat_radius_m << ',' << sample.retreat_pose.x_m << ','
+        << sample.retreat_pose.y_m << ',' << sample.retreat_pose.z_m << ','
+        << sample.retreat_pose.rx_rad << ',' << sample.retreat_pose.ry_rad << ','
+        << sample.retreat_pose.rz_rad << ',' << sample.retreat_move_duration_ms << ','
+        << (sample.retreat_ik_passed ? "true" : "false") << ','
+        << (sample.retreat_limit_passed ? "true" : "false") << ','
+        << (sample.retreat_collision_passed ? "true" : "false") << ','
+        << (sample.retreat_path_passed ? "true" : "false") << ','
+        << (sample.return_path_passed ? "true" : "false") << ','
         << (sample.retreat_completed ? "true" : "false")
         << ",true,false,false,false\n";
   }
@@ -413,8 +510,12 @@ void write_json(const std::string& path, const std::vector<Point>& points,
       << ",\"selected_points\":" << points.size()
       << ",\"planned_samples\":" << points.size() * kRepetitionsPerPoint
       << ",\"completed_samples\":" << run.samples.size()
-      << ",\"minimum_retreat_distance_m\":" << options.retreat_distance_m
-      << ",\"retreat_destination\":\"SIMULATED_SAFE_START\""
+      << ",\"test_mode\":\"randomized_radial_reacquisition\""
+      << ",\"retreat_plane\":\"BASE_XY\""
+      << ",\"retreat_radius_m\":" << options.retreat_radius_m
+      << ",\"random_seed\":" << options.random_seed
+      << ",\"random_candidate_attempts\":" << options.random_candidate_attempts
+      << ",\"retreat_destination\":\"RANDOM_CIRCLE_POINT\""
       << ",\"move_timeout_ms\":" << options.move_timeout_ms
       << ",\"settle_timeout_ms\":" << options.settle_timeout_ms
       << ",\"total_move_duration_ms\":" << run.total_move_duration_ms
@@ -510,6 +611,19 @@ void write_json(const std::string& path, const std::vector<Point>& points,
         << ",\"feedback_valid\":" << (sample.feedback_valid ? "true" : "false")
         << ",\"move_duration_ms\":" << sample.move_duration_ms
         << ",\"settle_duration_ms\":" << sample.settle_duration_ms
+        << ",\"random_seed\":" << sample.random_seed
+        << ",\"random_candidate_attempt\":" << sample.random_candidate_attempt
+        << ",\"random_angle_rad\":" << sample.random_angle_rad
+        << ",\"random_angle_deg\":" << sample.random_angle_rad * 180.0 / kPi
+        << ",\"retreat_radius_m\":" << sample.retreat_radius_m
+        << ",\"retreat_pose\":";
+    write_pose_json(out, sample.retreat_pose);
+    out << ",\"retreat_move_duration_ms\":" << sample.retreat_move_duration_ms
+        << ",\"retreat_ik_passed\":" << (sample.retreat_ik_passed ? "true" : "false")
+        << ",\"retreat_limit_passed\":" << (sample.retreat_limit_passed ? "true" : "false")
+        << ",\"retreat_collision_passed\":" << (sample.retreat_collision_passed ? "true" : "false")
+        << ",\"retreat_path_passed\":" << (sample.retreat_path_passed ? "true" : "false")
+        << ",\"return_path_passed\":" << (sample.return_path_passed ? "true" : "false")
         << ",\"retreat_completed\":" << (sample.retreat_completed ? "true" : "false")
         << '}';
   }
@@ -532,7 +646,8 @@ void write_json(const std::string& path, const std::vector<Point>& points,
 void usage(std::ostream& out) {
   out << "usage: endpoint_repeatability_sim --points points.csv "
          "--collision-config enclosure.csv --json report.json --csv table.csv "
-         "[--retreat-distance-m MINIMUM_N] [--move-timeout-ms N] "
+         "[--retreat-radius-m N] [--random-seed N] "
+         "[--random-candidate-attempts N] [--move-timeout-ms N] "
          "[--settle-timeout-ms N] [--simulate-feedback-loss-at point_id:repetition]\n";
 }
 
@@ -546,8 +661,12 @@ Options parse_options(int argc, char** argv) {
     else if (flag == "--collision-config") options.collision_path = value;
     else if (flag == "--json") options.json_path = value;
     else if (flag == "--csv") options.csv_path = value;
-    else if (flag == "--retreat-distance-m") {
-      options.retreat_distance_m = parse_number(value, flag, 0);
+    else if (flag == "--retreat-radius-m" || flag == "--retreat-distance-m") {
+      options.retreat_radius_m = parse_number(value, flag, 0);
+    } else if (flag == "--random-seed") {
+      options.random_seed = parse_seed(value);
+    } else if (flag == "--random-candidate-attempts") {
+      options.random_candidate_attempts = parse_positive_int(value, flag);
     } else if (flag == "--move-timeout-ms") {
       options.move_timeout_ms = parse_positive_int(value, flag);
     } else if (flag == "--settle-timeout-ms") {
@@ -562,8 +681,8 @@ Options parse_options(int argc, char** argv) {
       options.json_path.empty() || options.csv_path.empty()) {
     throw InputError("missing required option");
   }
-  if (!std::isfinite(options.retreat_distance_m) || options.retreat_distance_m <= 0.0) {
-    throw InputError("retreat-distance-m must be a finite positive number");
+  if (!std::isfinite(options.retreat_radius_m) || options.retreat_radius_m <= 0.0) {
+    throw InputError("retreat-radius-m must be a finite positive number");
   }
   return options;
 }
