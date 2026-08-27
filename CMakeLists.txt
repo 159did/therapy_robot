@@ -207,4 +207,9 @@ if(BUILD_TESTING)
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_h1_readonly_collector.py
             --root ${CMAKE_SOURCE_DIR}
   )
+  add_test(
+    NAME s3_endpoint_repeatability_preflight
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/test_s3_endpoint_repeatability_preflight.py
+  )
 endif()

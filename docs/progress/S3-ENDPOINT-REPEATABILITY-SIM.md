@@ -17,6 +17,13 @@
 
 安全边界：`nano_tested=false`、`arm64_tested=false`、`entity_hardware_tested=false`、`serial_accessed=false`、`d405_accessed=false`、`shared_memory_written=false`、`motor_target_generated=false`、`motor_command_generated=false`、`execution_allowed=false`、`entity_action_authorized=false`、`entity_motion_authorized=false`。
 
+## 实体测试适配预检
+
+- 新增 `scripts/s3_endpoint_repeatability_preflight.py`：只读取人工采集的 JSON 状态快照，检查 Nano/aarch64 身份、S3 提交、H1、`HARDWARE_CONTROL`、反馈年龄、看门狗、软限位、碰撞、抱闸、急停、工作区、操作者、急停负责人、request/authorization ID 和 1..100 次重复参数。
+- 预检通过时只输出 `READY_FOR_MANUAL_REVIEW`，`go=false`、`motion_authorized=false`；任一条件失败输出 `NO_GO`。该工具不连接设备、不启动进程、不打开串口、不写共享内存、不生成电机目标或命令。
+- 快照模板：`tests/fixtures/s3-entity-preflight-snapshot.example.json`。模板默认使用占位/失败值，不可直接作为实体 PASS。
+- 新增 CTest：`s3_endpoint_repeatability_preflight`。今晚的正确顺序是：Nano 只读采集 -> 填写快照 -> 运行预检 -> 人工复核，不能跳过预检直接执行实体运动。
+
 回滚：撤销本任务提交即可；本任务未修改正式实体配置、offset、软限位或碰撞边界。
 
 ## 审核修复：CSV 兼容与可配置重复次数

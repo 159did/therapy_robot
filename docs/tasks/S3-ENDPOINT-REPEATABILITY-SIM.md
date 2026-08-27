@@ -87,3 +87,21 @@ JSON 额外包含完整状态事件和每点汇总：平均实际 XYZ、平均/�
 
 - `docs/tasks/S3-ENDPOINT-REPEATABILITY-SIM.example.csv`
 - `docs/tasks/S3-ENDPOINT-REPEATABILITY-SIM.example.json`
+
+## 实体测试前置适配（只读）
+
+在真实 Nano 上，先由现场人员手工采集主机身份、当前提交、H1 只读状态、反馈年龄、看门狗、软限位、碰撞、抱闸、急停、工作区和人员角色，填写模板：
+
+```text
+tests/fixtures/s3-entity-preflight-snapshot.example.json
+```
+
+然后在不连接设备的环境中运行：
+
+```bash
+python3 scripts/s3_endpoint_repeatability_preflight.py \
+  /path/to/nano-readonly-snapshot.json \
+  --out /tmp/s3-entity-preflight-report.json
+```
+
+该工具只输出 `NO_GO` 或 `READY_FOR_MANUAL_REVIEW`。后者仍然包含 `go=false`、`motion_authorized=false`，只表示快照完整到可以交给人工审核；它不会打开串口、启动实体程序、写共享内存或生成电机目标/命令。模板默认是占位和失败值，不能直接当作 Nano 证据或实体 PASS。
