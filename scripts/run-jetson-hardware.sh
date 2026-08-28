@@ -77,6 +77,11 @@ export THERAPY_ROBOT_COLLISION_REQUIRED="$COLLISION_REQUIRED"
 
 MOTOR_POLL_MS="${THERAPY_ROBOT_MOTOR_POLL_MS:-${THERAPY_ROBOT_HARDWARE_POLL_MS:-}}"
 MOTOR_POLL_COMMANDS="${THERAPY_ROBOT_MOTOR_POLL_COMMANDS:-${THERAPY_ROBOT_DEBUG_POLL:-}}"
+START_SIM="${THERAPY_ROBOT_START_SIM:-0}"
+if [[ "$START_SIM" != "0" && "$START_SIM" != "1" ]]; then
+  echo "invalid THERAPY_ROBOT_START_SIM: expected 0 or 1" >&2
+  exit 2
+fi
 
 if [[ "$AXIS_OFFSETS_NATIVE" != "auto" ]]; then
   echo "THERAPY_ROBOT_AXIS_OFFSETS_NATIVE must be exactly 'auto'; inline hardware offsets are forbidden" >&2
@@ -190,12 +195,19 @@ start_component() {
   shift
   "$@" > "$LOG_DIR/$name.log" 2>&1 &
   local pid=$!
-  local start_time
-  start_time="$(awk '{print $22}' "/proc/$pid/stat")"
+  local start_time="0"
+  if [[ -r "/proc/$pid/stat" ]]; then
+    start_time="$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null || true)"
+  fi
+  [[ -n "$start_time" ]] || start_time="0"
   printf '%s %s %s\n' "$pid" "$start_time" "$name" >> "$PID_FILE"
   LAST_STARTED_PID="$pid"
 }
-export LD_LIBRARY_PATH="$ROOT_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+if [[ "${THERAPY_ROBOT_USE_BUNDLED_LIBS:-0}" == "1" ]]; then
+  export LD_LIBRARY_PATH="$ROOT_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+else
+  unset LD_LIBRARY_PATH
+fi
 
 MISSING_ACTIVE_PORT=0
 require_port_exists G0 "$( [[ "$ACTIVE_GROUPS" == *0* || "$ACTIVE_GROUPS" == "all" || "$ACTIVE_GROUPS" == "ALL" || "$ACTIVE_GROUPS" == "*" ]] && echo 1 || echo 0 )" "$G0_PORT" "$G0_PORT_RESOLVED"
@@ -260,9 +272,11 @@ if ! kill -0 "$MOTOR_PID" 2>/dev/null; then
   echo "main_motor failed during hardware initialization; see $LOG_DIR/main_motor.log" >&2
   exit 1
 fi
-start_component main_sim "$ROOT_DIR/bin/main_sim"
+if [[ "$START_SIM" == "1" ]]; then
+  start_component main_sim "$ROOT_DIR/bin/main_sim"
+  start_component main_web_sim "$ROOT_DIR/bin/main_web_sim"
+fi
 start_component main_web_control "$ROOT_DIR/bin/main_web_control"
-start_component main_web_sim "$ROOT_DIR/bin/main_web_sim"
 
 STARTUP_COMPLETE=1
 trap - EXIT
@@ -270,6 +284,11 @@ trap - EXIT
 IP_ADDR="$(hostname -I 2>/dev/null | awk '{print $1}')"
 if [[ -z "${IP_ADDR:-}" ]]; then
   IP_ADDR="192.168.2.100"
+fi
+if [[ "$START_SIM" == "1" ]]; then
+  SIM_GUI="http://$IP_ADDR:$SIM_WEB_PORT/sim"
+else
+  SIM_GUI="disabled (set THERAPY_ROBOT_START_SIM=1 to enable)"
 fi
 
 cat <<EOF
@@ -307,6 +326,7 @@ Ports:
 Motor polling:
   interval_ms: ${MOTOR_POLL_MS:-50}
   commands: ${MOTOR_POLL_COMMANDS:-all}
+  simulation_motor_started: $START_SIM
 
 Logs:
   $LOG_DIR/main_motor.log
@@ -315,7 +335,7 @@ Logs:
 
 Open GUI:
   control: http://$IP_ADDR:$WEB_PORT/control
-  sim:     http://$IP_ADDR:$SIM_WEB_PORT/sim
+  sim:     $SIM_GUI
 
 Runtime:
   directory: $RUNTIME_DIR
