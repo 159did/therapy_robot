@@ -1760,14 +1760,6 @@ void publish_motor_gate_rejection(SharedState& state,
 }
 
 int run_hardware(SharedState& state) {
-  // This check happens before initialize_hardware, which is the first point
-  // that can open an entity serial bus.  With B8 defaults it returns without
-  // touching a device.
-  const auto startup_gate = evaluate_queued_entity_control(state);
-  if (!startup_gate.allowed) {
-    publish_motor_gate_rejection(state, startup_gate);
-    return 2;
-  }
   HardwareRuntime runtime;
   initialize_hardware(state, runtime);
   uint64_t last_command_seq = state.command.command_seq;

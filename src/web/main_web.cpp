@@ -1012,6 +1012,32 @@ int main() {
       state->web_heartbeat_ms = now_ms();
       res.set_content(json_state(*state), "application/json");
     });
+    server.Get("/api/h1/status", [state](const httplib::Request&, httplib::Response& res) {
+      const char* configured_name = std::getenv("THERAPY_ROBOT_DEVICE_NAME");
+      const std::string device_name =
+          configured_name && *configured_name ? configured_name : "therapy_robot";
+      std::ostringstream out;
+      out << "{\"ok\":true,\"h1_status\":\"H1_BASIC_READONLY\","
+          << "\"device_name\":\"" << escape_json(device_name.c_str()) << "\","
+          << "\"run_mode\":\"" << escape_json(state->run_mode) << "\","
+          << "\"system_state\":\"" << escape_json(state->system_state) << "\","
+          << "\"axes\":[";
+      for (int idx = 0; idx < kAxisCount; ++idx) {
+        const auto& axis = state->axis_map[idx];
+        const auto& motor = state->groups[axis.group].motors[axis.axis];
+        if (idx) out << ',';
+        out << "{\"name\":\"" << escape_json(axis.name)
+            << "\",\"online\":" << (motor.online ? "true" : "false")
+            << ",\"fault\":" << motor.fault
+            << ",\"enabled\":" << (motor.enabled ? "true" : "false")
+            << ",\"actual_motor_native\":" << motor.actual_motor_native
+            << ",\"actual_axis_si\":" << motor.actual_axis_si << "}";
+      }
+      out << "],\"entity_control_authorized\":"
+          << (state->control_safety.entity_action_authorized ? "true" : "false")
+          << "}";
+      res.set_content(out.str(), "application/json");
+    });
     server.Post("/api/command/return_arm_zero", [state, collision_config](const httplib::Request&, httplib::Response& res) {
       if (state->emergency_stop) {
         res.status = 409;

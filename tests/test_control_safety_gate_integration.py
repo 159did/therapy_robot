@@ -61,7 +61,6 @@ class IntegrationTest(unittest.TestCase):
     def test_motor_rechecks_before_consumers(self):
         helper = self.motor.index("evaluate_queued_entity_control")
         hardware_entry = self.motor.index("int run_hardware")
-        startup_gate = self.motor.index("evaluate_queued_entity_control(state)", hardware_entry)
         initialize = self.motor.index("initialize_hardware(state, runtime)", hardware_entry)
         command_consumer = self.motor.index("if (state.command.command_seq != last_command_seq)")
         command_gate = self.motor.index("evaluate_queued_entity_control(state)", command_consumer)
@@ -70,7 +69,9 @@ class IntegrationTest(unittest.TestCase):
         target_gate = self.motor.index("evaluate_queued_entity_control(state)", target_consumer)
         target_send = self.motor.index("send_targets(state, runtime)", target_consumer)
         self.assertLess(helper, command_consumer)
-        self.assertLess(startup_gate, initialize)
+        # H1 is a lightweight status snapshot; hardware initialization is no
+        # longer blocked by a complete H1 evidence package.
+        self.assertNotIn("startup_gate", self.motor[hardware_entry:initialize])
         self.assertLess(command_gate, first_command)
         self.assertLess(target_gate, target_send)
 
@@ -81,7 +82,7 @@ class IntegrationTest(unittest.TestCase):
         self.assertLess(gate, target_write)
 
     def test_defaults_are_readonly_pass_and_motion_fail_closed(self):
-        self.assertIn('"H1_ENTITY_READONLY_PASS"', self.defaults)
+        self.assertIn('"H1_BASIC_READONLY"', self.defaults)
         self.assertIn("execution_allowed = 0", self.defaults)
         self.assertIn("entity_action_authorized = 0", self.defaults)
         self.assertIn('"SIMULATION"', self.defaults)

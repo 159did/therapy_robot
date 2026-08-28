@@ -22,7 +22,7 @@ struct ControlSafetyState {
   bool execution_allowed = false;
   bool entity_action_authorized = false;
   std::string hardware_mode = "SIMULATION";
-  std::string h1_status = "H1_ENTITY_READONLY_PASS";
+  std::string h1_status = "H1_BASIC_READONLY";
   bool emergency_stop = false;
   bool feedback_valid = false;
   uint64_t feedback_age_ms = UINT64_MAX;

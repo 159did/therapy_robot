@@ -167,8 +167,8 @@ ControlSafetyDecision evaluate_control_safety(
 
   if (state.hardware_mode != "HARDWARE_CONTROL")
     reject(decision, "hardware_control_mode_not_explicit");
-  if (state.h1_status != "H1_ENTITY_READONLY_PASS")
-    reject(decision, "h1_status_not_pass");
+  // H1 is an informational, read-only snapshot. Entity control is gated by
+  // current hardware mode, explicit authorization and live feedback below.
   if (!state.execution_allowed) reject(decision, "execution_not_allowed");
   if (!state.entity_action_authorized)
     reject(decision, "entity_action_not_authorized");

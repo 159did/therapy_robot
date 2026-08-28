@@ -34,7 +34,7 @@ ControlSafetyState valid_state() {
   state.execution_allowed = true;
   state.entity_action_authorized = true;
   state.hardware_mode = "HARDWARE_CONTROL";
-  state.h1_status = std::string("H1_ENTITY_READONLY_") + "PASS";
+  state.h1_status = "H1_BASIC_READONLY";
   state.emergency_stop = false;
   state.feedback_valid = true;
   state.feedback_age_ms = 1;
@@ -87,13 +87,16 @@ int main() {
   assert(!default_decision.allowed);
   assert(has_reason(default_decision, "hardware_control_mode_not_explicit"));
   assert(std::string(shared.control_safety.h1_status) ==
-         "H1_ENTITY_READONLY_PASS");
+         "H1_BASIC_READONLY");
   assert(shared.control_safety.execution_allowed == 0);
   assert(shared.control_safety.entity_action_authorized == 0);
 
-  expect_rejection("h1_status_not_pass", [](auto& state, auto&) {
-    state.h1_status = "H1_STATUS_NOT_READY";
-  });
+  {
+    auto state = valid_state();
+    state.h1_status = "H1_BASIC_READONLY";
+    const auto decision = evaluate_control_safety(state, valid_request());
+    assert(decision.allowed);
+  }
   expect_rejection("hardware_control_mode_not_explicit", [](auto& state, auto&) {
     state.hardware_mode = "HARDWARE_READONLY";
   });
