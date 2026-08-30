@@ -191,7 +191,10 @@ export function createWorkflowView(root = document, client = workflowClient) {
   }
 
   function renderState(payload) {
-    replaceText(elements.state, `${STATE_LABELS[payload.workflow_state]} (${payload.workflow_state})`);
+    const stateLabel = payload.workflow_state === 'vision_blocked'
+      ? '仿真可用；正式实体流程未就绪 (vision_blocked)'
+      : `${STATE_LABELS[payload.workflow_state]} (${payload.workflow_state})`;
+    replaceText(elements.state, stateLabel);
     replaceText(elements.schema, payload.schema_version);
     const source = payload.source_state;
     replaceText(elements.source, `command ${source.command_seq} / target ${source.target_command_seq} / endpoint ${source.endpoint_target_seq}`);
@@ -206,8 +209,8 @@ export function createWorkflowView(root = document, client = workflowClient) {
   }
 
   function renderPlan(payload) {
-    replaceText(elements.planStatus, `${payload.plan.side} / ${payload.preview_valid ? '预览有效' : '预览阻塞'} / execution_allowed=false`);
-    elements.planStatus.className = payload.preview_valid ? 'pill warn' : 'pill bad';
+    replaceText(elements.planStatus, `${payload.plan.side} / 仿真路线可查看 / 实体执行锁定`);
+    elements.planStatus.className = 'pill warn';
     replaceText(elements.planId, payload.plan_id);
     replaceText(elements.planHash, payload.plan_hash);
     renderSegments(root, elements.segments, payload.plan.segments);
@@ -244,9 +247,9 @@ export function createWorkflowView(root = document, client = workflowClient) {
 
     const failures = results.filter((result) => result.status === 'rejected');
     if (failures.length) {
-      setOverallStatus('locked', `不可用 / 已锁定：${failures.length} 个只读接口未通过`);
+      setOverallStatus('locked', `仿真界面仍可用；${failures.length} 个正式只读检查未通过`);
     } else {
-      setOverallStatus('loaded', '后端只读数据已更新 / 执行已锁定');
+      setOverallStatus('loaded', '仿真路线可用 / 实体执行已锁定');
     }
     replaceText(elements.updated, `更新时间：${new Date().toLocaleString('zh-CN', { hour12: false })}`);
     elements.refresh.disabled = false;
