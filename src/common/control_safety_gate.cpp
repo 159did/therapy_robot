@@ -221,6 +221,9 @@ ControlRoutePolicy classify_control_post(const std::string& path) {
   if (path == "/api/workflow/start")
     return {ControlActionKind::GuidedWorkflowStart, true, "enum",
             {"side"}, {"side"}, {}};
+  if (path == "/api/workflow/back")
+    return {ControlActionKind::GuidedWorkflowStart, true, "enum",
+            {"side"}, {"side"}, {}};
   if (path == "/api/workflow/advance")
     return entity("workflow", {"side", "index"}, {"side", "index"}, {"index"});
   if (path == "/api/ik/check") {

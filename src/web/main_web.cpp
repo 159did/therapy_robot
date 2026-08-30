@@ -1072,6 +1072,24 @@ int main() {
       runtime.last_error.clear();
       res.set_content(guided_workflow_json(runtime), "application/json");
     });
+    server.Post("/api/workflow/back", [](const httplib::Request& req, httplib::Response& res) {
+      const std::string side = extract_string(req.body, "side");
+      auto& runtime = guided_workflow_runtime();
+      std::lock_guard<std::mutex> lock(runtime.mutex);
+      if (!runtime.active) {
+        res.status = 409;
+        res.set_content("{\"ok\":false,\"error_code\":\"workflow_not_started\"}", "application/json");
+        return;
+      }
+      if (side != runtime.side) {
+        res.status = 409;
+        res.set_content("{\"ok\":false,\"error_code\":\"workflow_side_mismatch\"}", "application/json");
+        return;
+      }
+      if (runtime.next_point > 0) --runtime.next_point;
+      runtime.last_error.clear();
+      res.set_content(guided_workflow_json(runtime), "application/json");
+    });
     server.Post("/api/workflow/advance", [state, collision_config](const httplib::Request& req, httplib::Response& res) {
       const std::string side = extract_string(req.body, "side");
       const int requested_index = static_cast<int>(std::llround(extract_number(req.body, "index", 0.0)));

@@ -405,6 +405,7 @@ function guidedWorkflowSide() {
 async function refreshGuidedWorkflow() {
   const status = document.getElementById('guidedWorkflowStatus');
   const advance = document.getElementById('guidedWorkflowAdvance');
+  const back = document.getElementById('guidedWorkflowBack');
   try {
     const payload = await api.get('/api/workflow/guided_state');
     const point = payload.next_point;
@@ -413,6 +414,7 @@ async function refreshGuidedWorkflow() {
       : '分阶段流程：未启动';
     status.className = payload.active ? 'pill good' : 'pill';
     advance.disabled = !payload.active || !point;
+    back.disabled = !payload.active || payload.next_index <= 1;
     advance.dataset.nextIndex = point?.index || '';
   } catch (error) {
     status.textContent = `分阶段流程：${error.message}`;
@@ -439,6 +441,19 @@ document.getElementById('guidedWorkflowAdvance')?.addEventListener('click', asyn
       side: guidedWorkflowSide(),
       index: Number(button.dataset.nextIndex),
     });
+  } catch (error) {
+    const status = document.getElementById('guidedWorkflowStatus');
+    status.textContent = `分阶段流程：${error.message}`;
+    status.className = 'pill warn';
+  } finally {
+    await refreshGuidedWorkflow();
+  }
+});
+document.getElementById('guidedWorkflowBack')?.addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    await api.post('/api/workflow/back', { side: guidedWorkflowSide() });
   } catch (error) {
     const status = document.getElementById('guidedWorkflowStatus');
     status.textContent = `分阶段流程：${error.message}`;
