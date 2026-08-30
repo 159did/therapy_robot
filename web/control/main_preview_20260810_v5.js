@@ -396,4 +396,56 @@ window.addEventListener('resize', renderAcupointImage);
 loadAcupointData();
 createWorkflowView();
 createReadinessView();
+
+function guidedWorkflowSide() {
+  return document.querySelector('[data-workflow-side].selected')?.dataset.workflowSide === 'left'
+    ? 'left' : 'right';
+}
+
+async function refreshGuidedWorkflow() {
+  const status = document.getElementById('guidedWorkflowStatus');
+  const advance = document.getElementById('guidedWorkflowAdvance');
+  try {
+    const payload = await api.get('/api/workflow/guided_state');
+    const point = payload.next_point;
+    status.textContent = payload.active
+      ? `分阶段流程：${payload.phase}；下一点 ${point ? `${point.index} ${point.name}` : '完成'}`
+      : '分阶段流程：未启动';
+    status.className = payload.active ? 'pill good' : 'pill';
+    advance.disabled = !payload.active || !point;
+    advance.dataset.nextIndex = point?.index || '';
+  } catch (error) {
+    status.textContent = `分阶段流程：${error.message}`;
+    status.className = 'pill bad';
+    advance.disabled = true;
+  }
+}
+
+document.getElementById('guidedWorkflowStart')?.addEventListener('click', async () => {
+  try {
+    await api.post('/api/workflow/start', { side: guidedWorkflowSide() });
+    await refreshGuidedWorkflow();
+  } catch (error) {
+    const status = document.getElementById('guidedWorkflowStatus');
+    status.textContent = `分阶段流程：${error.message}`;
+    status.className = 'pill bad';
+  }
+});
+document.getElementById('guidedWorkflowAdvance')?.addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    await api.post('/api/workflow/advance', {
+      side: guidedWorkflowSide(),
+      index: Number(button.dataset.nextIndex),
+    });
+  } catch (error) {
+    const status = document.getElementById('guidedWorkflowStatus');
+    status.textContent = `分阶段流程：${error.message}`;
+    status.className = 'pill warn';
+  } finally {
+    await refreshGuidedWorkflow();
+  }
+});
+refreshGuidedWorkflow();
 pollState();

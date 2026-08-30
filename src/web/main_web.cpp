@@ -25,6 +25,7 @@ namespace fs = std::experimental::filesystem;
 #endif
 #include <fstream>
 #include <iostream>
+#include <mutex>
 #include <signal.h>
 #include <sstream>
 #include <stdexcept>
@@ -792,6 +793,88 @@ bool acupoint_sequence_running() {
   return process_running(read_acupoint_sequence_pid());
 }
 
+// Operator-facing cursor over the validated motion_test_points route.
+// It never bypasses the central control-safety gate.
+struct GuidedWorkflowRuntime {
+  std::mutex mutex;
+  bool active = false;
+  std::string side = "right";
+  std::size_t next_point = 0;
+  std::uint64_t run_id = 0;
+  std::string last_error;
+};
+
+GuidedWorkflowRuntime& guided_workflow_runtime() {
+  static GuidedWorkflowRuntime runtime;
+  return runtime;
+}
+
+const char* guided_phase(std::size_t point_index, std::size_t point_count,
+                         bool active) {
+  if (!active) return "IDLE";
+  if (point_index == 0) return "SAFE_HIGH";
+  if (point_index <= 2) return "SIDE_DEPLOY";
+  if (point_index <= 6) return "ARM_EXTENDED";
+  if (point_index + 2 < point_count) return "WORK_CORRIDOR";
+  if (point_index + 1 < point_count) return "RETURN_HIGH";
+  return "COMPLETE";
+}
+
+std::string guided_workflow_json(const GuidedWorkflowRuntime& runtime) {
+  const auto points = motion_test_points(runtime.side);
+  const std::size_t cursor = std::min(runtime.next_point, points.size());
+  const bool complete = runtime.active && cursor >= points.size();
+  const std::size_t status_index = complete ? points.size() - 1 : cursor;
+  const char* phase = complete ? "COMPLETE" : guided_phase(status_index, points.size(), runtime.active);
+  std::ostringstream out;
+  out << "{\"ok\":true,\"schema_version\":\"ptr.guided-workflow.v1\""
+      << ",\"active\":" << (runtime.active ? "true" : "false")
+      << ",\"run_id\":" << runtime.run_id
+      << ",\"side\":\"" << escape_json(runtime.side.c_str()) << "\""
+      << ",\"phase\":\"" << phase << "\""
+      << ",\"next_index\":" << (complete ? 0 : static_cast<int>(cursor + 1))
+      << ",\"point_count\":" << points.size()
+      << ",\"last_error\":\"" << escape_json(runtime.last_error.c_str()) << "\"";
+  if (!complete && runtime.active && cursor < points.size()) {
+    const auto& point = points[cursor];
+    out << ",\"next_point\":{\"index\":" << point.index
+        << ",\"name\":\"" << escape_json(point.name)
+        << "\",\"description\":\"" << escape_json(point.description)
+        << "\",\"x_mm\":" << point.x_mm
+        << ",\"y_mm\":" << point.y_mm
+        << ",\"z_mm\":" << point.z_mm << "}";
+  } else {
+    out << ",\"next_point\":null";
+  }
+  out << "}";
+  return out.str();
+}
+
+bool publish_guided_target(SharedState& state, const MotionTestPoint& point,
+                           const CollisionConfig& collision_config,
+                           std::string& error) {
+  Pose target;
+  target.x_m = point.x_mm / 1000.0;
+  target.y_m = point.y_mm / 1000.0;
+  target.z_m = point.z_mm / 1000.0;
+  const JointState current = actual_joints(state);
+  const auto ik = inverse_kinematics(target, current);
+  if (!ik.ok) { error = ik.error; return false; }
+  const auto collision = check_endpoint_motion(
+      current, ik.joints, effective_collision_config(state, collision_config));
+  if (!collision.ok) { error = collision.reason; return false; }
+  auto& endpoint = state.control.endpoint_target;
+  endpoint.x_m = target.x_m;
+  endpoint.y_m = target.y_m;
+  endpoint.z_m = target.z_m;
+  endpoint.rx_rad = endpoint.ry_rad = endpoint.rz_rad = 0.0;
+  endpoint.valid = 1;
+  endpoint.status = 1;
+  endpoint.target_seq++;
+  set_text(endpoint.last_error, sizeof(endpoint.last_error), "guided_workflow_pending");
+  return true;
+}
+
 std::string shell_quote(const std::string& value) {
   std::string out = "'";
   for (char c : value) {
@@ -949,6 +1032,77 @@ int main() {
       const auto input = readiness_input_snapshot(snapshot, collision_config);
       const auto attestation = issue_readiness_attestation(input, now_ms());
       res.set_content(readiness_attestation_json(attestation), "application/json");
+    });
+    server.Get("/api/workflow/guided_state", [](const httplib::Request&, httplib::Response& res) {
+      auto& runtime = guided_workflow_runtime();
+      std::lock_guard<std::mutex> lock(runtime.mutex);
+      res.set_content(guided_workflow_json(runtime), "application/json");
+    });
+    server.Get("/api/workflow/guided_plan", [](const httplib::Request& req, httplib::Response& res) {
+      const std::string side = req.has_param("side") && req.get_param_value("side") == "left" ? "left" : "right";
+      const auto points = motion_test_points(side);
+      std::ostringstream out;
+      out << "{\"ok\":true,\"schema_version\":\"ptr.guided-workflow.v1\",\"side\":\"" << side << "\",\"phases\":["
+          << "\"SAFE_HIGH\",\"SIDE_DEPLOY\",\"ARM_EXTENDED\",\"WORK_CORRIDOR\",\"RETURN_HIGH\"],\"points\":[";
+      for (std::size_t index = 0; index < points.size(); ++index) {
+        if (index) out << ',';
+        const auto& point = points[index];
+        out << "{\"index\":" << point.index << ",\"phase\":\""
+            << guided_phase(index, points.size(), true) << "\",\"name\":\""
+            << escape_json(point.name) << "\",\"description\":\""
+            << escape_json(point.description) << "\",\"x_mm\":" << point.x_mm
+            << ",\"y_mm\":" << point.y_mm << ",\"z_mm\":" << point.z_mm << "}";
+      }
+      out << "]}";
+      res.set_content(out.str(), "application/json");
+    });
+    server.Post("/api/workflow/start", [](const httplib::Request& req, httplib::Response& res) {
+      const std::string side = extract_string(req.body, "side");
+      if (side != "left" && side != "right") {
+        res.status = 400;
+        res.set_content("{\"ok\":false,\"error_code\":\"invalid_workflow_side\"}", "application/json");
+        return;
+      }
+      auto& runtime = guided_workflow_runtime();
+      std::lock_guard<std::mutex> lock(runtime.mutex);
+      runtime.active = true;
+      runtime.side = side;
+      runtime.next_point = 0;
+      runtime.run_id++;
+      runtime.last_error.clear();
+      res.set_content(guided_workflow_json(runtime), "application/json");
+    });
+    server.Post("/api/workflow/advance", [state, collision_config](const httplib::Request& req, httplib::Response& res) {
+      const std::string side = extract_string(req.body, "side");
+      const int requested_index = static_cast<int>(std::llround(extract_number(req.body, "index", 0.0)));
+      auto& runtime = guided_workflow_runtime();
+      std::lock_guard<std::mutex> lock(runtime.mutex);
+      const auto points = motion_test_points(runtime.side);
+      if (!runtime.active) {
+        res.status = 409;
+        res.set_content("{\"ok\":false,\"error_code\":\"workflow_not_started\"}", "application/json");
+        return;
+      }
+      if (side != runtime.side || requested_index != static_cast<int>(runtime.next_point + 1)) {
+        res.status = 409;
+        res.set_content("{\"ok\":false,\"error_code\":\"workflow_step_out_of_order\",\"motor_command_written\":false}", "application/json");
+        return;
+      }
+      if (runtime.next_point > 0 && state->control.endpoint_target.status != 2) {
+        res.status = 409;
+        res.set_content("{\"ok\":false,\"error_code\":\"previous_workflow_target_not_confirmed\",\"motor_command_written\":false}", "application/json");
+        return;
+      }
+      std::string error;
+      if (!publish_guided_target(*state, points[runtime.next_point], collision_config, error)) {
+        runtime.last_error = error;
+        res.status = 409;
+        res.set_content("{\"ok\":false,\"error_code\":\"workflow_preflight_failed\",\"error\":\"" + escape_json(error.c_str()) + "\",\"motor_command_written\":false}", "application/json");
+        return;
+      }
+      runtime.next_point++;
+      runtime.last_error.clear();
+      res.set_content(guided_workflow_json(runtime), "application/json");
     });
     server.Get("/api/workflow/state", [state, collision_config](const httplib::Request&, httplib::Response& res) {
       const SharedState snapshot = *state;

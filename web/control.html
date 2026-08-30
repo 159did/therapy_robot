@@ -61,8 +61,11 @@
             <button type="button" data-workflow-side="right" aria-pressed="false">右侧</button>
           </div>
           <button id="workflowRefresh" type="button" class="secondary">刷新状态</button>
+          <button id="guidedWorkflowStart" type="button" class="secondary">开始分阶段流程</button>
+          <button id="guidedWorkflowAdvance" type="button" disabled title="先启动工作流">推进下一步</button>
         </div>
       </div>
+      <p id="guidedWorkflowStatus" class="pill">分阶段流程：未启动</p>
 
       <div class="workflow-overview-grid">
         <section class="workflow-overview-block" aria-labelledby="workflowStateTitle">

@@ -105,7 +105,7 @@ def assert_common(payload: dict) -> None:
 
 
 def run(main_core: Path, main_web: Path) -> None:
-    repo = main_core.parents[2]
+    repo = main_core.parents[1]
     token = f"b2_workflow_{os.getpid()}_{uuid.uuid4().hex[:10]}"
     shm_name = f"/therapy_robot_{token}"
     shm_path = Path("/dev/shm") / shm_name[1:]

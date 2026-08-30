@@ -59,9 +59,15 @@ export const api = {
     return request(path);
   },
   async post(path, body = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (path === '/api/workflow/advance' || path === '/api/command/endpoint_target' || path === '/api/command/endpoint_jog' || path === '/api/motion_test/point') {
+      headers['X-Request-ID'] = globalThis.crypto?.randomUUID?.() || `web-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      headers['X-Authorization-ID'] = window.localStorage.getItem('therapyRobotAuthorizationId') || '';
+      headers['X-Input-Units'] = path === '/api/command/endpoint_target' ? 'SI' : path === '/api/command/endpoint_jog' ? 'mm' : 'workflow';
+    }
     return request(path, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(body),
     });
   },
