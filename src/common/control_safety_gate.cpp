@@ -155,6 +155,15 @@ ControlSafetyDecision evaluate_control_safety(
     decision.allowed = decision.reasons.empty();
     return decision;
   }
+  if (request.action == ControlActionKind::GuidedWorkflowAdvance &&
+      state.hardware_mode == "SIMULATION") {
+    if (!request.input_schema_valid) reject(decision, "input_schema_invalid");
+    if (!request.input_finite) reject(decision, "input_non_finite");
+    if (request.has_unknown_fields) reject(decision, "unknown_input_field");
+    if (request.has_missing_fields) reject(decision, "missing_input_field");
+    decision.allowed = decision.reasons.empty();
+    return decision;
+  }
   if (request.action == ControlActionKind::OfflineSimulation ||
       request.action == ControlActionKind::ReadOnlyComputation) {
     if (state.hardware_mode != "SIMULATION") {
@@ -225,7 +234,8 @@ ControlRoutePolicy classify_control_post(const std::string& path) {
     return {ControlActionKind::GuidedWorkflowStart, true, "enum",
             {"side"}, {"side"}, {}};
   if (path == "/api/workflow/advance")
-    return entity("workflow", {"side", "index"}, {"side", "index"}, {"index"});
+    return {ControlActionKind::GuidedWorkflowAdvance, true, "workflow",
+            {"side", "index"}, {"side", "index"}, {"index"}};
   if (path == "/api/ik/check") {
     const std::vector<std::string> pose =
         {"x_m", "y_m", "z_m", "rx_rad", "ry_rad", "rz_rad"};

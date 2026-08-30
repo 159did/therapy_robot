@@ -15,6 +15,7 @@ enum class ControlActionKind {
   OfflineSimulation,
   ReadOnlyComputation,
   GuidedWorkflowStart,
+  GuidedWorkflowAdvance,
   EntityControl,
   FailSafeStop,
 };
