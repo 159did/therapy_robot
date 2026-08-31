@@ -509,7 +509,7 @@ std::string json_state(const SharedState& s) {
   o << "\"config_path\":\"" << escape_json(collision.config_path) << "\"},";
   o << "\"endpoint_target\":{";
   o << "\"valid\":" << ep.valid << ",\"target_seq\":" << ep.target_seq << ",\"status\":" << ep.status << ",\"last_error\":\"" << escape_json(ep.last_error) << "\",";
-  o << "\"x_m\":" << ep.x_m << ",\"y_m\":" << ep.y_m << ",\"z_m\":" << ep.z_m << ",\"rx_rad\":" << ep.rx_rad << ",\"ry_rad\":" << ep.ry_rad << ",\"rz_rad\":" << ep.rz_rad << ",";
+  o << "\"x_m\":" << ep.x_m << ",\"y_m\":" << ep.y_m << ",\"z_m\":" << ep.z_m << ",\"rx_rad\":" << ep.rx_rad << ",\"ry_rad\":" << ep.ry_rad << ",\"rz_rad\":" << ep.rz_rad << ",\"forearm_yaw_constrained\":" << ep.forearm_yaw_constrained << ",\"forearm_yaw_rad\":" << ep.forearm_yaw_rad << ",";
   o << "\"last_position_error_m\":" << ep.last_position_error_m << ",\"last_direction_error_rad\":" << ep.last_direction_error_rad << "}},";
   o << "\"simulation\":{";
   o << "\"enabled\":" << s.simulation.enabled << ",\"hardware_mode\":" << s.simulation.hardware_mode << ",\"mujoco_available\":" << s.simulation.mujoco_available << ",";
@@ -602,7 +602,8 @@ struct MotionTestPoint {
 bool process_running(int pid);
 
 std::vector<MotionTestPoint> motion_test_points(const std::string& side) {
-  const double x = side == "left" ? -575.0 : 575.0;
+  const double x = side == "left" ? -450.0 : 450.0;
+  constexpr double corridor_y_mm = 17.9235;
   std::vector<MotionTestPoint> points;
   points.reserve(30);
   auto add = [&](const char* name, const char* description,
@@ -611,37 +612,40 @@ std::vector<MotionTestPoint> motion_test_points(const std::string& side) {
                       px, py, pz});
   };
 
-  // Offline-simulated back coverage route.  Its 125 x 250 mm working footprint
-  // was checked with the enclosure model, full link envelopes, and sixty
+  // Offline-simulated back coverage route. Its fixed-yaw arc spans X=300..450
+  // mm and Y=17.9..148.4 mm on either side. The route is checked with the
+  // enclosure model, full link envelopes, and sixty
   // synchronized joint-interpolation samples per segment.  The arm leaves the
   // enclosure only in the high plane, then descends through one exterior
   // corridor; it returns through that corridor before lifting again.
   const double sign = side == "left" ? -1.0 : 1.0;
   add("High ready", "K0=313.1 mm, about 1 mm below the recorded stable maximum", 0.0, 232.0, 790.0);
   add("High deploy 1", "High-plane move only", sign * 450.0, 250.0, 790.0);
-  add("High deploy 2", "High-plane exterior deployment", sign * 575.0, 250.0, 790.0);
-  add("Descent 1", "Exterior staged descent", x, 250.0, 755.0);
-  add("Descent 2", "Exterior staged descent", x, 250.0, 720.0);
-  add("Descent 3", "Exterior staged descent", x, 250.0, 685.0);
-  add("Work corridor", "Reach the exterior work height", x, 250.0, 650.0);
-  add("Upper outer", "Upper back strip", sign * 575.0, 300.0, 650.0);
-  add("Upper inner", "Upper back strip", sign * 550.0, 300.0, 650.0);
-  add("Upper return", "Return to the safe exterior corridor", sign * 550.0, 250.0, 650.0);
-  add("Middle inner", "Middle back strip", sign * 500.0, 250.0, 650.0);
-  add("Middle forward", "Middle back strip", sign * 500.0, 200.0, 650.0);
-  add("Middle outer", "Middle back strip", sign * 600.0, 200.0, 650.0);
-  add("Lower forward", "Lower back strip", sign * 600.0, 150.0, 650.0);
-  add("Lower inner", "Lower back strip", sign * 500.0, 150.0, 650.0);
-  add("Lower middle", "Lower back strip", sign * 500.0, 100.0, 650.0);
-  add("Lower outer", "Lower back strip", sign * 625.0, 100.0, 650.0);
-  add("Lower front", "Lower back strip", sign * 625.0, 50.0, 650.0);
-  add("Exit inner", "Return through the exterior corridor", sign * 500.0, 50.0, 650.0);
-  add("Exit middle", "Return through the exterior corridor", sign * 500.0, 250.0, 650.0);
-  add("Exit outer", "Return through the exterior corridor", x, 250.0, 650.0);
-  add("Lift 1", "Exterior staged lift", x, 250.0, 685.0);
-  add("Lift 2", "Exterior staged lift", x, 250.0, 720.0);
-  add("Lift 3", "Exterior staged lift", x, 250.0, 755.0);
-  add("High exit", "Lift clear before crossing the enclosure projection", x, 250.0, 790.0);
+  add("High deploy 2", "High-plane exterior deployment", x, corridor_y_mm, 790.0);
+  add("Descent 1", "Exterior staged descent", x, corridor_y_mm, 755.0);
+  add("Descent 2", "Exterior staged descent", x, corridor_y_mm, 720.0);
+  add("Descent 3", "Exterior staged descent", x, corridor_y_mm, 685.0);
+  // Work points follow the fixed -Y forearm-yaw circle. K1 drives the arc
+  // while K2 compensates, so the forearm remains parallel to the spine axis.
+  add("Work corridor", "Reach the exterior work height", sign * 450.0, 17.9235, 650.0);
+  add("Upper outer", "Upper back arc", sign * 450.0, 17.9235, 650.0);
+  add("Upper inner", "Upper back arc", sign * 400.0, 72.0, 650.0);
+  add("Upper return", "Return along the fixed-yaw arc", sign * 350.0, 114.4932, 650.0);
+  add("Middle inner", "Middle back arc", sign * 300.0, 148.3869, 650.0);
+  add("Middle forward", "Middle back arc", sign * 350.0, 114.4932, 650.0);
+  add("Middle outer", "Middle back arc", sign * 400.0, 72.0, 650.0);
+  add("Lower forward", "Lower back arc", sign * 450.0, 17.9235, 650.0);
+  add("Lower inner", "Lower back arc", sign * 400.0, 72.0, 650.0);
+  add("Lower middle", "Lower back arc", sign * 350.0, 114.4932, 650.0);
+  add("Lower outer", "Lower back arc", sign * 300.0, 148.3869, 650.0);
+  add("Lower front", "Lower back arc", sign * 350.0, 114.4932, 650.0);
+  add("Exit inner", "Return along the fixed-yaw arc", sign * 400.0, 72.0, 650.0);
+  add("Exit middle", "Return along the fixed-yaw arc", sign * 450.0, 17.9235, 650.0);
+  add("Exit outer", "Return through the exterior corridor", sign * 450.0, 17.9235, 650.0);
+  add("Lift 1", "Exterior staged lift", x, corridor_y_mm, 685.0);
+  add("Lift 2", "Exterior staged lift", x, corridor_y_mm, 720.0);
+  add("Lift 3", "Exterior staged lift", x, corridor_y_mm, 755.0);
+  add("High exit", "Lift clear before crossing the enclosure projection", x, corridor_y_mm, 790.0);
   add("High return", "High-plane return to the enclosure center", 0.0, 232.0, 790.0);
   return points;
 
@@ -692,7 +696,9 @@ std::vector<MotionPathPointCheck> check_motion_test_path(
     target.x_m = point.x_mm / 1000.0;
     target.y_m = point.y_mm / 1000.0;
     target.z_m = point.z_mm / 1000.0;
-    const auto ik = inverse_kinematics(target, previous);
+    const auto ik = (point.index >= 7 && point.index <= 21)
+                        ? inverse_kinematics_fixed_forearm_yaw(target, 3.14159265358979323846, previous)
+                        : inverse_kinematics(target, previous);
     check.joints = ik.joints;
     check.reason = ik.ok ? "ok" : ik.error;
     std::array<int64_t, kAxisCount> requested{};
@@ -858,7 +864,9 @@ bool publish_guided_target(SharedState& state, const MotionTestPoint& point,
   target.y_m = point.y_mm / 1000.0;
   target.z_m = point.z_mm / 1000.0;
   const JointState current = actual_joints(state);
-  const auto ik = inverse_kinematics(target, current);
+  const auto ik = (point.index >= 7 && point.index <= 21)
+                      ? inverse_kinematics_fixed_forearm_yaw(target, 3.14159265358979323846, current)
+                      : inverse_kinematics(target, current);
   if (!ik.ok) { error = ik.error; return false; }
   const auto collision = check_endpoint_motion(
       current, ik.joints, effective_collision_config(state, collision_config));
@@ -868,6 +876,8 @@ bool publish_guided_target(SharedState& state, const MotionTestPoint& point,
   endpoint.y_m = target.y_m;
   endpoint.z_m = target.z_m;
   endpoint.rx_rad = endpoint.ry_rad = endpoint.rz_rad = 0.0;
+  endpoint.forearm_yaw_constrained = (point.index >= 7 && point.index <= 21) ? 1 : 0;
+  endpoint.forearm_yaw_rad = endpoint.forearm_yaw_constrained ? 3.14159265358979323846 : 0.0;
   endpoint.valid = 1;
   endpoint.status = 1;
   endpoint.target_seq++;
@@ -1789,6 +1799,8 @@ int main() {
       ep.rx_rad = target.rx_rad;
       ep.ry_rad = target.ry_rad;
       ep.rz_rad = target.rz_rad;
+      ep.forearm_yaw_constrained = 0;
+      ep.forearm_yaw_rad = 0.0;
       ep.valid = 1;
       ep.status = 1;
       std::atomic_thread_fence(std::memory_order_release);
@@ -1973,7 +1985,9 @@ int main() {
       target.ry_rad = 0.0;
       target.rz_rad = 0.0;
       const JointState current_joints = actual_joints(*state);
-      const auto ik = inverse_kinematics(target, current_joints);
+      const auto ik = (selected->index >= 7 && selected->index <= 21)
+                          ? inverse_kinematics_fixed_forearm_yaw(target, 3.14159265358979323846, current_joints)
+                          : inverse_kinematics(target, current_joints);
       if (!ik.ok) {
         res.status = 409;
         res.set_content("{\"ok\":false,\"error\":\"" + escape_json(ik.error.c_str()) + "\"}", "application/json");
@@ -1993,6 +2007,8 @@ int main() {
       ep.rx_rad = target.rx_rad;
       ep.ry_rad = target.ry_rad;
       ep.rz_rad = target.rz_rad;
+      ep.forearm_yaw_constrained = (selected->index >= 7 && selected->index <= 21) ? 1 : 0;
+      ep.forearm_yaw_rad = ep.forearm_yaw_constrained ? 3.14159265358979323846 : 0.0;
       ep.valid = 1;
       ep.status = 1;
       ep.target_seq++;

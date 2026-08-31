@@ -235,4 +235,40 @@ IkResult inverse_kinematics(const Pose& target, const JointState& preferred,
   return inverse_kinematics_impl(target, g, &preferred);
 }
 
+IkResult inverse_kinematics_fixed_forearm_yaw(
+    const Pose& target, double forearm_yaw_rad,
+    const JointState& preferred, const RobotGeometry& g) {
+  auto axis = axis_from_rx_ry(target.rx_rad, target.ry_rad);
+  double k3 = 0.0;
+  double k4 = 0.0;
+  if (!orientation_for_yaw(axis, forearm_yaw_rad, k3, k4))
+    return {false, {}, "requested forearm yaw is incompatible with tool orientation"};
+  auto forward = planar_dir(forearm_yaw_rad);
+  auto side = rotate_around_axis(side_dir(forearm_yaw_rad), forward, k3);
+  auto offset_forward = rotate_around_axis(forward, side, k4);
+  std::array<double, 3> tip{target.x_m, target.y_m, target.z_m};
+  auto p4 = sub(add(tip, mul(axis, g.tool_length_m)),
+                mul(offset_forward, g.wrist_forward_offset_m));
+  double lift = p4[2] - g.base_height_m + g.forearm_drop_m;
+  if (lift < -0.001 - 1e-9) return {false, {}, "target requires negative K0 lift"};
+  lift = std::max(lift, 0.0);
+  auto p1_vec = sub({p4[0], p4[1], 0.0}, mul(forward, g.forearm_m));
+  double p1_len = std::hypot(p1_vec[0], p1_vec[1]);
+  if (std::abs(p1_len - g.upper_arm_m) > 1e-5)
+    return {false, {}, "target xy outside fixed-forearm-yaw workspace"};
+  double k1 = std::atan2(p1_vec[0], p1_vec[1]);
+  double k2 = wrap_pi(forearm_yaw_rad - k1 - kPi);
+  if (k1 < -kPi / 2.0 || k1 > kPi / 2.0 ||
+      k2 < -kPi / 2.0 || k2 > kPi / 2.0)
+    return {false, {}, "fixed forearm yaw requires joint outside limits"};
+  JointState result{lift, k1, k2, k3, k4};
+  const double dk0 = (lift - preferred.k0_m) / 0.100;
+  const double dk1 = wrap_pi(k1 - preferred.k1_rad);
+  const double dk2 = wrap_pi(k2 - preferred.k2_rad);
+  const double dk3 = wrap_pi(k3 - preferred.k3_rad);
+  const double dk4 = wrap_pi(k4 - preferred.k4_rad);
+  (void)(dk0 * dk0 + dk1 * dk1 + dk2 * dk2 + dk3 * dk3 + dk4 * dk4);
+  return {true, result, "ok"};
+}
+
 }

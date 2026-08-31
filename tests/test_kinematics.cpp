@@ -48,6 +48,40 @@ bool verify_roundtrip(const JointState& q) {
   }
   return true;
 }
+
+bool verify_fixed_forearm_yaw() {
+  // The scan corridor is intentionally a circular arc: with forearm yaw
+  // locked to -Y, K1 changes the arc position and K2 compensates it.
+  const std::array<std::array<double, 2>, 5> arc_mm{{
+      {{450.0, 17.9235}}, {{400.0, 72.0}}, {{350.0, 114.4932}},
+      {{300.0, 148.3869}}, {{350.0, 114.4932}},
+  }};
+  JointState preferred{};
+  for (const auto& xy : arc_mm) {
+    for (const double sign : {-1.0, 1.0}) {
+      Pose target{sign * xy[0] / 1000.0, xy[1] / 1000.0, 0.650, 0.0, 0.0, 0.0};
+      const auto ik = therapy_robot::inverse_kinematics_fixed_forearm_yaw(
+          target, kPi, preferred);
+      if (!ik.ok) {
+        std::cerr << "fixed -Y IK rejected scan point: " << ik.error << '\n';
+        return false;
+      }
+      const Pose achieved = therapy_robot::forward_kinematics(ik.joints);
+      const double position_error = std::sqrt(
+          std::pow(achieved.x_m - target.x_m, 2) +
+          std::pow(achieved.y_m - target.y_m, 2) +
+          std::pow(achieved.z_m - target.z_m, 2));
+      const double forearm_yaw = ik.joints.k1_rad + ik.joints.k2_rad + kPi;
+      if (position_error > 2e-5 || angle_error(forearm_yaw, kPi) > 1e-9) {
+        std::cerr << "fixed -Y IK residual or yaw error: " << position_error
+                  << " m, yaw=" << forearm_yaw << " rad\n";
+        return false;
+      }
+      preferred = ik.joints;
+    }
+  }
+  return true;
+}
 }  // namespace
 
 int main() {
@@ -64,6 +98,7 @@ int main() {
   for (const auto& sample : samples) {
     if (!verify_roundtrip(sample)) return EXIT_FAILURE;
   }
+  if (!verify_fixed_forearm_yaw()) return EXIT_FAILURE;
 
   const Pose zero = therapy_robot::forward_kinematics({});
   if (!near(zero.x_m, 0.0, 1e-9) ||

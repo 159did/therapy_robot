@@ -64,6 +64,8 @@ struct EndpointTarget {
   double rx_rad = 0.0;
   double ry_rad = 0.0;
   double rz_rad = 0.0;
+  int forearm_yaw_constrained = 0;
+  double forearm_yaw_rad = 0.0;
   double last_position_error_m = 0.0;
   double last_direction_error_rad = 0.0;
 };

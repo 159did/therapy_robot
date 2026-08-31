@@ -132,7 +132,10 @@ int main() {
         }
         Pose target{ep.x_m, ep.y_m, ep.z_m, ep.rx_rad, ep.ry_rad, ep.rz_rad};
         const JointState current_joints = actual_joints(*state);
-        auto result = inverse_kinematics(target, current_joints);
+        auto result = ep.forearm_yaw_constrained
+                          ? inverse_kinematics_fixed_forearm_yaw(
+                                target, ep.forearm_yaw_rad, current_joints)
+                          : inverse_kinematics(target, current_joints);
         if (result.ok) {
           auto collision = check_endpoint_motion(current_joints, result.joints,
                                                  collision_config);

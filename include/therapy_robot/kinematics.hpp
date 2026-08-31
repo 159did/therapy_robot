@@ -74,6 +74,12 @@ IkResult inverse_kinematics(const Pose& target, const RobotGeometry& geometry = 
 // command must not switch to a distant elbow/wrist branch.
 IkResult inverse_kinematics(const Pose& target, const JointState& preferred,
                             const RobotGeometry& geometry = default_geometry());
+// Solve IK while keeping the forearm planar yaw fixed.  The returned K2
+// compensates K1 so q.k1 + q.k2 + pi remains equal to forearm_yaw_rad.
+IkResult inverse_kinematics_fixed_forearm_yaw(
+    const Pose& target, double forearm_yaw_rad,
+    const JointState& preferred,
+    const RobotGeometry& geometry = default_geometry());
 std::array<double, 3> axis_from_rx_ry(double rx_rad, double ry_rad);
 std::array<double, 2> rx_ry_from_axis(const std::array<double, 3>& axis);
 
